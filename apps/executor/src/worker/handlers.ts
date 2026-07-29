@@ -294,10 +294,7 @@ export class ExecutorHandlers {
     return complete();
   }
 
-  private async processRecovery(
-    attemptId: string,
-    generation: number,
-  ): Promise<HandlerResult> {
+  private async processRecovery(attemptId: string, generation: number): Promise<HandlerResult> {
     const snapshot = await this.store.loadRecoveryExecution(attemptId, generation);
     if (!snapshot) {
       return retry('RECOVERY_REQUEST_MISSING', 'Recovery request checkpoint was not found', 60_000);
@@ -387,10 +384,7 @@ export class ExecutorHandlers {
       prepared = result.value;
       await this.store.saveRecoveryFdcPrepared(snapshot.request.id, prepared);
     } else {
-      prepared = preparedFromCheckpoint(
-        snapshot.fdc.requestBytes,
-        snapshot.fdc.verifierRequest,
-      );
+      prepared = preparedFromCheckpoint(snapshot.fdc.requestBytes, snapshot.fdc.verifierRequest);
     }
 
     let submitted: SubmittedXrpPaymentRequest;
@@ -401,11 +395,7 @@ export class ExecutorHandlers {
       }
       if (result.status === 'FAILED') {
         if (result.retryable) return retry(result.code, result.detail, DEFAULT_RETRY_MS);
-        await this.store.saveRecoveryFdcFailure(
-          snapshot.request.id,
-          result.code,
-          result.detail,
-        );
+        await this.store.saveRecoveryFdcFailure(snapshot.request.id, result.code, result.detail);
         return complete();
       }
       submitted = result.value;
@@ -517,10 +507,7 @@ export class ExecutorHandlers {
               transactionHash,
             }),
           )
-        : await this.boundaries.flare.resume(
-            request,
-            normalizeBytes32(checkpoint.transactionHash),
-          );
+        : await this.boundaries.flare.resume(request, normalizeBytes32(checkpoint.transactionHash));
     if (result.status === 'FAILED') {
       if (result.retryable) return retry(result.code, result.detail, DEFAULT_RETRY_MS);
       await this.store.saveRecoveryExecutionFailure({

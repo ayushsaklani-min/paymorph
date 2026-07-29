@@ -1,6 +1,6 @@
 # PayMorph project memory
 
-Last updated: 2026-07-27
+Last updated: 2026-07-29
 
 ## Product objective
 
@@ -47,7 +47,7 @@ verification items".
 - Blueprint moved to `docs/reference/`.
 - The clean pnpm monorepo, strict TypeScript configuration, CI, containers,
   Prisma migrations, seed tooling, API contract, and runbooks are implemented.
-- The local verification gate passes: format, lint, typecheck, 125 automated
+- The local verification gate passes: format, lint, typecheck, 174 automated
   tests, all production builds, 29 Foundry unit/fuzz/invariant tests, Prisma
   generation/validation, and the OpenAPI structural check.
 - Phase 2 read-only Flare provider, direct-mint amount solver, capability gate,
@@ -76,12 +76,19 @@ verification items".
 - The production-only executor package has been smoke-loaded successfully:
   workspace dependencies and the package-owned generated Prisma client resolve,
   and startup stops at the expected strict missing-secret validation boundary.
-- Local PostgreSQL migration/integration and Playwright browser acceptance are
-  environment-blocked on this machine: Docker Desktop's Linux engine is stopped
-  and the Chromium download timed out. Their unit and build coverage passes.
+- Local PostgreSQL migration/integration still needs a stable native or hosted
+  PostgreSQL instance; Docker Desktop is intentionally not part of this setup.
+  Playwright browser acceptance remains blocked because Chromium could not be
+  downloaded. Unit and build coverage passes.
+- The FXRP-only `PayMorphRouter` is deployed and independently verified on
+  Coston2. The immutable deployment manifest is
+  `packages/contracts/deployments/coston2.json`; deployment transaction
+  `0x25613fe12d1d980cfc2fc532850cbab3b817dc590374284c7d68094509bc4c82`
+  created router `0x9C7d670BE201be8a527cCDf349FE45B037eC6008` from source
+  commit `a674e446f90c9dc4949babb85dbcbea0fac4f3f8`.
 - Credentialed Xaman/FDC/Coston2 submission remains a live acceptance gate, not
-  an implementation fallback. No testnet transaction or deployment artifact is
-  claimed without real hashes and receipts.
+  an implementation fallback. No real XRPL payment, FDC proof, or settlement
+  is claimed without its hashes and receipts.
 
 ## Decisions
 
@@ -173,6 +180,18 @@ job and cannot retry deterministic terminal or recovery states.
   a fresh official transaction-used read. Provider failures never produce an
   eligibility result.
 
+### 2026-07-29 — Coston2 FXRP-only deployment
+
+- Deployed `PayMorphRouter` at
+  `0x9C7d670BE201be8a527cCDf349FE45B037eC6008` on Coston2 (chain 114), with
+  FXRP `0x0b6A3645c240605887a5532109323A3E12273dc7`, a 50-bps service fee,
+  and the USDT0 adapter disabled.
+- `pnpm verify:deployment` independently confirmed bytecode, live registry
+  resolution, FXRP, service fee, and fee recipient at block 33,393,431.
+- At the user's explicit testnet-only request, deployer, admin, fee recipient,
+  and executor use one funded test account. This exception must not be copied
+  to any hosted or production configuration.
+
 ## Verified provider facts
 
 - Use official unified Xaman package `xumm`; `xumm-sdk` is legacy.
@@ -229,6 +248,10 @@ job and cannot retry deterministic terminal or recovery states.
 - `0xE0` recovery eligibility is
   `MasterAccountController.isTransactionIdUsed(originalTxId) == false`. The
   recovery payment must have a positive net FXRP mint after fees.
+- The Coston2 deployment transaction
+  `0x25613fe12d1d980cfc2fc532850cbab3b817dc590374284c7d68094509bc4c82`
+  is successful. Its machine-readable manifest is committed at
+  `packages/contracts/deployments/coston2.json`.
 
 ## Open verification items
 
@@ -239,13 +262,8 @@ job and cannot retry deterministic terminal or recovery states.
   after Coston2 broadcast. The durable nonce makes this replacement-safe and
   the submission callback persists the returned hash before receipt polling,
   but no real transaction was sent during local verification.
-- Post-signing `0xE0` execution remains incomplete. The authoritative recovery
-  Xaman notification and exact XRPL validation boundary are implemented/in
-  progress, but the database does not yet distinguish or checkpoint recovery
-  FDC, `RECOVERY_MARKER`, and `RECOVERY_ORIGINAL` evidence. `RECOVERED` must not
-  be written until a dedicated evidence-enforced transition requires both
-  `IgnoreMemoSet` for the original transaction and the verified original
-  direct-mint evidence.
+- Recovery code and its durable evidence checkpoints are locally covered; a
+  real official `0xE0` recovery remains a credentialed live acceptance gate.
 - Recheck official SparkDEX deployment, factory, quoter, fee-500 pool,
   liquidity, and exact-output simulation before enabling USDT0.
 - Exact Xaman real-webhook HMAC fixture before hosted launch.
@@ -253,14 +271,14 @@ job and cannot retry deterministic terminal or recovery states.
   credentials; local tests cover payload construction, unresolved/signed
   normalization, HMAC rejection, token handling, and status derivation.
 - Run PostgreSQL migrations, seed, queue lease tests, and projection rebuild
-  against a real database when the local Docker engine or a database URL is
-  available.
+  against a stable native or hosted database.
 - Install Playwright Chromium and run the browser journeys. The source and
   production Next.js build pass; the browser binary could not be downloaded on
   this machine.
 
 ## Next action
 
-Run the credentialed tiny-value XRPL/FDC/Coston2 smoke, including a restart
+Configure the public HTTPS Xaman webhook and a stable PostgreSQL database, then
+run the credentialed tiny-value XRPL/FDC/Coston2 smoke, including a restart
 after broadcast, and retain transaction hashes and receipts. Keep USDT0
 disabled until ADR 0006's full route gate passes.

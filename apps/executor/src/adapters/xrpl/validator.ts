@@ -53,10 +53,7 @@ function assertAbsent(record: UnknownRecord, key: string): void {
 
 function normalizeExpectedMemo(memoHex: string, memoOpcode: 'E0' | 'FE'): string {
   const normalized = memoHex.startsWith('0x') ? memoHex.slice(2) : memoHex;
-  if (
-    !HASH_INSTRUCTION_MEMO.test(normalized) ||
-    !normalized.toUpperCase().startsWith(memoOpcode)
-  ) {
+  if (!HASH_INSTRUCTION_MEMO.test(normalized) || !normalized.toUpperCase().startsWith(memoOpcode)) {
     throw new XrplValidationError(
       'INVALID_EXPECTATION',
       `Expected memo must be the exact 42-byte 0x${memoOpcode} instruction memo`,

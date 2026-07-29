@@ -18,9 +18,7 @@ export async function transitionAttempt(input: {
   settlementEvidence?: SettlementEvidence;
 }): Promise<void> {
   if (input.nextStatus === 'RECOVERED') {
-    throw new Error(
-      'RECOVERED requires the dedicated persisted-evidence recovery transition',
-    );
+    throw new Error('RECOVERED requires the dedicated persisted-evidence recovery transition');
   }
   assertTransition(input.expectedStatus, input.nextStatus);
   if (input.nextStatus === 'SETTLED' && !input.settlementEvidence) {

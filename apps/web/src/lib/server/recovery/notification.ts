@@ -11,10 +11,7 @@ import { DomainError } from '@paymorph/shared';
 import { z } from 'zod';
 import { getPayerRuntimeConfig } from '../payer-session/config.js';
 import { XamanGateway } from '../xaman/gateway.js';
-import type {
-  XamanAuthoritativePayload,
-  XamanResolvedExpectation,
-} from '../xaman/types.js';
+import type { XamanAuthoritativePayload, XamanResolvedExpectation } from '../xaman/types.js';
 
 const transactionSchema = z
   .object({
@@ -22,18 +19,17 @@ const transactionSchema = z
     Destination: z.string(),
     Amount: z.string().regex(/^[1-9][0-9]*$/),
     LastLedgerSequence: z.number().int().positive().max(4_294_967_295),
-    Memos: z
-      .tuple([
-        z
-          .object({
-            Memo: z
-              .object({
-                MemoData: z.string().regex(/^E0[A-F0-9]{82}$/),
-              })
-              .strict(),
-          })
-          .strict(),
-      ]),
+    Memos: z.tuple([
+      z
+        .object({
+          Memo: z
+            .object({
+              MemoData: z.string().regex(/^E0[A-F0-9]{82}$/),
+            })
+            .strict(),
+        })
+        .strict(),
+    ]),
   })
   .strict();
 
@@ -73,9 +69,7 @@ const recoveryRequestSnapshotSchema = z
 export type RecoveryRequestSnapshot = z.infer<typeof recoveryRequestSnapshotSchema>;
 
 interface RecoveryGateway {
-  getAuthoritativePayload(
-    expected: XamanResolvedExpectation,
-  ): Promise<XamanAuthoritativePayload>;
+  getAuthoritativePayload(expected: XamanResolvedExpectation): Promise<XamanAuthoritativePayload>;
 }
 
 interface RecoveryNotificationOptions {
@@ -135,10 +129,7 @@ export function assertAuthoritativeRecoveryRequest(
       actual.error.issues,
     );
   }
-  if (
-    JSON.stringify(actual.data) !==
-    JSON.stringify(snapshot.xamanRequest.txjson)
-  ) {
+  if (JSON.stringify(actual.data) !== JSON.stringify(snapshot.xamanRequest.txjson)) {
     throw new DomainError(
       'XAMAN_REJECTED',
       'Authoritative recovery transaction differs from the persisted request',
@@ -164,11 +155,7 @@ export async function processXamanRecoveryNotification(
       },
     },
   });
-  if (
-    persisted === null ||
-    persisted.kind !== PayloadKind.RECOVERY ||
-    persisted.attempt === null
-  ) {
+  if (persisted === null || persisted.kind !== PayloadKind.RECOVERY || persisted.attempt === null) {
     return { known: false };
   }
   const attempt = persisted.attempt;
@@ -202,9 +189,7 @@ export async function processXamanRecoveryNotification(
       db.xamanPayload.update({
         where: { payloadUuid },
         data: {
-          status: authoritative.expired
-            ? PayloadStatus.EXPIRED
-            : PayloadStatus.REJECTED,
+          status: authoritative.expired ? PayloadStatus.EXPIRED : PayloadStatus.REJECTED,
         },
       }),
       db.recoveryRequest.update({
@@ -218,10 +203,7 @@ export async function processXamanRecoveryNotification(
     authoritative.account !== attempt.payerXrplAccount ||
     authoritative.account !== attempt.payerSession.xrplAccount
   ) {
-    throw new DomainError(
-      'XAMAN_REJECTED',
-      'Recovery was signed by a different XRP account',
-    );
+    throw new DomainError('XAMAN_REJECTED', 'Recovery was signed by a different XRP account');
   }
 
   const recoveryTxHash = authoritative.transactionHash.toUpperCase();

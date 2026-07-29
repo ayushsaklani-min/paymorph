@@ -66,10 +66,7 @@ export function parseRecoveryXrplExpectation(value: unknown): RecoveryXrplExpect
   }
 
   const options = requireRecord(request.options, 'Recovery Xaman options');
-  if (
-    options.submit !== true ||
-    options.force_network !== 'TESTNET'
-  ) {
+  if (options.submit !== true || options.force_network !== 'TESTNET') {
     throw new TypeError('Recovery Xaman request must submit on TESTNET');
   }
 

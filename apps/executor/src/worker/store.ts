@@ -11,10 +11,7 @@ import {
 } from '@paymorph/db';
 import { assertTransition } from '@paymorph/shared';
 import { getAddress, type Address } from 'viem';
-import type {
-  DirectMintFinalization,
-  DirectMintReceiptEvidence,
-} from '../adapters/flare/index.js';
+import type { DirectMintFinalization, DirectMintReceiptEvidence } from '../adapters/flare/index.js';
 import { parseRecoveryXrplExpectation } from './recovery-request.js';
 import { fromJson, toJson } from './serialization.js';
 import type {
@@ -472,7 +469,8 @@ export class PrismaExecutorStore implements ExecutorStore {
         },
         include: { nonceReservation: true, recoveryRequest: true },
       });
-      if (!execution?.nonceReservation) throw new Error('Recovery execution has no nonce reservation');
+      if (!execution?.nonceReservation)
+        throw new Error('Recovery execution has no nonce reservation');
       await transaction.recoveryExecution.update({
         where: { id: execution.id },
         data: {
@@ -508,8 +506,7 @@ export class PrismaExecutorStore implements ExecutorStore {
     executionGeneration: number;
     result: Extract<DirectMintFinalization, { status: 'READY' | 'PENDING' }>;
   }): Promise<void> {
-    const purpose =
-      input.stage === 'MARKER' ? 'RECOVERY_MARKER' : 'RECOVERY_ORIGINAL';
+    const purpose = input.stage === 'MARKER' ? 'RECOVERY_MARKER' : 'RECOVERY_ORIGINAL';
     const receiptJson =
       input.result.status === 'READY'
         ? toJson({ purpose, outcome: 'READY', receipt: input.result.receipt })
@@ -603,9 +600,7 @@ export class PrismaExecutorStore implements ExecutorStore {
         const recoveryTransactionId = normalizeTransactionId(
           persistedRequest.xrplTxHash ?? undefined,
         );
-        const recoveryExpectation = parseRecoveryXrplExpectation(
-          persistedRequest.requestJson,
-        );
+        const recoveryExpectation = parseRecoveryXrplExpectation(persistedRequest.requestJson);
         if (
           recoveryExpectation.targetTransactionId.toLowerCase() !==
           originalTransactionId.toLowerCase()
@@ -624,9 +619,7 @@ export class PrismaExecutorStore implements ExecutorStore {
             evidenceJson: true,
           },
         });
-        const markerRecord = confirmedExecutions.find(
-          (execution) => execution.stage === 'MARKER',
-        );
+        const markerRecord = confirmedExecutions.find((execution) => execution.stage === 'MARKER');
         const originalRecord = confirmedExecutions.find(
           (execution) => execution.stage === 'ORIGINAL',
         );
@@ -639,9 +632,7 @@ export class PrismaExecutorStore implements ExecutorStore {
           throw new Error('RECOVERED requires confirmed persisted marker and original evidence');
         }
         const markerEvidence = fromJson<DirectMintReceiptEvidence>(markerRecord.evidenceJson);
-        const originalEvidence = fromJson<DirectMintReceiptEvidence>(
-          originalRecord.evidenceJson,
-        );
+        const originalEvidence = fromJson<DirectMintReceiptEvidence>(originalRecord.evidenceJson);
         if (
           markerEvidence.transactionHash.toLowerCase() !==
             markerRecord.transactionHash.toLowerCase() ||
@@ -655,8 +646,7 @@ export class PrismaExecutorStore implements ExecutorStore {
             recoveryTransactionId.toLowerCase() ||
           markerEvidence.masterAccountMint.personalAccount.toLowerCase() !==
             current.personalAccount.toLowerCase() ||
-          markerEvidence.masterAccountMint.amountUBA !==
-            recoveryExpectation.desiredNetMintUBA ||
+          markerEvidence.masterAccountMint.amountUBA !== recoveryExpectation.desiredNetMintUBA ||
           markerEvidence.ignoreMemo.targetTransactionId.toLowerCase() !==
             originalTransactionId.toLowerCase() ||
           markerEvidence.ignoreMemo.personalAccount.toLowerCase() !==
@@ -672,7 +662,9 @@ export class PrismaExecutorStore implements ExecutorStore {
           originalEvidence.userOperation !== undefined ||
           originalEvidence.paymentSettled !== undefined
         ) {
-          throw new Error('Persisted recovery evidence does not prove ignored memo and original mint');
+          throw new Error(
+            'Persisted recovery evidence does not prove ignored memo and original mint',
+          );
         }
         await transaction.chainEvent.createMany({
           data: [

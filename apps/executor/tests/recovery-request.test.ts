@@ -50,8 +50,7 @@ describe('durable recovery request parsing', () => {
     expect(() => parseRecoveryXrplExpectation(withTag)).toThrow(/unexpected fields/);
 
     const wrongMemo = snapshot();
-    wrongMemo.xamanRequest.txjson.Memos[0]!.Memo.MemoData =
-      `FE00${'00'.repeat(8)}${'AB'.repeat(32)}`;
+    wrongMemo.xamanRequest.txjson.Memos[0]!.Memo.MemoData = `FE00${'00'.repeat(8)}${'AB'.repeat(32)}`;
     expect(() => parseRecoveryXrplExpectation(wrongMemo)).toThrow(/0xE0/);
   });
 });

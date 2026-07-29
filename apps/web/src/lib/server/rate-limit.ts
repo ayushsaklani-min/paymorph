@@ -10,11 +10,7 @@ export interface RateLimitPolicy {
 }
 
 export interface RateLimitStore {
-  increment(input: {
-    key: string;
-    windowStart: Date;
-    expiresAt: Date;
-  }): Promise<number>;
+  increment(input: { key: string; windowStart: Date; expiresAt: Date }): Promise<number>;
 }
 
 const prismaRateLimitStore: RateLimitStore = {
@@ -50,7 +46,7 @@ export function rateLimitSubject(request: Request, actor?: string): string {
 }
 
 export async function consumeRateLimit(input: {
-  policy: RateLimitPolicy,
+  policy: RateLimitPolicy;
   subject: string;
   now?: Date;
   store?: RateLimitStore;

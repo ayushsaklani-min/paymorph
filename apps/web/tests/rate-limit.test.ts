@@ -1,9 +1,6 @@
 import { DomainError } from '@paymorph/shared';
 import { describe, expect, it } from 'vitest';
-import {
-  consumeRateLimit,
-  type RateLimitStore,
-} from '../src/lib/server/rate-limit.js';
+import { consumeRateLimit, type RateLimitStore } from '../src/lib/server/rate-limit.js';
 import { jsonError } from '../src/lib/server/http.js';
 
 function memoryStore(): RateLimitStore {

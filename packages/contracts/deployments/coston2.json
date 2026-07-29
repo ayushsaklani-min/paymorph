@@ -1,0 +1,23 @@
+{
+  "network": "coston2",
+  "chainId": 114,
+  "version": "1.0.0",
+  "commitSha": "a674e446f90c9dc4949babb85dbcbea0fac4f3f8",
+  "deployer": "0x060613A360fFe3213818c022b404E5AA9D755611",
+  "routerAddress": "0x9C7d670BE201be8a527cCDf349FE45B037eC6008",
+  "adapterAddress": "0x0000000000000000000000000000000000000000",
+  "assetManagerAddress": "0xc1Ca88b937d0b528842F95d5731ffB586f4fbDFA",
+  "fxrpAddress": "0x0b6A3645c240605887a5532109323A3E12273dc7",
+  "usdt0Address": "0xC1A5B41512496B80903D1f32d6dEa3a73212E71F",
+  "swapRouterAddress": "0x0000000000000000000000000000000000000000",
+  "poolFee": 500,
+  "serviceFeeBps": 50,
+  "feeRecipient": "0x060613A360fFe3213818c022b404E5AA9D755611",
+  "deployTransactionHashes": ["0x25613fe12d1d980cfc2fc532850cbab3b817dc590374284c7d68094509bc4c82"],
+  "constructorArguments": {
+    "enableUsdt0": false,
+    "contractAdmin": "0x060613A360fFe3213818c022b404E5AA9D755611",
+    "roleSeparation": "testnet-only consolidated deployer/admin/fee-recipient/executor"
+  },
+  "createdAt": "2026-07-29T08:10:01.6493778Z"
+}

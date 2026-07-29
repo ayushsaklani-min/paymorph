@@ -1,10 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { db } from '../packages/db/src/index.js';
-import {
-  createCoston2PublicClient,
-  FlareNetworkProvider,
-} from '../packages/shared/src/index.js';
+import { createCoston2PublicClient, FlareNetworkProvider } from '../packages/shared/src/index.js';
 import { getAddress, parseAbi, parseEventLogs, type Hex } from 'viem';
 
 if (process.env.RUN_LIVE_RECOVERY !== '1') {

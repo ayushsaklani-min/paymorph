@@ -9,8 +9,6 @@ describe('generic attempt transitions', () => {
         expectedStatus: 'RECOVERY_REQUIRED',
         nextStatus: 'RECOVERED',
       }),
-    ).rejects.toThrow(
-      'RECOVERED requires the dedicated persisted-evidence recovery transition',
-    );
+    ).rejects.toThrow('RECOVERED requires the dedicated persisted-evidence recovery transition');
   });
 });

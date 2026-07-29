@@ -358,11 +358,7 @@ function recoveryOriginalRequest(): RecoveryOriginalFinalizeRequest {
   };
 }
 
-function directMintEvidenceLogs(
-  transactionId: Hex,
-  memoData: Hex,
-  amountUBA: bigint,
-): Log[] {
+function directMintEvidenceLogs(transactionId: Hex, memoData: Hex, amountUBA: bigint): Log[] {
   return [
     log(
       ASSET_MANAGER,

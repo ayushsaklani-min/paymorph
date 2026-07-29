@@ -169,8 +169,8 @@ export function AttemptStatus({ attemptId }: { attemptId: string }) {
         <div className="mt-6 rounded-2xl border border-amber-300/40 bg-amber-300/10 p-5">
           <h2 className="text-lg font-semibold text-amber-100">Recovery requires a new payment</h2>
           <p className="mt-3 text-sm leading-6 text-amber-50">
-            The original XRP payment was confirmed, but merchant settlement did not finish.
-            Recovery requires signing another XRPL Testnet transaction.
+            The original XRP payment was confirmed, but merchant settlement did not finish. Recovery
+            requires signing another XRPL Testnet transaction.
           </p>
           <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-6 text-amber-50">
             <li>Recovery mints test FXRP to your Coston2 personal account.</li>
@@ -190,8 +190,8 @@ export function AttemptStatus({ attemptId }: { attemptId: string }) {
                   type="checkbox"
                 />
                 <span>
-                  I understand recovery sends another XRP Testnet payment and does not complete
-                  the merchant invoice.
+                  I understand recovery sends another XRP Testnet payment and does not complete the
+                  merchant invoice.
                 </span>
               </label>
               <button

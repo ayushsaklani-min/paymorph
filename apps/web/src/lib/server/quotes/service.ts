@@ -45,6 +45,12 @@ const ACTIVE_ATTEMPT_STATUSES: AttemptStatus[] = [
   'RECOVERY_REQUIRED',
 ];
 
+const RESUMABLE_ATTEMPT_STATUSES: AttemptStatus[] = [
+  AttemptStatus.QUOTED,
+  AttemptStatus.XAMAN_CREATED,
+  AttemptStatus.AWAITING_SIGNATURE,
+];
+
 export async function createFxrpQuote(input: {
   invoiceSlug: string;
   payerSessionToken: string;
@@ -169,7 +175,7 @@ export async function createFxrpQuote(input: {
     aad: `quote:${quoteId}`,
   });
 
-  await db.$transaction(async (transaction) => {
+  const transactionResult = await db.$transaction(async (transaction) => {
     await transaction.paymentAttempt.updateMany({
       where: {
         invoiceId: invoice.id,
@@ -183,9 +189,37 @@ export async function createFxrpQuote(input: {
         invoiceId: invoice.id,
         status: { in: [...ACTIVE_ATTEMPT_STATUSES, AttemptStatus.SETTLED] },
       },
-      select: { id: true, status: true },
+      select: {
+        id: true,
+        status: true,
+        payerSessionId: true,
+        quote: {
+          select: {
+            id: true,
+            payerXrplAccount: true,
+            invoiceOutBaseUnits: true,
+            serviceFeeOutBaseUnits: true,
+            serviceFeeBps: true,
+            xrplPaymentDrops: true,
+            maxFxrpInputUBA: true,
+            route: true,
+            personalAccount: true,
+            userOpHash: true,
+            expiresAt: true,
+            settlementDeadline: true,
+          },
+        },
+      },
     });
     if (existing) {
+      if (
+        existing.payerSessionId === payerSession.id &&
+        existing.quote.payerXrplAccount === payerSession.xrplAccount &&
+        existing.quote.expiresAt > now &&
+        RESUMABLE_ATTEMPT_STATUSES.includes(existing.status)
+      ) {
+        return { kind: 'RESUME' as const, attempt: existing };
+      }
       throw new DomainError(
         'IDEMPOTENCY_CONFLICT',
         existing.status === AttemptStatus.SETTLED
@@ -238,33 +272,109 @@ export async function createFxrpQuote(input: {
         personalAccount: personalAccountState.personalAccount,
       },
     });
+    return { kind: 'CREATED' as const };
   });
 
-  return {
+  if (transactionResult.kind === 'RESUME') {
+    return publicStoredQuote(transactionResult.attempt);
+  }
+
+  return publicCalculatedQuote({
     quoteId,
     attemptId,
+    calculation,
+    serviceFeeBps,
+    personalAccount: personalAccountState.personalAccount,
+    userOpHash: operation.userOpHash,
+    expiresAt,
+    settlementDeadline,
+  });
+}
+
+function publicCalculatedQuote(input: {
+  quoteId: string;
+  attemptId: string;
+  calculation: ReturnType<typeof calculateQuote>;
+  serviceFeeBps: number;
+  personalAccount: string;
+  userOpHash: string;
+  expiresAt: Date;
+  settlementDeadline: Date;
+}) {
+  return {
+    quoteId: input.quoteId,
+    attemptId: input.attemptId,
     invoiceAmount: {
       asset: 'FXRP',
-      baseUnits: calculation.invoiceOutBaseUnits.toString(),
-      display: formatBaseUnits(calculation.invoiceOutBaseUnits, 6),
+      baseUnits: input.calculation.invoiceOutBaseUnits.toString(),
+      display: formatBaseUnits(input.calculation.invoiceOutBaseUnits, 6),
     },
     serviceFee: {
       asset: 'FXRP',
-      baseUnits: calculation.serviceFeeOutBaseUnits.toString(),
-      display: formatBaseUnits(calculation.serviceFeeOutBaseUnits, 6),
-      bps: serviceFeeBps,
+      baseUnits: input.calculation.serviceFeeOutBaseUnits.toString(),
+      display: formatBaseUnits(input.calculation.serviceFeeOutBaseUnits, 6),
+      bps: input.serviceFeeBps,
     },
     customerPays: {
       asset: 'XRP',
-      drops: calculation.xrplPaymentDrops.toString(),
-      display: formatBaseUnits(calculation.xrplPaymentDrops, 6),
+      drops: input.calculation.xrplPaymentDrops.toString(),
+      display: formatBaseUnits(input.calculation.xrplPaymentDrops, 6),
     },
-    maxFxrpInputUBA: calculation.maxFxrpInputUBA.toString(),
-    route: calculation.route,
-    personalAccount: personalAccountState.personalAccount,
-    userOpHash: operation.userOpHash,
-    expiresAt: expiresAt.toISOString(),
-    settlementDeadline: settlementDeadline.toISOString(),
+    maxFxrpInputUBA: input.calculation.maxFxrpInputUBA.toString(),
+    route: input.calculation.route,
+    personalAccount: input.personalAccount,
+    userOpHash: input.userOpHash,
+    expiresAt: input.expiresAt.toISOString(),
+    settlementDeadline: input.settlementDeadline.toISOString(),
+    warnings: ['XRPL Testnet and Coston2 test tokens have no real monetary value.'],
+  };
+}
+
+function publicStoredQuote(input: {
+  id: string;
+  quote: {
+    id: string;
+    invoiceOutBaseUnits: { toFixed(): string };
+    serviceFeeOutBaseUnits: { toFixed(): string };
+    serviceFeeBps: number;
+    xrplPaymentDrops: { toFixed(): string };
+    maxFxrpInputUBA: { toFixed(): string };
+    route: string;
+    personalAccount: string;
+    userOpHash: string;
+    expiresAt: Date;
+    settlementDeadline: Date;
+  };
+}) {
+  const invoiceOutBaseUnits = BigInt(input.quote.invoiceOutBaseUnits.toFixed());
+  const serviceFeeOutBaseUnits = BigInt(input.quote.serviceFeeOutBaseUnits.toFixed());
+  const xrplPaymentDrops = BigInt(input.quote.xrplPaymentDrops.toFixed());
+
+  return {
+    quoteId: input.quote.id,
+    attemptId: input.id,
+    invoiceAmount: {
+      asset: 'FXRP',
+      baseUnits: invoiceOutBaseUnits.toString(),
+      display: formatBaseUnits(invoiceOutBaseUnits, 6),
+    },
+    serviceFee: {
+      asset: 'FXRP',
+      baseUnits: serviceFeeOutBaseUnits.toString(),
+      display: formatBaseUnits(serviceFeeOutBaseUnits, 6),
+      bps: input.quote.serviceFeeBps,
+    },
+    customerPays: {
+      asset: 'XRP',
+      drops: xrplPaymentDrops.toString(),
+      display: formatBaseUnits(xrplPaymentDrops, 6),
+    },
+    maxFxrpInputUBA: input.quote.maxFxrpInputUBA.toFixed(),
+    route: input.quote.route,
+    personalAccount: input.quote.personalAccount,
+    userOpHash: input.quote.userOpHash,
+    expiresAt: input.quote.expiresAt.toISOString(),
+    settlementDeadline: input.quote.settlementDeadline.toISOString(),
     warnings: ['XRPL Testnet and Coston2 test tokens have no real monetary value.'],
   };
 }

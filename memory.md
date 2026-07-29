@@ -265,8 +265,16 @@ job and cannot retry deterministic terminal or recovery states.
   domain-separated SHA-256 compact form when needed and are checked against
   the same value when authoritative payloads are fetched.
 - A real Testnet SignIn payload was created successfully for the active invoice
-  on 2026-07-29. It is persisted and awaits the payer's Xaman approval. No XRP
-  or Coston2 transaction has yet been submitted.
+  on 2026-07-29, demonstrating that the live provider boundary accepts the
+  corrected request. No XRP or Coston2 transaction has yet been submitted.
+- The payer subsequently completed a real Xaman Testnet SignIn for the active
+  invoice and created one immutable FXRP direct-settlement quote: attempt
+  `84343db3-9d83-4e2e-a059-9a112cbae65f`, quote
+  `3dd104bb-2c69-4d35-b17d-b9598c3eea5c`, and exact XRP amount 1,205,000 drops.
+  It is still `QUOTED`: no Xaman Payment payload, XRP transaction, FDC request,
+  or Coston2 transaction exists. An unexpired, same-payer resumable attempt is
+  now returned by quote creation so a client-side state loss cannot create a
+  conflicting second attempt.
 
 ## Open verification items
 

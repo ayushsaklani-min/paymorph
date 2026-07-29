@@ -259,10 +259,14 @@ job and cannot retry deterministic terminal or recovery states.
   `hL2su5znW1mtkQSP`; it remains unpaid.
 - The Xaman SDK gateway now waits for its proxied payload API without returning
   that thenable proxy from an `async` function, and requests detailed provider
-  errors. This removed the local SDK boundary failure. A genuine Testnet
-  `SignIn` request now reaches Xaman but is rejected by the configured Xaman
-  app with provider error `413` (console reference retained only in local
-  logs); no payload was persisted and no XRPL transaction was submitted.
+  errors. Xaman rejected the initial live request because its
+  `custom_meta.identifier` limit is 40 characters; production UUIDs with
+  descriptive prefixes exceeded it. All identifiers now use a deterministic
+  domain-separated SHA-256 compact form when needed and are checked against
+  the same value when authoritative payloads are fetched.
+- A real Testnet SignIn payload was created successfully for the active invoice
+  on 2026-07-29. It is persisted and awaits the payer's Xaman approval. No XRP
+  or Coston2 transaction has yet been submitted.
 
 ## Open verification items
 
@@ -278,10 +282,10 @@ job and cannot retry deterministic terminal or recovery states.
 - Recheck official SparkDEX deployment, factory, quoter, fee-500 pool,
   liquidity, and exact-output simulation before enabling USDT0.
 - Exact Xaman real-webhook HMAC fixture before hosted launch.
-- Resolve the Xaman Developer Console error `413` for the configured app, then
-  run the real mobile Testnet SignIn acceptance gate. Local tests cover payload
-  construction, unresolved/signed normalization, HMAC rejection, token
-  handling, and status derivation.
+- Complete the active real mobile Xaman Testnet SignIn request, then run the
+  payment, FDC, and Coston2 live gate. Local tests cover payload construction,
+  unresolved/signed normalization, HMAC rejection, token handling, and status
+  derivation.
 - Run database seed, queue lease tests, and projection rebuild against the
   configured native or hosted database.
 - Install Playwright Chromium and run the browser journeys. The source and
@@ -290,9 +294,7 @@ job and cannot retry deterministic terminal or recovery states.
 
 ## Next action
 
-In the Xaman Developer Console, inspect the error `413` reference for the
-configured app and correct the app-level restriction. Then set the temporary
-HTTPS webhook to `<APP_URL>/api/webhooks/xaman`, create a real Testnet SignIn
-from `/pay/hL2su5znW1mtkQSP`, and continue the credentialed tiny-value
-XRPL/FDC/Coston2 smoke. Keep USDT0 disabled until ADR 0006's full route gate
-passes.
+After the payer approves the active Testnet SignIn, resolve it authoritatively,
+create the immutable quote and exact XRP payment request, then continue the
+credentialed tiny-value XRPL/FDC/Coston2 smoke. Keep USDT0 disabled until ADR
+0006's full route gate passes.

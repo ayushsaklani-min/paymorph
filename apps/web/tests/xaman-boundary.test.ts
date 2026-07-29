@@ -3,6 +3,7 @@ import {
   buildXamanPaymentPayload,
   buildXamanSignInPayload,
   normalizeAuthoritativeXamanPayload,
+  xamanCustomIdentifier,
 } from '../src/lib/server/xaman/payloads.js';
 import {
   computeXamanWebhookSignature,
@@ -18,6 +19,16 @@ const TX_HASH = 'A'.repeat(64);
 const MEMO_HEX = `FE00${'00'.repeat(8)}${'11'.repeat(32)}`;
 
 describe('Xaman payload construction', () => {
+  it('keeps a deterministic Xaman metadata identifier within the provider limit', () => {
+    const resourceId = '11111111-1111-4111-8111-111111111111';
+    const identifier = xamanCustomIdentifier('SIGN_IN', resourceId);
+
+    expect(identifier).toHaveLength(40);
+    expect(identifier).toMatch(/^s:[A-Za-z0-9_-]{38}$/);
+    expect(identifier).toBe(xamanCustomIdentifier('SIGN_IN', resourceId));
+    expect(identifier).not.toBe(xamanCustomIdentifier('PAYMENT', resourceId));
+  });
+
   it('builds a forced-Testnet SignIn request without ledger submission', () => {
     expect(
       buildXamanSignInPayload({

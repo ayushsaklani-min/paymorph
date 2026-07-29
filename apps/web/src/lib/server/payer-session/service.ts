@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { db, InvoiceStatus, PayloadKind, PayloadStatus } from '@paymorph/db';
 import { DomainError, encryptSensitive } from '@paymorph/shared';
-import { buildXamanSignInPayload } from '../xaman/payloads.js';
+import { buildXamanSignInPayload, xamanCustomIdentifier } from '../xaman/payloads.js';
 import type { XamanAuthoritativePayload, XamanCreatedPayload } from '../xaman/types.js';
 import { XamanGateway } from '../xaman/gateway.js';
 import { createPayerSessionToken, hashPayerSessionToken } from './cookie.js';
@@ -347,7 +347,7 @@ async function resolvePersistedPayload(
     uuid: persisted.payloadUuid,
     applicationId: config.xamanApiKey,
     kind: 'SIGN_IN',
-    customIdentifier: `signin:${persisted.payerSession.id}`,
+    customIdentifier: xamanCustomIdentifier('SIGN_IN', persisted.payerSession.id),
     requireSigned: false,
   });
 

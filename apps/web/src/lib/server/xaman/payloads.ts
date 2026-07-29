@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { createHash } from 'node:crypto';
 import {
   XAMAN_TESTNET,
   XamanBoundaryError,
@@ -20,6 +21,7 @@ const HASH_INSTRUCTION_MEMO = /^[A-Fa-f0-9]{84}$/;
 const MAX_XRP_DROPS = 100_000_000_000_000_000n;
 const MINIMUM_ABSOLUTE_LEDGER_INDEX = 32_570;
 const UINT32_MAX = 4_294_967_295;
+const XAMAN_CUSTOM_IDENTIFIER_MAX_LENGTH = 40;
 
 const recordSchema = z.record(z.string(), z.unknown());
 
@@ -76,6 +78,28 @@ function assertIdentifier(value: string, label: string): void {
   }
 }
 
+export type XamanCustomIdentifierKind = 'SIGN_IN' | 'PAYMENT' | 'RECOVERY';
+
+/**
+ * Xaman accepts at most 40 characters for custom_meta.identifier. Keep short
+ * local fixture IDs readable, while reducing production UUIDs to a
+ * collision-resistant, deterministic value that remains bound to their kind.
+ */
+export function xamanCustomIdentifier(kind: XamanCustomIdentifierKind, resourceId: string): string {
+  assertIdentifier(resourceId, 'resourceId');
+  const prefix =
+    kind === 'SIGN_IN' ? 'signin' : kind === 'PAYMENT' ? 'payment' : 'recovery';
+  const readable = `${prefix}:${resourceId}`;
+  if (readable.length <= XAMAN_CUSTOM_IDENTIFIER_MAX_LENGTH) return readable;
+
+  const compactPrefix = kind === 'SIGN_IN' ? 's' : kind === 'PAYMENT' ? 'p' : 'r';
+  const digest = createHash('sha256')
+    .update(`${kind}:${resourceId}`, 'utf8')
+    .digest('base64url')
+    .slice(0, XAMAN_CUSTOM_IDENTIFIER_MAX_LENGTH - compactPrefix.length - 1);
+  return `${compactPrefix}:${digest}`;
+}
+
 function assertReturnUrl(value: string): void {
   let url: URL;
   try {
@@ -110,7 +134,7 @@ export function buildXamanSignInPayload(input: XamanSignInPayloadInput): XamanPa
       },
     },
     custom_meta: {
-      identifier: `signin:${input.payerSessionId}`,
+      identifier: xamanCustomIdentifier('SIGN_IN', input.payerSessionId),
       instruction: 'Confirm your XRP Testnet account for PayMorph.',
     },
   };
@@ -119,7 +143,7 @@ export function buildXamanSignInPayload(input: XamanSignInPayloadInput): XamanPa
 export function buildXamanPaymentPayload(input: XamanPaymentPayloadInput): XamanPayloadRequest {
   return buildXamanPaymentRequest(input, {
     memoOpcode: 'FE',
-    identifier: `payment:${input.attemptId}`,
+    identifier: xamanCustomIdentifier('PAYMENT', input.attemptId),
     instruction: 'Pay the exact XRP Testnet amount to complete this PayMorph checkout.',
   });
 }
@@ -127,7 +151,7 @@ export function buildXamanPaymentPayload(input: XamanPaymentPayloadInput): Xaman
 export function buildXamanRecoveryPayload(input: XamanRecoveryPayloadInput): XamanPayloadRequest {
   return buildXamanPaymentRequest(input, {
     memoOpcode: 'E0',
-    identifier: `recovery:${input.attemptId}`,
+    identifier: xamanCustomIdentifier('RECOVERY', input.attemptId),
     instruction:
       'Recovery: mint test FXRP to your personal account and skip the failed merchant instruction.',
   });

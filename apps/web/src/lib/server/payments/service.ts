@@ -3,7 +3,7 @@ import { decryptSensitive, DomainError } from '@paymorph/shared';
 import { getPayerRuntimeConfig } from '../payer-session/config.js';
 import { hashPayerSessionToken } from '../payer-session/cookie.js';
 import { getConfiguredFlareProvider, resolveConfiguredNetwork } from '../network.js';
-import { buildXamanPaymentPayload } from '../xaman/payloads.js';
+import { buildXamanPaymentPayload, xamanCustomIdentifier } from '../xaman/payloads.js';
 import type { XamanAuthoritativePayload, XamanCreatedPayload } from '../xaman/types.js';
 import { XamanGateway } from '../xaman/gateway.js';
 import { getCurrentXrplLedgerIndex } from '../xrpl-ledger.js';
@@ -241,7 +241,7 @@ export async function processXamanPaymentNotification(
     uuid: payloadUuid,
     applicationId: getPayerRuntimeConfig().xamanApiKey,
     kind: 'PAYMENT',
-    customIdentifier: `payment:${attempt.id}`,
+    customIdentifier: xamanCustomIdentifier('PAYMENT', attempt.id),
     requireSigned: false,
   });
 

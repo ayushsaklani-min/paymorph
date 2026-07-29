@@ -11,6 +11,7 @@ import { DomainError } from '@paymorph/shared';
 import { z } from 'zod';
 import { getPayerRuntimeConfig } from '../payer-session/config.js';
 import { XamanGateway } from '../xaman/gateway.js';
+import { xamanCustomIdentifier } from '../xaman/payloads.js';
 import type { XamanAuthoritativePayload, XamanResolvedExpectation } from '../xaman/types.js';
 
 const transactionSchema = z
@@ -107,14 +108,16 @@ export function assertAuthoritativeRecoveryRequest(
   if (
     authoritative.kind !== 'PAYMENT' ||
     authoritative.forceNetwork !== 'TESTNET' ||
-    authoritative.customIdentifier !== `recovery:${attemptId}`
+    authoritative.customIdentifier !== xamanCustomIdentifier('RECOVERY', attemptId)
   ) {
     throw new DomainError(
       'XAMAN_REJECTED',
       'Authoritative recovery payload identity does not match',
     );
   }
-  if (snapshot.xamanRequest.custom_meta.identifier !== `recovery:${attemptId}`) {
+  if (
+    snapshot.xamanRequest.custom_meta.identifier !== xamanCustomIdentifier('RECOVERY', attemptId)
+  ) {
     throw new DomainError(
       'RECOVERY_NOT_ELIGIBLE',
       'Persisted recovery custom identifier does not match',
@@ -171,7 +174,7 @@ export async function processXamanRecoveryNotification(
     uuid: payloadUuid,
     applicationId: getPayerRuntimeConfig().xamanApiKey,
     kind: 'PAYMENT',
-    customIdentifier: `recovery:${attempt.id}`,
+    customIdentifier: xamanCustomIdentifier('RECOVERY', attempt.id),
     requireSigned: false,
   });
   assertAuthoritativeRecoveryRequest(authoritative, snapshot, attempt.id);

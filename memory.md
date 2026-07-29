@@ -282,6 +282,9 @@ job and cannot retry deterministic terminal or recovery states.
   either representation and normalizes it to a number. The payment return page
   now performs one payer-cookie-bound authoritative reconciliation rather than
   relying on a webhook arrival or browser redirect as settlement evidence.
+- Local testing may use an explicit `MUTATION_ALLOWED_ORIGINS` allowlist while
+  retaining the public HTTPS `APP_URL` required for Xaman callbacks. Origins
+  remain exact-match only; this is not a wildcard or CSRF bypass.
 
 ## Open verification items
 

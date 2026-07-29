@@ -92,13 +92,20 @@ export function assertMutationOrigin(request: Request): void {
     // requests do, and Sec-Fetch-Site adds a second rejection signal.
     return;
   }
-  let expectedOrigin: string;
+  let trustedOrigins: Set<string>;
   try {
-    expectedOrigin = new URL(process.env.APP_URL ?? request.url).origin;
+    trustedOrigins = new Set([
+      new URL(process.env.APP_URL ?? request.url).origin,
+      ...(process.env.MUTATION_ALLOWED_ORIGINS ?? '')
+        .split(',')
+        .map((value) => value.trim())
+        .filter(Boolean)
+        .map((value) => new URL(value).origin),
+    ]);
   } catch {
-    throw new DomainError('INTERNAL_ERROR', 'APP_URL is invalid');
+    throw new DomainError('INTERNAL_ERROR', 'PayMorph mutation-origin configuration is invalid');
   }
-  if (origin !== expectedOrigin) {
+  if (!trustedOrigins.has(origin)) {
     throw new DomainError('FORBIDDEN', 'Mutation origin does not match PayMorph');
   }
 }

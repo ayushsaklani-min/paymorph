@@ -253,6 +253,16 @@ job and cannot retry deterministic terminal or recovery states.
   `0x25613fe12d1d980cfc2fc532850cbab3b817dc590374284c7d68094509bc4c82`
   is successful. Its machine-readable manifest is committed at
   `packages/contracts/deployments/coston2.json`.
+- Native PostgreSQL, the local web application, executor, and a temporary
+  Cloudflare HTTPS tunnel are live for the testnet smoke. Both local and public
+  `/api/health` returned HTTP 200 on 2026-07-29. The active test invoice is
+  `hL2su5znW1mtkQSP`; it remains unpaid.
+- The Xaman SDK gateway now waits for its proxied payload API without returning
+  that thenable proxy from an `async` function, and requests detailed provider
+  errors. This removed the local SDK boundary failure. A genuine Testnet
+  `SignIn` request now reaches Xaman but is rejected by the configured Xaman
+  app with provider error `413` (console reference retained only in local
+  logs); no payload was persisted and no XRPL transaction was submitted.
 
 ## Open verification items
 
@@ -268,9 +278,10 @@ job and cannot retry deterministic terminal or recovery states.
 - Recheck official SparkDEX deployment, factory, quoter, fee-500 pool,
   liquidity, and exact-output simulation before enabling USDT0.
 - Exact Xaman real-webhook HMAC fixture before hosted launch.
-- Run the real mobile Xaman SignIn acceptance gate with hosted testnet
-  credentials; local tests cover payload construction, unresolved/signed
-  normalization, HMAC rejection, token handling, and status derivation.
+- Resolve the Xaman Developer Console error `413` for the configured app, then
+  run the real mobile Testnet SignIn acceptance gate. Local tests cover payload
+  construction, unresolved/signed normalization, HMAC rejection, token
+  handling, and status derivation.
 - Run database seed, queue lease tests, and projection rebuild against the
   configured native or hosted database.
 - Install Playwright Chromium and run the browser journeys. The source and
@@ -279,7 +290,9 @@ job and cannot retry deterministic terminal or recovery states.
 
 ## Next action
 
-Configure the public HTTPS Xaman webhook, then run the credentialed tiny-value
-XRPL/FDC/Coston2 smoke, including a restart after broadcast, and retain
-transaction hashes and receipts. Keep USDT0 disabled until ADR 0006's full
-route gate passes.
+In the Xaman Developer Console, inspect the error `413` reference for the
+configured app and correct the app-level restriction. Then set the temporary
+HTTPS webhook to `<APP_URL>/api/webhooks/xaman`, create a real Testnet SignIn
+from `/pay/hL2su5znW1mtkQSP`, and continue the credentialed tiny-value
+XRPL/FDC/Coston2 smoke. Keep USDT0 disabled until ADR 0006's full route gate
+passes.

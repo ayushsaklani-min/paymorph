@@ -26,24 +26,30 @@ export class XamanGateway {
     this.#client = new Xumm(config.apiKey, config.apiSecret);
   }
 
-  async #payloadApi(): Promise<NonNullable<Xumm['payload']>> {
+  async #waitForPayloadApi(): Promise<void> {
     await this.#client.environment.ready;
+    if (this.#client.payload === undefined) {
+      throw new XamanBoundaryError('INVALID_CONFIGURATION', 'Xaman payload API did not initialize');
+    }
+  }
+
+  async createPayload(request: XamanPayloadRequest): Promise<XamanCreatedPayload> {
+    await this.#waitForPayloadApi();
     const payload = this.#client.payload;
     if (payload === undefined) {
       throw new XamanBoundaryError('INVALID_CONFIGURATION', 'Xaman payload API did not initialize');
     }
-    return payload;
-  }
-
-  async createPayload(request: XamanPayloadRequest): Promise<XamanCreatedPayload> {
-    const api = await this.#payloadApi();
-    return normalizeCreatedXamanPayload(await api.create(request));
+    return normalizeCreatedXamanPayload(await payload.create(request, true));
   }
 
   async getAuthoritativePayload(
     expected: XamanResolvedExpectation,
   ): Promise<XamanAuthoritativePayload> {
-    const api = await this.#payloadApi();
-    return normalizeAuthoritativeXamanPayload(await api.get(expected.uuid), expected);
+    await this.#waitForPayloadApi();
+    const payload = this.#client.payload;
+    if (payload === undefined) {
+      throw new XamanBoundaryError('INVALID_CONFIGURATION', 'Xaman payload API did not initialize');
+    }
+    return normalizeAuthoritativeXamanPayload(await payload.get(expected.uuid, true), expected);
   }
 }

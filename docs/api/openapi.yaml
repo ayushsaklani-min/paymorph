@@ -552,6 +552,41 @@ paths:
         '500':
           $ref: '#/components/responses/InternalError'
 
+  /api/attempts/{id}/resolve-payment:
+    post:
+      tags: [Attempts]
+      operationId: reconcileXamanPaymentReturn
+      summary: Reconcile the payer-bound Xaman Payment after browser return
+      description: |
+        Fetches the authoritative Xaman payload for this attempt once. A signed
+        browser return alone never advances settlement; the service validates
+        the authoritative payload and queues XRPL validation only when it is
+        signed by the bound Testnet XRP account.
+      x-implementation-status: implemented
+      security:
+        - PayerCookie: []
+      parameters:
+        - $ref: '#/components/parameters/AttemptId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyObject'
+      responses:
+        '200':
+          description: Authoritative reconciliation completed or remains unresolved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentReconciliationEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
   /api/attempts/{id}/events:
     get:
       tags: [Attempts]
@@ -1744,6 +1779,15 @@ components:
           anyOf:
             - $ref: '#/components/schemas/TransactionHash'
             - type: 'null'
+    PaymentReconciliation:
+      type: object
+      additionalProperties: false
+      required: [attemptId, signed]
+      properties:
+        attemptId:
+          $ref: '#/components/schemas/AttemptId'
+        signed:
+          type: boolean
     Attempt:
       type: object
       additionalProperties: false
@@ -2485,6 +2529,17 @@ components:
       properties:
         data:
           $ref: '#/components/schemas/PaymentPayload'
+        error:
+          type: 'null'
+        requestId:
+          $ref: '#/components/schemas/RequestId'
+    PaymentReconciliationEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, error, requestId]
+      properties:
+        data:
+          $ref: '#/components/schemas/PaymentReconciliation'
         error:
           type: 'null'
         requestId:

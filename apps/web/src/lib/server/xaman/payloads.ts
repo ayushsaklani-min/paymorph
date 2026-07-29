@@ -37,6 +37,17 @@ const createdPayloadSchema = z.object({
   pushed: z.boolean(),
 });
 
+const environmentNetworkIdSchema = z
+  .union([
+    z.number().int().nonnegative(),
+    z
+      .string()
+      .regex(/^(0|[1-9][0-9]*)$/)
+      .transform(Number),
+  ])
+  .nullish()
+  .transform((value) => value ?? null);
+
 const authoritativePayloadSchema = z.object({
   meta: z.object({
     exists: z.literal(true),
@@ -60,7 +71,7 @@ const authoritativePayloadSchema = z.object({
     hex: z.string().nullable(),
     txid: z.string().nullable(),
     environment_nodetype: z.string().nullable(),
-    environment_networkid: z.number().int().nullable(),
+    environment_networkid: environmentNetworkIdSchema,
     dispatched_nodetype: z.string().nullable(),
     dispatched_result: z.string().nullable(),
   }),
@@ -87,8 +98,7 @@ export type XamanCustomIdentifierKind = 'SIGN_IN' | 'PAYMENT' | 'RECOVERY';
  */
 export function xamanCustomIdentifier(kind: XamanCustomIdentifierKind, resourceId: string): string {
   assertIdentifier(resourceId, 'resourceId');
-  const prefix =
-    kind === 'SIGN_IN' ? 'signin' : kind === 'PAYMENT' ? 'payment' : 'recovery';
+  const prefix = kind === 'SIGN_IN' ? 'signin' : kind === 'PAYMENT' ? 'payment' : 'recovery';
   const readable = `${prefix}:${resourceId}`;
   if (readable.length <= XAMAN_CUSTOM_IDENTIFIER_MAX_LENGTH) return readable;
 

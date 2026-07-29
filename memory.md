@@ -277,6 +277,11 @@ job and cannot retry deterministic terminal or recovery states.
   conflicting second attempt. A signed payer session also remains reusable
   after its short-lived SignIn payload expires, and the checkout resolves it
   authoritatively after a refresh.
+- Xaman's authoritative response may provide `environment_networkid` as a
+  canonical decimal string rather than a JSON number; the adapter now accepts
+  either representation and normalizes it to a number. The payment return page
+  now performs one payer-cookie-bound authoritative reconciliation rather than
+  relying on a webhook arrival or browser redirect as settlement evidence.
 
 ## Open verification items
 

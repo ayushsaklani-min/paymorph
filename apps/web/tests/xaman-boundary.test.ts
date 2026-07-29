@@ -161,7 +161,7 @@ describe('authoritative Xaman payload normalization', () => {
           hex: 'DEADBEEF',
           txid: null,
           environment_nodetype: 'TESTNET',
-          environment_networkid: 1,
+          environment_networkid: '1',
           dispatched_nodetype: null,
           dispatched_result: null,
         },

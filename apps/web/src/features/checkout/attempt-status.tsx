@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface Attempt {
   id: string;
@@ -65,6 +65,28 @@ export function AttemptStatus({ attemptId }: { attemptId: string }) {
   const [recoveryError, setRecoveryError] = useState<string | null>(null);
   const [recoveryPayload, setRecoveryPayload] = useState<RecoveryPayload | null>(null);
   const [recoveryProgress, setRecoveryProgress] = useState<string | null>(null);
+  const reconciledPaymentRef = useRef(false);
+
+  useEffect(() => {
+    if (reconciledPaymentRef.current) return;
+    reconciledPaymentRef.current = true;
+
+    async function reconcilePaymentReturn() {
+      try {
+        await fetch(`/api/attempts/${encodeURIComponent(attemptId)}/resolve-payment`, {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'content-type': 'application/json' },
+          body: '{}',
+        });
+      } catch {
+        // The regular status projection remains available; this is a
+        // best-effort return-page trigger, not settlement authority.
+      }
+    }
+
+    void reconcilePaymentReturn();
+  }, [attemptId]);
 
   useEffect(() => {
     let stopped = false;

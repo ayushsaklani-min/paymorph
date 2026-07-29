@@ -7,21 +7,21 @@ to fixture behavior.
 
 ## Phase ledger
 
-| Phase | Scope                                                                     | Exit gate                              | Status                         |
-| ----- | ------------------------------------------------------------------------- | -------------------------------------- | ------------------------------ |
-| 0     | Workspace, strict TS, lint/format, Postgres, Prisma, shared envelopes, CI | `pnpm verify`, health route, migration | Local complete; DB gate        |
-| 1     | Router, SparkDEX adapter, deployment scripts, Foundry tests               | unit/fuzz/invariant tests              | Complete; FXRP router deployed |
-| 2     | Registry, FAssets/FTSO helpers, amounts, capability checks                | verified network report + fixtures     | Complete                       |
-| 3     | Merchant signed auth, sessions, invoices, dashboard                       | ownership and lifecycle tests          | Complete                       |
-| 4     | Public checkout, payer session, Xaman SignIn, webhook                     | payload/dedupe/mobile tests            | Code complete; live gate       |
-| 5     | Pricing, personal account/nonce, userOp, `0xFE` memo                      | golden vectors, expiry/nonce tests     | Complete                       |
-| 6     | Xaman Payment, timeline, XRPL validator                                   | exact-field validation tests           | Code complete; live gate       |
-| 7     | FDC executor, Coston2 submission, event decoding                          | real tiny FXRP smoke                   | Code complete; live gate       |
-| 8     | USDT0 route, exact-output settlement/refund                               | real smoke or explicit disabled reason | Complete; route disabled       |
-| 9     | Receipts, event reconstruction, reconciliation, export                    | projection rebuild test                | Code complete; DB gate         |
-| 10    | `0xE0` recovery diagnostics and payer flow                                | reproducible official recovery test    | Partial; official gate         |
-| 11    | Abuse controls, admin, logs/metrics, accessibility, UX                    | security checklist + all suites        | Partial                        |
-| 12    | Containers, hosted config, smoke artifact, submission docs                | README-driven judge flow               | Local complete; host gate      |
+| Phase | Scope                                                                     | Exit gate                              | Status                             |
+| ----- | ------------------------------------------------------------------------- | -------------------------------------- | ---------------------------------- |
+| 0     | Workspace, strict TS, lint/format, Postgres, Prisma, shared envelopes, CI | `pnpm verify`, health route, migration | Local complete; native DB migrated |
+| 1     | Router, SparkDEX adapter, deployment scripts, Foundry tests               | unit/fuzz/invariant tests              | Complete; FXRP router deployed     |
+| 2     | Registry, FAssets/FTSO helpers, amounts, capability checks                | verified network report + fixtures     | Complete                           |
+| 3     | Merchant signed auth, sessions, invoices, dashboard                       | ownership and lifecycle tests          | Complete                           |
+| 4     | Public checkout, payer session, Xaman SignIn, webhook                     | payload/dedupe/mobile tests            | Code complete; live gate           |
+| 5     | Pricing, personal account/nonce, userOp, `0xFE` memo                      | golden vectors, expiry/nonce tests     | Complete                           |
+| 6     | Xaman Payment, timeline, XRPL validator                                   | exact-field validation tests           | Code complete; live gate           |
+| 7     | FDC executor, Coston2 submission, event decoding                          | real tiny FXRP smoke                   | Code complete; live gate           |
+| 8     | USDT0 route, exact-output settlement/refund                               | real smoke or explicit disabled reason | Complete; route disabled           |
+| 9     | Receipts, event reconstruction, reconciliation, export                    | projection rebuild test                | Code complete; DB gate             |
+| 10    | `0xE0` recovery diagnostics and payer flow                                | reproducible official recovery test    | Partial; official gate             |
+| 11    | Abuse controls, admin, logs/metrics, accessibility, UX                    | security checklist + all suites        | Partial                            |
+| 12    | Containers, hosted config, smoke artifact, submission docs                | README-driven judge flow               | Local complete; host gate          |
 
 `DB gate` means the implementation and unit coverage exist, but the acceptance
 test still requires a reachable PostgreSQL instance. `Live gate` means real
@@ -40,8 +40,9 @@ artifacts are required; fixtures do not satisfy it.
 - Production executor deploy/package smoke: passed through dependency loading
   and stopped at the expected missing-secret validation boundary.
 - Playwright journeys: blocked because Chromium could not be downloaded.
-- PostgreSQL integration/migration acceptance: still requires a stable native
-  or hosted database; Docker Desktop is intentionally not used.
+- PostgreSQL migration acceptance: seven migrations applied successfully to
+  native PostgreSQL 16 in Ubuntu WSL; the database-backed merchant nonce route
+  returned HTTP 201. Seed, queue lease, and projection-rebuild acceptance remain.
 - FXRP-only router deployment: verified on Coston2 at
   `0x9C7d670BE201be8a527cCDf349FE45B037eC6008`; transaction
   `0x25613fe12d1d980cfc2fc532850cbab3b817dc590374284c7d68094509bc4c82`.

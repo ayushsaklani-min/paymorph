@@ -2,16 +2,25 @@
 
 ## Start dependencies
 
-Start Docker Desktop's Linux engine, then:
+PayMorph's local setup does not require Docker Desktop. Install PostgreSQL in
+Ubuntu WSL and start its cluster:
 
 ```bash
-docker compose -f infra/docker-compose.yml up -d postgres
+wsl -d Ubuntu-24.04 -u root -- pg_ctlcluster 16 main start
 ```
 
-Copy `.env.example` to the repository-root `.env.local` and populate
-high-entropy local secrets. Root development, database, deployment, network,
-and smoke commands load this single file for both applications. Only testnet
-credentials are permitted.
+If the WSL distribution is configured to shut down after the command exits,
+keep it alive in a separate terminal while developing:
+
+```bash
+wsl -d Ubuntu-24.04 -u root -- sh -lc "pg_ctlcluster 16 main start; exec sleep infinity"
+```
+
+Use the WSL IP reported by `wsl -d Ubuntu-24.04 -- hostname -I` in the
+repository-root `.env.local` `DATABASE_URL`; the database must allow the
+Windows host gateway to connect. Root development, database, deployment,
+network, and smoke commands load this single file for both applications. Only
+testnet credentials are permitted.
 
 Generate `OPERATOR_SESSION_TOKEN` as documented in
 `docs/runbooks/operator-api.md` only when exercising the local operator API.
@@ -43,7 +52,8 @@ database, admin, or executor ports.
 ## Stop
 
 ```bash
-docker compose -f infra/docker-compose.yml down
+wsl -d Ubuntu-24.04 -u root -- pg_ctlcluster 16 main stop
 ```
 
-Do not add `-v` unless intentionally deleting the local development database.
+Do not delete the WSL PostgreSQL data directory unless intentionally deleting
+the local development database.

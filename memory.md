@@ -76,10 +76,11 @@ verification items".
 - The production-only executor package has been smoke-loaded successfully:
   workspace dependencies and the package-owned generated Prisma client resolve,
   and startup stops at the expected strict missing-secret validation boundary.
-- Local PostgreSQL migration/integration still needs a stable native or hosted
-  PostgreSQL instance; Docker Desktop is intentionally not part of this setup.
-  Playwright browser acceptance remains blocked because Chromium could not be
-  downloaded. Unit and build coverage passes.
+- Native PostgreSQL 16 is running in Ubuntu WSL; all seven Prisma migrations
+  are applied to the local `paymorph` database and a real HTTP merchant nonce
+  request returned 201 with persisted challenge data. Docker Desktop is not
+  part of this setup. Playwright browser acceptance remains blocked because
+  Chromium could not be downloaded. Unit and build coverage passes.
 - The FXRP-only `PayMorphRouter` is deployed and independently verified on
   Coston2. The immutable deployment manifest is
   `packages/contracts/deployments/coston2.json`; deployment transaction
@@ -270,15 +271,15 @@ job and cannot retry deterministic terminal or recovery states.
 - Run the real mobile Xaman SignIn acceptance gate with hosted testnet
   credentials; local tests cover payload construction, unresolved/signed
   normalization, HMAC rejection, token handling, and status derivation.
-- Run PostgreSQL migrations, seed, queue lease tests, and projection rebuild
-  against a stable native or hosted database.
+- Run database seed, queue lease tests, and projection rebuild against the
+  configured native or hosted database.
 - Install Playwright Chromium and run the browser journeys. The source and
   production Next.js build pass; the browser binary could not be downloaded on
   this machine.
 
 ## Next action
 
-Configure the public HTTPS Xaman webhook and a stable PostgreSQL database, then
-run the credentialed tiny-value XRPL/FDC/Coston2 smoke, including a restart
-after broadcast, and retain transaction hashes and receipts. Keep USDT0
-disabled until ADR 0006's full route gate passes.
+Configure the public HTTPS Xaman webhook, then run the credentialed tiny-value
+XRPL/FDC/Coston2 smoke, including a restart after broadcast, and retain
+transaction hashes and receipts. Keep USDT0 disabled until ADR 0006's full
+route gate passes.

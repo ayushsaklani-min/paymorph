@@ -274,7 +274,9 @@ job and cannot retry deterministic terminal or recovery states.
   It is still `QUOTED`: no Xaman Payment payload, XRP transaction, FDC request,
   or Coston2 transaction exists. An unexpired, same-payer resumable attempt is
   now returned by quote creation so a client-side state loss cannot create a
-  conflicting second attempt.
+  conflicting second attempt. A signed payer session also remains reusable
+  after its short-lived SignIn payload expires, and the checkout resolves it
+  authoritatively after a refresh.
 
 ## Open verification items
 

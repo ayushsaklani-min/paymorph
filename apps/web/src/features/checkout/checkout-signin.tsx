@@ -92,6 +92,12 @@ export function CheckoutSignIn({ invoiceSlug }: { invoiceSlug: string }) {
   }, [invoiceSlug, payment]);
 
   useEffect(() => {
+    if (payload !== null && resolution === null) {
+      void resolveSignIn();
+    }
+  }, [payload, resolution, resolveSignIn]);
+
+  useEffect(() => {
     if (payload === null || resolution?.status === 'SIGNED') {
       return;
     }

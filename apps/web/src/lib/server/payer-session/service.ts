@@ -115,8 +115,8 @@ async function findReusableSession(
       payloads: {
         where: {
           kind: PayloadKind.SIGN_IN,
-          expiresAt: { gt: now },
           status: { in: [PayloadStatus.CREATED, PayloadStatus.OPENED, PayloadStatus.SIGNED] },
+          OR: [{ status: PayloadStatus.SIGNED }, { expiresAt: { gt: now } }],
         },
         orderBy: { createdAt: 'desc' },
         take: 1,

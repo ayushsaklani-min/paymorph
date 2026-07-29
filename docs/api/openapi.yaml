@@ -1,0 +1,2601 @@
+openapi: 3.1.0
+info:
+  title: PayMorph API
+  version: 0.2.0
+  description: |
+    Normative HTTP contract for the PayMorph XRPL Testnet to Flare Coston2
+    checkout. Every JSON response uses `{ data, error, requestId }`.
+
+    Monetary values are never JSON numbers. Base-unit amounts are canonical
+    unsigned decimal strings and display amounts are presentation-only decimal
+    strings. Dates are RFC 3339 UTC strings.
+
+    Merchant and payer sessions are opaque HttpOnly cookies with `SameSite=Lax`,
+    `Path=/`, an explicit expiry, and `Secure` outside local development.
+    Cookie-authenticated mutations require SameSite cookie enforcement and
+    strict same-origin Origin/Host validation as their CSRF control.
+
+    `x-implementation-status` distinguishes implemented routes from the
+    blueprint contract still scheduled for later phases. A planned operation is
+    not a claim that its live provider or chain gate has passed.
+  license:
+    name: MIT
+servers:
+  - url: http://localhost:3000
+    description: Local development
+tags:
+  - name: Authentication
+  - name: Merchant
+  - name: Invoices
+  - name: Payer
+  - name: Attempts
+  - name: Receipts
+  - name: Providers
+  - name: Network
+  - name: Operations
+
+paths:
+  /api/auth/nonce:
+    post:
+      tags: [Authentication]
+      operationId: createMerchantAuthNonce
+      summary: Create a one-time merchant wallet challenge
+      x-implementation-status: implemented
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthNonceRequest'
+      responses:
+        '201':
+          description: Challenge created
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthNonceEnvelope'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/auth/verify:
+    post:
+      tags: [Authentication]
+      operationId: verifyMerchantWallet
+      summary: Verify an EIP-191 signature and create a merchant session
+      description: |
+        On success the server sets `paymorph_session` as an opaque HttpOnly,
+        SameSite=Lax cookie. The signed message is the exact message returned by
+        `/api/auth/nonce` and is bound to Coston2 chain ID 114.
+      x-implementation-status: implemented
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthVerifyRequest'
+      responses:
+        '200':
+          description: Merchant authenticated
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+              description: Opaque `paymorph_session` cookie; never expose it to JavaScript.
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MerchantAuthEnvelope'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/auth/logout:
+    post:
+      tags: [Authentication]
+      operationId: logoutMerchant
+      summary: Revoke the current merchant session
+      x-implementation-status: implemented
+      security:
+        - MerchantCookie: []
+      responses:
+        '200':
+          description: Session revoked and cookie cleared
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogoutEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/me:
+    get:
+      tags: [Merchant]
+      operationId: getMerchantProfile
+      summary: Return the authenticated merchant and network capability summary
+      description: Encrypted secrets and provider tokens are never projected.
+      x-implementation-status: implemented
+      security:
+        - MerchantCookie: []
+      responses:
+        '200':
+          description: Merchant profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MerchantEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    patch:
+      tags: [Merchant]
+      operationId: updateMerchantProfile
+      summary: Update merchant-safe profile fields
+      x-implementation-status: implemented
+      security:
+        - MerchantCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MerchantPatchRequest'
+      responses:
+        '200':
+          description: Updated merchant profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MerchantEnvelope'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/invoices:
+    get:
+      tags: [Invoices]
+      operationId: listInvoices
+      summary: List the merchant's invoices
+      description: |
+        Cursor-paginated, newest-first merchant invoice projection.
+      x-implementation-status: implemented
+      security:
+        - MerchantCookie: []
+      parameters:
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/PageLimit'
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/InvoiceStatus'
+        - name: settlementAsset
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/SettlementAsset'
+      responses:
+        '200':
+          description: Cursor page ordered newest first
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceListEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    post:
+      tags: [Invoices]
+      operationId: createInvoice
+      summary: Create an immutable-term draft invoice
+      x-implementation-status: implemented
+      security:
+        - MerchantCookie: []
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInvoiceRequest'
+      responses:
+        '201':
+          description: Draft invoice created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceEnvelope'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/invoices/{id}:
+    parameters:
+      - $ref: '#/components/parameters/InvoiceId'
+    get:
+      tags: [Invoices]
+      operationId: getInvoice
+      summary: Return an owned invoice and its ordered recipients
+      x-implementation-status: implemented
+      security:
+        - MerchantCookie: []
+      responses:
+        '200':
+          description: Invoice detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    patch:
+      tags: [Invoices]
+      operationId: updateInvoice
+      summary: Edit a draft invoice
+      description: Published financial fields are immutable. A replacement invoice is required.
+      x-implementation-status: implemented
+      security:
+        - MerchantCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateInvoiceRequest'
+      responses:
+        '200':
+          description: Updated invoice
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceEnvelope'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/invoices/{id}/publish:
+    parameters:
+      - $ref: '#/components/parameters/InvoiceId'
+    post:
+      tags: [Invoices]
+      operationId: publishInvoice
+      summary: Publish a draft invoice
+      x-implementation-status: implemented
+      security:
+        - MerchantCookie: []
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: Active invoice
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceEnvelope'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/invoices/{id}/cancel:
+    parameters:
+      - $ref: '#/components/parameters/InvoiceId'
+    post:
+      tags: [Invoices]
+      operationId: cancelInvoice
+      summary: Cancel a draft or active unpaid invoice
+      x-implementation-status: implemented
+      security:
+        - MerchantCookie: []
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: Cancelled invoice
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceEnvelope'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/public/invoices/{slug}:
+    get:
+      tags: [Invoices]
+      operationId: getPublicInvoice
+      summary: Return checkout-safe data for an active invoice
+      x-implementation-status: implemented
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/InvoiceSlug'
+      responses:
+        '200':
+          description: Public invoice
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicInvoiceEnvelope'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/payer/signin:
+    post:
+      tags: [Payer]
+      operationId: createPayerSignIn
+      summary: Create or reuse a Xaman SignIn payload
+      description: |
+        On success sets the short-lived opaque `paymorph_payer` cookie. Xaman
+        is forced to TESTNET. The browser response never establishes identity;
+        authoritative Xaman payload retrieval does.
+      x-implementation-status: implemented
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PayerSignInRequest'
+      responses:
+        '201':
+          description: SignIn payload created or safely reused
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+              description: Opaque `paymorph_payer` cookie with a maximum 30-minute lifetime.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayerSignInStartEnvelope'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/payer/signin/{payloadId}:
+    get:
+      tags: [Payer]
+      operationId: getPayerSignInStatus
+      summary: Fetch and persist authoritative Xaman SignIn status
+      x-implementation-status: implemented
+      security:
+        - PayerCookie: []
+      parameters:
+        - $ref: '#/components/parameters/PayloadId'
+      responses:
+        '200':
+          description: Current authoritative SignIn state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayerSignInStatusEnvelope'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/public/invoices/{slug}/quotes:
+    post:
+      tags: [Payer]
+      operationId: createQuote
+      summary: Create an immutable payer-bound quote and committed user operation
+      description: |
+        Requires completed Xaman SignIn. The server reads current FTSO,
+        registry-resolved FAssets settings, payer personal account and nonce.
+        USDT0 returns `QUOTE_ROUTE_UNAVAILABLE` while ADR 0006's route gate is
+        not satisfied. Exact user-operation bytes are encrypted at rest and are
+        not returned.
+      x-implementation-status: implemented
+      security:
+        - PayerCookie: []
+      parameters:
+        - $ref: '#/components/parameters/InvoiceSlug'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateQuoteRequest'
+      responses:
+        '201':
+          description: Immutable quote created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuoteEnvelope'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/quotes/{quoteId}/payment-payload:
+    post:
+      tags: [Payer]
+      operationId: createPaymentPayload
+      summary: Create the Xaman XRP Payment payload and payment attempt
+      description: |
+        Re-reads the personal-account nonce before creating the payload. The
+        XRPL transaction has exact native drops, the singleton 42-byte `0xFE`
+        memo, no DestinationTag or NetworkID, and an absolute
+        LastLedgerSequence. Xaman is forced to TESTNET.
+      x-implementation-status: implemented
+      security:
+        - PayerCookie: []
+      parameters:
+        - $ref: '#/components/parameters/QuoteId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyObject'
+      responses:
+        '201':
+          description: Payment payload and attempt created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentPayloadEnvelope'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/attempts/{id}:
+    get:
+      tags: [Attempts]
+      operationId: getAttempt
+      summary: Return canonical payment-attempt status
+      description: Current implementation is payer-cookie bound.
+      x-implementation-status: implemented
+      security:
+        - PayerCookie: []
+        - MerchantCookie: []
+      parameters:
+        - $ref: '#/components/parameters/AttemptId'
+      responses:
+        '200':
+          description: Attempt status snapshot; polling is canonical
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttemptEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/attempts/{id}/events:
+    get:
+      tags: [Attempts]
+      operationId: streamAttemptEvents
+      summary: Stream attempt snapshots and forward-only transitions
+      description: |
+        Server-Sent Events sends an initial `snapshot`, then `transition`
+        events, plus a comment heartbeat at least every 15 seconds. Each event's
+        `data` is JSON matching `AttemptSseEvent`. The polling endpoint remains
+        canonical. SSE transport does not use the JSON API envelope.
+      x-implementation-status: implemented
+      x-event-schema:
+        $ref: '#/components/schemas/AttemptSseEvent'
+      security:
+        - PayerCookie: []
+        - MerchantCookie: []
+      parameters:
+        - $ref: '#/components/parameters/AttemptId'
+        - name: Last-Event-ID
+          in: header
+          required: false
+          schema:
+            type: string
+            maxLength: 128
+          description: Resume cursor supplied by the browser EventSource client.
+      responses:
+        '200':
+          description: Event stream
+          headers:
+            Cache-Control:
+              schema:
+                const: no-cache
+            X-Accel-Buffering:
+              schema:
+                const: 'no'
+          content:
+            text/event-stream:
+              schema:
+                type: string
+              example: |
+                event: snapshot
+                id: 1
+                data: {"attemptId":"00000000-0000-4000-8000-000000000000","status":"XRPL_VALIDATED","at":"2026-07-27T00:00:00.000Z"}
+
+                : heartbeat
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/receipts/{id}:
+    get:
+      tags: [Receipts]
+      operationId: getReceipt
+      summary: Return a public immutable settlement receipt
+      description: |
+        A settled receipt exists only after a decoded
+        `PayMorphRouter.PaymentSettled` event and reconciled RecipientPaid
+        events. Database status alone cannot produce this projection.
+      x-implementation-status: implemented
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/AttemptId'
+      responses:
+        '200':
+          description: Public testnet receipt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReceiptEnvelope'
+        '404':
+          description: Receipt not available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/webhooks/xaman:
+    post:
+      tags: [Providers]
+      operationId: receiveXamanWebhook
+      summary: Authenticate and deduplicate a Xaman payload notification
+      description: |
+        The HMAC-protected webhook is a notification only. The handler fetches
+        the authoritative payload through Xaman before changing workflow state
+        and returns quickly. Duplicate provider delivery IDs return 200.
+      x-implementation-status: implemented
+      security:
+        - XamanWebhookSignature: []
+      parameters:
+        - name: X-Xumm-Request-Timestamp
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 10
+            maxLength: 64
+          description: Signed provider timestamp; stale and future-skewed requests are rejected.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/XamanWebhookRequest'
+      responses:
+        '200':
+          description: Notification accepted, including duplicate deliveries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookAckEnvelope'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/meta/network:
+    get:
+      tags: [Network]
+      operationId: getNetworkMetadata
+      summary: Return runtime-resolved Coston2 addresses and capabilities
+      description: |
+        Contains no secrets. Dynamic Flare protocol addresses are registry
+        results observed at the returned block, not source constants.
+      x-implementation-status: implemented
+      security: []
+      responses:
+        '200':
+          description: Verified runtime network view
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetworkEnvelope'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+
+  /api/health:
+    get:
+      tags: [Network]
+      operationId: getHealth
+      summary: Process liveness
+      x-implementation-status: implemented
+      security: []
+      responses:
+        '200':
+          description: Process is alive; dependencies are not implied ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthEnvelope'
+
+  /api/ready:
+    get:
+      tags: [Network]
+      operationId: getReadiness
+      summary: Database, Coston2, FXRP, FTSO, and route readiness
+      description: USDT0 may be degraded while the service remains FXRP-ready.
+      x-implementation-status: implemented
+      security: []
+      responses:
+        '200':
+          description: Core FXRP path is ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadinessEnvelope'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+
+  /api/admin/attempts:
+    get:
+      tags: [Operations]
+      operationId: listAdminAttempts
+      summary: Search pending and failed attempts
+      x-implementation-status: implemented
+      security:
+        - OperatorCookie: []
+      parameters:
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/PageLimit'
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/AttemptStatus'
+        - name: olderThan
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Cursor page with redacted immutable snapshots and job summaries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminAttemptListEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/admin/attempts/{id}/retry:
+    post:
+      tags: [Operations]
+      operationId: retryAttemptJob
+      summary: Enqueue only the next retry-safe attempt step
+      description: Deterministic validation failures and contract reverts are not blindly retried.
+      x-implementation-status: implemented
+      security:
+        - OperatorCookie: []
+      parameters:
+        - $ref: '#/components/parameters/AttemptId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RetryAttemptRequest'
+      responses:
+        '202':
+          description: Durable job accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobRetryEnvelope'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/admin/attempts/{id}/diagnose-recovery:
+    post:
+      tags: [Operations]
+      operationId: diagnoseAttemptRecovery
+      summary: Check official stuck direct-mint recovery eligibility
+      description: Read-only diagnosis; it does not create or submit a recovery transaction.
+      x-implementation-status: implemented
+      security:
+        - OperatorCookie: []
+      parameters:
+        - $ref: '#/components/parameters/AttemptId'
+      responses:
+        '200':
+          description: Evidence-backed recovery diagnosis
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecoveryDiagnosisEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+
+  /api/attempts/{id}/recovery-payload:
+    post:
+      tags: [Attempts]
+      operationId: createRecoveryPayload
+      summary: Create the official Xaman 0xE0 recovery payload
+      description: |
+        Available only after fresh eligibility diagnosis. Recovery requires a
+        separate XRPL Testnet transaction and mints FXRP to the payer personal
+        account; it does not return native XRP or settle the merchant invoice.
+      x-implementation-status: complete
+      security:
+        - PayerCookie: []
+      parameters:
+        - $ref: '#/components/parameters/AttemptId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyObject'
+      responses:
+        '201':
+          description: Recovery Xaman payload created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecoveryPayloadEnvelope'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+components:
+  securitySchemes:
+    MerchantCookie:
+      type: apiKey
+      in: cookie
+      name: paymorph_session
+      description: Opaque seven-day merchant session; HttpOnly, SameSite=Lax, Secure outside local development.
+    PayerCookie:
+      type: apiKey
+      in: cookie
+      name: paymorph_payer
+      description: Opaque invoice-bound payer session, at most 30 minutes; HttpOnly and SameSite=Lax.
+    OperatorCookie:
+      type: apiKey
+      in: cookie
+      name: paymorph_operator
+      description: Environment-provisioned high-entropy operator token; merchant sessions do not authorize admin routes.
+    XamanWebhookSignature:
+      type: apiKey
+      in: header
+      name: X-Xumm-Request-Signature
+      description: Xaman HMAC signature paired with `X-Xumm-Request-Timestamp`.
+
+  headers:
+    RequestId:
+      description: Correlation identifier echoed from or assigned for the request.
+      schema:
+        $ref: '#/components/schemas/RequestId'
+
+  parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: |
+        UUID reserved atomically with the mutation. An identical retry returns
+        the stored response; reuse with a different canonical body returns
+        `IDEMPOTENCY_CONFLICT`.
+      schema:
+        type: string
+        format: uuid
+    Cursor:
+      name: cursor
+      in: query
+      required: false
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 512
+    PageLimit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 25
+    InvoiceId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    InvoiceSlug:
+      name: slug
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 128
+        pattern: '^[A-Za-z0-9_-]+$'
+    PayloadId:
+      name: payloadId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    QuoteId:
+      name: quoteId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    AttemptId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  responses:
+    BadRequest:
+      description: Validation or deterministic request error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+    Unauthorized:
+      description: Missing, expired, invalid, or provider-unauthenticated credentials
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+    Forbidden:
+      description: Authenticated actor does not own or control the resource
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+    Conflict:
+      description: Resource lifecycle, idempotency, nonce, quote, or route conflict
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+    TooManyRequests:
+      description: Route, actor, payer-session, provider, or IP rate limit
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+            minimum: 1
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+    InternalError:
+      description: Redacted unexpected failure; use requestId for support
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+    ServiceUnavailable:
+      description: Required provider, RPC, FTSO, or route capability is unavailable
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+
+  schemas:
+    RequestId:
+      type: string
+      minLength: 1
+      maxLength: 128
+    BaseUnitString:
+      type: string
+      pattern: '^(0|[1-9][0-9]*)$'
+      description: Canonical unsigned integer with no sign, decimal point, exponent, or leading zeros.
+      examples: ['25000000']
+    PositiveBaseUnitString:
+      allOf:
+        - $ref: '#/components/schemas/BaseUnitString'
+        - pattern: '^[1-9][0-9]*$'
+    DisplayAmountString:
+      type: string
+      pattern: '^(0|[1-9][0-9]*)(\.[0-9]+)?$'
+      examples: ['25.00']
+    PositiveDisplayAmountString:
+      type: string
+      pattern: '^(0\.[0-9]*[1-9][0-9]*|[1-9][0-9]*(\.[0-9]+)?)$'
+      examples: ['25.00']
+    EvmAddress:
+      type: string
+      pattern: '^0x[0-9a-fA-F]{40}$'
+    XrplAddress:
+      type: string
+      pattern: '^r[1-9A-HJ-NP-Za-km-z]{24,34}$'
+    Hash32:
+      type: string
+      pattern: '^0x[0-9a-fA-F]{64}$'
+    TransactionHash:
+      type: string
+      pattern: '^(0x)?[0-9a-fA-F]{64}$'
+    NullableTransactionHash:
+      anyOf:
+        - $ref: '#/components/schemas/TransactionHash'
+        - type: 'null'
+    ErrorCode:
+      type: string
+      enum:
+        - VALIDATION_ERROR
+        - UNAUTHENTICATED
+        - FORBIDDEN
+        - INVOICE_NOT_ACTIVE
+        - PAYER_NOT_IDENTIFIED
+        - WRONG_XRPL_NETWORK
+        - QUOTE_ROUTE_UNAVAILABLE
+        - QUOTE_EXPIRED
+        - NONCE_CHANGED
+        - XAMAN_REJECTED
+        - XRPL_VALIDATION_MISMATCH
+        - FDC_NOT_READY
+        - FLARE_SIMULATION_FAILED
+        - SETTLEMENT_REVERTED
+        - RECOVERY_NOT_ELIGIBLE
+        - IDEMPOTENCY_CONFLICT
+        - RATE_LIMITED
+        - INTERNAL_ERROR
+    ApiError:
+      type: object
+      additionalProperties: false
+      required: [code, message]
+      properties:
+        code:
+          $ref: '#/components/schemas/ErrorCode'
+        message:
+          type: string
+          minLength: 1
+          maxLength: 500
+        details:
+          description: Redacted structured context safe for the caller.
+    ErrorEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, error, requestId]
+      properties:
+        data:
+          type: 'null'
+        error:
+          $ref: '#/components/schemas/ApiError'
+        requestId:
+          $ref: '#/components/schemas/RequestId'
+
+    Denomination:
+      type: string
+      enum: [XRP, USD]
+    SettlementAsset:
+      type: string
+      enum: [FXRP, USDT0]
+    InvoiceStatus:
+      type: string
+      enum: [DRAFT, ACTIVE, EXPIRED, CANCELLED]
+    PayloadStatus:
+      type: string
+      enum: [CREATED, OPENED, SIGNED, REJECTED, EXPIRED]
+    PayerSignInStatus:
+      type: string
+      enum: [CREATED, SIGNED, REJECTED, EXPIRED]
+    AttemptStatus:
+      type: string
+      enum:
+        - CREATED
+        - IDENTIFYING
+        - IDENTIFIED
+        - QUOTED
+        - XAMAN_CREATED
+        - AWAITING_SIGNATURE
+        - XRPL_SIGNED
+        - XRPL_VALIDATED
+        - USEROP_UPLOADED
+        - FDC_REQUESTED
+        - FDC_READY
+        - FLARE_SUBMITTED
+        - FLARE_CONFIRMED
+        - SETTLED
+        - REJECTED
+        - QUOTE_EXPIRED
+        - XRPL_FAILED
+        - EXECUTION_REVERTED
+        - RECOVERY_REQUIRED
+        - RECOVERED
+        - CANCELLED
+    JobType:
+      type: string
+      enum:
+        - VALIDATE_XRPL
+        - REQUEST_FDC
+        - SUBMIT_FLARE
+        - INDEX_EVENTS
+        - RECONCILE
+        - RECOVERY_DIAGNOSIS
+    JobStatus:
+      type: string
+      enum: [READY, RUNNING, RETRY, SUCCEEDED, DEAD]
+
+    EmptyObject:
+      type: object
+      additionalProperties: false
+      maxProperties: 0
+    AuthNonceRequest:
+      type: object
+      additionalProperties: false
+      required: [walletAddress]
+      properties:
+        walletAddress:
+          $ref: '#/components/schemas/EvmAddress'
+    AuthNonce:
+      type: object
+      additionalProperties: false
+      required: [nonceId, nonce, message, expiration]
+      properties:
+        nonceId:
+          type: string
+          format: uuid
+        nonce:
+          type: string
+          minLength: 20
+          maxLength: 128
+        message:
+          type: string
+          minLength: 1
+          maxLength: 2048
+        expiration:
+          type: string
+          format: date-time
+    AuthVerifyRequest:
+      type: object
+      additionalProperties: false
+      required: [walletAddress, nonceId, nonce, signature]
+      properties:
+        walletAddress:
+          $ref: '#/components/schemas/EvmAddress'
+        nonceId:
+          type: string
+          format: uuid
+        nonce:
+          type: string
+          minLength: 20
+          maxLength: 128
+        signature:
+          type: string
+          pattern: '^0x[0-9a-fA-F]+$'
+    LogoutResult:
+      type: object
+      additionalProperties: false
+      required: [loggedOut]
+      properties:
+        loggedOut:
+          const: true
+
+    MerchantProfile:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - walletAddress
+        - displayName
+        - logoUrl
+        - defaultAsset
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        walletAddress:
+          $ref: '#/components/schemas/EvmAddress'
+        displayName:
+          type: string
+          minLength: 1
+          maxLength: 80
+        logoUrl:
+          type: [string, 'null']
+          format: uri
+        defaultAsset:
+          $ref: '#/components/schemas/SettlementAsset'
+        webhookUrl:
+          type: [string, 'null']
+          format: uri
+          description: Merchant-visible endpoint only; the signing secret is never returned.
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    MerchantAuthResult:
+      type: object
+      additionalProperties: false
+      required: [id, walletAddress, displayName]
+      properties:
+        id:
+          type: string
+          format: uuid
+        walletAddress:
+          $ref: '#/components/schemas/EvmAddress'
+        displayName:
+          type: string
+          minLength: 1
+          maxLength: 80
+    MerchantPatchRequest:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        displayName:
+          type: string
+          minLength: 1
+          maxLength: 80
+        logoUrl:
+          type: [string, 'null']
+          format: uri
+        defaultAsset:
+          $ref: '#/components/schemas/SettlementAsset'
+
+    RecipientInput:
+      type: object
+      additionalProperties: false
+      required: [label, address, bps]
+      properties:
+        label:
+          type: string
+          minLength: 1
+          maxLength: 80
+        address:
+          $ref: '#/components/schemas/EvmAddress'
+        bps:
+          type: integer
+          minimum: 1
+          maximum: 10000
+      description: All recipient entries must use unique addresses and total exactly 10,000 bps.
+    InvoiceRecipient:
+      type: object
+      additionalProperties: false
+      required: [id, invoiceId, position, label, address, bps]
+      properties:
+        id:
+          type: string
+          format: uuid
+        invoiceId:
+          type: string
+          format: uuid
+        position:
+          type: integer
+          minimum: 0
+          maximum: 9
+        label:
+          type: string
+          minLength: 1
+          maxLength: 80
+        address:
+          $ref: '#/components/schemas/EvmAddress'
+        bps:
+          type: integer
+          minimum: 1
+          maximum: 10000
+    CreateInvoiceRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - title
+        - denomination
+        - amount
+        - settlementAsset
+        - expiresAt
+        - recipients
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 80
+        description:
+          type: string
+          maxLength: 500
+        externalRef:
+          type: string
+          maxLength: 80
+        denomination:
+          $ref: '#/components/schemas/Denomination'
+        amount:
+          $ref: '#/components/schemas/PositiveDisplayAmountString'
+        settlementAsset:
+          $ref: '#/components/schemas/SettlementAsset'
+        expiresAt:
+          type: string
+          format: date-time
+          description: Must be between 15 minutes and 30 days in the future.
+        recipients:
+          type: array
+          minItems: 1
+          maxItems: 10
+          items:
+            $ref: '#/components/schemas/RecipientInput'
+    UpdateInvoiceRequest:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 80
+        description:
+          type: [string, 'null']
+          maxLength: 500
+        externalRef:
+          type: [string, 'null']
+          maxLength: 80
+        denomination:
+          $ref: '#/components/schemas/Denomination'
+        amount:
+          $ref: '#/components/schemas/PositiveDisplayAmountString'
+        settlementAsset:
+          $ref: '#/components/schemas/SettlementAsset'
+        expiresAt:
+          type: string
+          format: date-time
+        recipients:
+          type: array
+          minItems: 1
+          maxItems: 10
+          items:
+            $ref: '#/components/schemas/RecipientInput'
+    Invoice:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - merchantId
+        - publicSlug
+        - title
+        - description
+        - externalRef
+        - denomination
+        - amountBaseUnits
+        - settlementAsset
+        - status
+        - expiresAt
+        - publishedAt
+        - cancelledAt
+        - createdAt
+        - updatedAt
+        - recipients
+      properties:
+        id:
+          type: string
+          format: uuid
+        merchantId:
+          type: string
+          format: uuid
+        publicSlug:
+          type: string
+          minLength: 1
+          maxLength: 128
+        title:
+          type: string
+          minLength: 1
+          maxLength: 120
+        description:
+          type: [string, 'null']
+          maxLength: 2000
+        externalRef:
+          type: [string, 'null']
+          maxLength: 120
+        denomination:
+          $ref: '#/components/schemas/Denomination'
+        amountBaseUnits:
+          $ref: '#/components/schemas/PositiveBaseUnitString'
+        settlementAsset:
+          $ref: '#/components/schemas/SettlementAsset'
+        status:
+          $ref: '#/components/schemas/InvoiceStatus'
+        expiresAt:
+          type: string
+          format: date-time
+        publishedAt:
+          type: [string, 'null']
+          format: date-time
+        cancelledAt:
+          type: [string, 'null']
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        recipients:
+          type: array
+          minItems: 1
+          maxItems: 10
+          items:
+            $ref: '#/components/schemas/InvoiceRecipient'
+    InvoiceList:
+      type: object
+      additionalProperties: false
+      required: [items, nextCursor]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Invoice'
+        nextCursor:
+          type: [string, 'null']
+          maxLength: 512
+    PublicInvoiceRecipient:
+      type: object
+      additionalProperties: false
+      required: [label, addressMasked, bps]
+      properties:
+        label:
+          type: string
+          minLength: 1
+          maxLength: 80
+        addressMasked:
+          type: string
+          minLength: 8
+          maxLength: 32
+        bps:
+          type: integer
+          minimum: 1
+          maximum: 10000
+    PublicInvoice:
+      type: object
+      additionalProperties: false
+      required:
+        - slug
+        - title
+        - description
+        - externalRef
+        - merchant
+        - denomination
+        - amountDisplay
+        - settlementAsset
+        - expiresAt
+        - recipients
+        - status
+        - network
+        - testnet
+      properties:
+        slug:
+          type: string
+          minLength: 1
+          maxLength: 128
+        title:
+          type: string
+          minLength: 1
+          maxLength: 120
+        description:
+          type: [string, 'null']
+          maxLength: 2000
+        externalRef:
+          type: [string, 'null']
+          maxLength: 120
+        merchant:
+          type: object
+          additionalProperties: false
+          required: [displayName, logoUrl]
+          properties:
+            displayName:
+              type: string
+              minLength: 1
+              maxLength: 80
+            logoUrl:
+              type: [string, 'null']
+              format: uri
+        denomination:
+          $ref: '#/components/schemas/Denomination'
+        amountDisplay:
+          $ref: '#/components/schemas/DisplayAmountString'
+        settlementAsset:
+          $ref: '#/components/schemas/SettlementAsset'
+        expiresAt:
+          type: string
+          format: date-time
+        recipients:
+          type: array
+          minItems: 1
+          maxItems: 10
+          items:
+            $ref: '#/components/schemas/PublicInvoiceRecipient'
+        status:
+          const: ACTIVE
+        network:
+          type: object
+          additionalProperties: false
+          required: [source, destination]
+          properties:
+            source:
+              const: XRPL_TESTNET
+            destination:
+              const: COSTON2
+        testnet:
+          const: true
+
+    PayerSignInRequest:
+      type: object
+      additionalProperties: false
+      required: [invoiceSlug]
+      properties:
+        invoiceSlug:
+          type: string
+          minLength: 1
+          maxLength: 128
+    PayerSignInStart:
+      type: object
+      additionalProperties: false
+      required:
+        - payerSessionId
+        - payloadUuid
+        - qrPngUrl
+        - deeplinkUrl
+        - websocketUrl
+        - expiresAt
+      properties:
+        payerSessionId:
+          type: string
+          format: uuid
+        payloadUuid:
+          type: string
+          format: uuid
+        qrPngUrl:
+          type: string
+          format: uri
+        deeplinkUrl:
+          type: string
+          format: uri
+        websocketUrl:
+          type: string
+          format: uri
+        expiresAt:
+          type: string
+          format: date-time
+    PayerSignInResult:
+      type: object
+      additionalProperties: false
+      required: [status, xrplAccount, network]
+      properties:
+        status:
+          $ref: '#/components/schemas/PayerSignInStatus'
+        xrplAccount:
+          anyOf:
+            - $ref: '#/components/schemas/XrplAddress'
+            - type: 'null'
+        network:
+          const: XRPL_TESTNET
+
+    CreateQuoteRequest:
+      type: object
+      additionalProperties: false
+      required: [slippageBps]
+      properties:
+        slippageBps:
+          type: integer
+          minimum: 0
+          maximum: 1000
+          default: 150
+    AssetAmount:
+      type: object
+      additionalProperties: false
+      required: [asset, baseUnits, display]
+      properties:
+        asset:
+          type: string
+          enum: [XRP, FXRP, USDT0, USD]
+        baseUnits:
+          $ref: '#/components/schemas/BaseUnitString'
+        display:
+          $ref: '#/components/schemas/DisplayAmountString'
+    XrpPaymentAmount:
+      type: object
+      additionalProperties: false
+      required: [asset, drops, display]
+      properties:
+        asset:
+          const: XRP
+        drops:
+          $ref: '#/components/schemas/PositiveBaseUnitString'
+        display:
+          $ref: '#/components/schemas/DisplayAmountString'
+    Quote:
+      type: object
+      additionalProperties: false
+      required:
+        - quoteId
+        - invoiceAmount
+        - serviceFee
+        - customerPays
+        - maxFxrpInputUBA
+        - protocolMintFeeUBA
+        - executorFeeUBA
+        - route
+        - personalAccount
+        - userOpHash
+        - expiresAt
+        - warnings
+      properties:
+        quoteId:
+          type: string
+          format: uuid
+        invoiceAmount:
+          $ref: '#/components/schemas/AssetAmount'
+        serviceFee:
+          $ref: '#/components/schemas/AssetAmount'
+        customerPays:
+          $ref: '#/components/schemas/XrpPaymentAmount'
+        maxFxrpInputUBA:
+          $ref: '#/components/schemas/PositiveBaseUnitString'
+        protocolMintFeeUBA:
+          $ref: '#/components/schemas/BaseUnitString'
+        executorFeeUBA:
+          $ref: '#/components/schemas/BaseUnitString'
+        route:
+          type: string
+          enum: [DIRECT_FXRP, SPARKDEX_EXACT_OUT]
+        poolFee:
+          type: [integer, 'null']
+          minimum: 1
+          maximum: 16777215
+        personalAccount:
+          $ref: '#/components/schemas/EvmAddress'
+        userOpHash:
+          $ref: '#/components/schemas/Hash32'
+        expiresAt:
+          type: string
+          format: date-time
+        warnings:
+          type: array
+          maxItems: 20
+          items:
+            type: string
+            minLength: 1
+            maxLength: 200
+
+    PaymentPayload:
+      type: object
+      additionalProperties: false
+      required:
+        - attemptId
+        - paymentId
+        - payloadUuid
+        - qrPngUrl
+        - deeplinkUrl
+        - websocketUrl
+        - statusUrl
+        - expiresAt
+      properties:
+        attemptId:
+          type: string
+          format: uuid
+        paymentId:
+          $ref: '#/components/schemas/Hash32'
+        payloadUuid:
+          type: string
+          format: uuid
+        qrPngUrl:
+          type: string
+          format: uri
+        deeplinkUrl:
+          type: string
+          format: uri
+        websocketUrl:
+          type: string
+          format: uri
+        statusUrl:
+          type: string
+          pattern: '^/pay/[^/]+/status/[0-9a-fA-F-]{36}$'
+        expiresAt:
+          type: string
+          format: date-time
+
+    AttemptProgressStep:
+      type: object
+      additionalProperties: false
+      required: [step, state]
+      properties:
+        step:
+          type: string
+          enum: [XAMAN_SIGNATURE, XRPL_VALIDATION, FDC_PROOF, FLARE_SETTLEMENT]
+        state:
+          type: string
+          enum: [PENDING, RUNNING, DONE, FAILED]
+        at:
+          type: [string, 'null']
+          format: date-time
+        txHash:
+          anyOf:
+            - $ref: '#/components/schemas/TransactionHash'
+            - type: 'null'
+    Attempt:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - paymentId
+        - status
+        - progress
+        - recoverable
+        - nextPollAfterMs
+        - failure
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        paymentId:
+          $ref: '#/components/schemas/Hash32'
+        status:
+          $ref: '#/components/schemas/AttemptStatus'
+        progress:
+          type: array
+          minItems: 1
+          maxItems: 4
+          items:
+            $ref: '#/components/schemas/AttemptProgressStep'
+        recoverable:
+          type: boolean
+        nextPollAfterMs:
+          type: integer
+          minimum: 1000
+          maximum: 60000
+        failure:
+          anyOf:
+            - type: 'null'
+            - type: object
+              additionalProperties: false
+              required: [code, message]
+              properties:
+                code:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                message:
+                  type: string
+                  minLength: 1
+                  maxLength: 500
+        updatedAt:
+          type: string
+          format: date-time
+    AttemptSseEvent:
+      type: object
+      additionalProperties: false
+      required: [attemptId, status, at]
+      properties:
+        attemptId:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/AttemptStatus'
+        previousStatus:
+          anyOf:
+            - $ref: '#/components/schemas/AttemptStatus'
+            - type: 'null'
+        at:
+          type: string
+          format: date-time
+
+    ReceiptRecipient:
+      type: object
+      additionalProperties: false
+      required: [label, address, bps, amount, token, txHash]
+      properties:
+        label:
+          type: string
+          minLength: 1
+          maxLength: 80
+        address:
+          $ref: '#/components/schemas/EvmAddress'
+        bps:
+          type: integer
+          minimum: 1
+          maximum: 10000
+        amount:
+          $ref: '#/components/schemas/BaseUnitString'
+        token:
+          $ref: '#/components/schemas/EvmAddress'
+        txHash:
+          $ref: '#/components/schemas/TransactionHash'
+    Receipt:
+      type: object
+      additionalProperties: false
+      required:
+        - attemptId
+        - paymentId
+        - status
+        - testnet
+        - invoice
+        - payer
+        - sourcePayment
+        - settlement
+        - recipients
+        - protocol
+      properties:
+        attemptId:
+          type: string
+          format: uuid
+        paymentId:
+          $ref: '#/components/schemas/Hash32'
+        status:
+          const: SETTLED
+        testnet:
+          const: true
+        invoice:
+          type: object
+          additionalProperties: false
+          required: [title, externalRef, denomination, amountBaseUnits]
+          properties:
+            title:
+              type: string
+              minLength: 1
+              maxLength: 120
+            externalRef:
+              type: [string, 'null']
+              maxLength: 120
+            denomination:
+              $ref: '#/components/schemas/Denomination'
+            amountBaseUnits:
+              $ref: '#/components/schemas/PositiveBaseUnitString'
+        payer:
+          type: object
+          additionalProperties: false
+          required: [xrplAccount]
+          properties:
+            xrplAccount:
+              $ref: '#/components/schemas/XrplAddress'
+        sourcePayment:
+          type: object
+          additionalProperties: false
+          required: [xrpDrops, xrpDisplay, txHash, explorerUrl, validatedAt]
+          properties:
+            xrpDrops:
+              $ref: '#/components/schemas/PositiveBaseUnitString'
+            xrpDisplay:
+              $ref: '#/components/schemas/DisplayAmountString'
+            txHash:
+              $ref: '#/components/schemas/TransactionHash'
+            explorerUrl:
+              type: string
+              format: uri
+            validatedAt:
+              type: string
+              format: date-time
+        settlement:
+          type: object
+          additionalProperties: false
+          required:
+            - asset
+            - invoiceAmount
+            - serviceFee
+            - inputFxrpUsed
+            - refundFxrp
+            - flareTxHash
+            - explorerUrl
+            - settledAt
+            - routerAddress
+            - version
+          properties:
+            asset:
+              $ref: '#/components/schemas/SettlementAsset'
+            invoiceAmount:
+              $ref: '#/components/schemas/PositiveBaseUnitString'
+            serviceFee:
+              $ref: '#/components/schemas/BaseUnitString'
+            inputFxrpUsed:
+              $ref: '#/components/schemas/PositiveBaseUnitString'
+            refundFxrp:
+              $ref: '#/components/schemas/BaseUnitString'
+            flareTxHash:
+              $ref: '#/components/schemas/TransactionHash'
+            explorerUrl:
+              type: string
+              format: uri
+            settledAt:
+              type: string
+              format: date-time
+            routerAddress:
+              $ref: '#/components/schemas/EvmAddress'
+            version:
+              type: string
+              minLength: 1
+              maxLength: 64
+        recipients:
+          type: array
+          minItems: 1
+          maxItems: 10
+          items:
+            $ref: '#/components/schemas/ReceiptRecipient'
+        protocol:
+          type: object
+          additionalProperties: false
+          required: [userOpHash, personalAccount, assetManagerAddress]
+          properties:
+            userOpHash:
+              $ref: '#/components/schemas/Hash32'
+            personalAccount:
+              $ref: '#/components/schemas/EvmAddress'
+            assetManagerAddress:
+              $ref: '#/components/schemas/EvmAddress'
+
+    XamanWebhookRequest:
+      type: object
+      additionalProperties: false
+      required: [meta, payloadResponse]
+      properties:
+        meta:
+          type: object
+          additionalProperties: false
+          required: [application_uuidv4, payload_uuidv4]
+          properties:
+            application_uuidv4:
+              type: string
+              format: uuid
+            payload_uuidv4:
+              type: string
+              format: uuid
+        payloadResponse:
+          type: object
+          additionalProperties: false
+          required: [payload_uuidv4, reference_call_uuidv4, signed]
+          properties:
+            payload_uuidv4:
+              type: string
+              format: uuid
+            reference_call_uuidv4:
+              type: string
+              format: uuid
+            signed:
+              type: boolean
+            txid:
+              anyOf:
+                - $ref: '#/components/schemas/TransactionHash'
+                - type: 'null'
+    WebhookAck:
+      type: object
+      additionalProperties: false
+      required: [accepted, duplicate]
+      properties:
+        accepted:
+          const: true
+        duplicate:
+          type: boolean
+        knownPayload:
+          type: boolean
+
+    TokenMetadata:
+      type: object
+      additionalProperties: false
+      required: [address, name, symbol, decimals]
+      properties:
+        address:
+          $ref: '#/components/schemas/EvmAddress'
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        symbol:
+          type: string
+          minLength: 1
+          maxLength: 32
+        decimals:
+          type: integer
+          minimum: 0
+          maximum: 255
+    Usdt0Capability:
+      oneOf:
+        - type: object
+          additionalProperties: false
+          required: [available, reason, token, router]
+          properties:
+            available:
+              const: false
+            reason:
+              type: string
+              enum:
+                - USDT0_TOKEN_NO_CODE
+                - USDT0_DECIMALS_MISMATCH
+                - SWAP_ROUTER_NO_CODE
+                - SWAP_FACTORY_NOT_CONFIGURED
+                - SWAP_FACTORY_NO_CODE
+                - SWAP_ROUTER_FACTORY_MISMATCH
+                - SWAP_QUOTER_NOT_CONFIGURED
+                - SWAP_QUOTER_NO_CODE
+                - SWAP_POOL_NOT_FOUND
+                - SWAP_POOL_NO_CODE
+                - SWAP_POOL_NO_LIQUIDITY
+            token:
+              $ref: '#/components/schemas/EvmAddress'
+            router:
+              $ref: '#/components/schemas/EvmAddress'
+        - type: object
+          additionalProperties: false
+          required: [available, token, router, factory, quoter, pool, poolFee, liquidity]
+          properties:
+            available:
+              const: true
+            token:
+              $ref: '#/components/schemas/EvmAddress'
+            router:
+              $ref: '#/components/schemas/EvmAddress'
+            factory:
+              $ref: '#/components/schemas/EvmAddress'
+            quoter:
+              $ref: '#/components/schemas/EvmAddress'
+            pool:
+              $ref: '#/components/schemas/EvmAddress'
+            poolFee:
+              type: integer
+              minimum: 1
+              maximum: 16777215
+            liquidity:
+              $ref: '#/components/schemas/PositiveBaseUnitString'
+    NetworkMetadata:
+      type: object
+      additionalProperties: false
+      required:
+        - chainId
+        - blockNumber
+        - contracts
+        - fxrp
+        - directMintingPaymentAddress
+        - directMintSettings
+        - xrpUsd
+        - capabilities
+      properties:
+        chainId:
+          const: 114
+        blockNumber:
+          $ref: '#/components/schemas/PositiveBaseUnitString'
+        contracts:
+          type: object
+          additionalProperties: false
+          required: [registry, assetManagerFXRP, masterAccountController, ftsoV2]
+          properties:
+            registry:
+              $ref: '#/components/schemas/EvmAddress'
+            assetManagerFXRP:
+              $ref: '#/components/schemas/EvmAddress'
+            masterAccountController:
+              $ref: '#/components/schemas/EvmAddress'
+            ftsoV2:
+              $ref: '#/components/schemas/EvmAddress'
+        fxrp:
+          $ref: '#/components/schemas/TokenMetadata'
+        directMintingPaymentAddress:
+          $ref: '#/components/schemas/XrplAddress'
+        directMintSettings:
+          type: object
+          additionalProperties: false
+          required: [feeBIPS, minimumFeeUBA, executorFeeUBA]
+          properties:
+            feeBIPS:
+              $ref: '#/components/schemas/BaseUnitString'
+            minimumFeeUBA:
+              $ref: '#/components/schemas/BaseUnitString'
+            executorFeeUBA:
+              $ref: '#/components/schemas/BaseUnitString'
+        xrpUsd:
+          type: object
+          additionalProperties: false
+          required: [feedId, value, decimals, exactValue, timestamp, ageSeconds, fresh]
+          properties:
+            feedId:
+              type: string
+              pattern: '^0x[0-9a-fA-F]{42}$'
+            value:
+              $ref: '#/components/schemas/BaseUnitString'
+            decimals:
+              type: integer
+              minimum: -128
+              maximum: 127
+            exactValue:
+              type: object
+              additionalProperties: false
+              required: [numerator, denominator]
+              properties:
+                numerator:
+                  $ref: '#/components/schemas/BaseUnitString'
+                denominator:
+                  $ref: '#/components/schemas/PositiveBaseUnitString'
+            timestamp:
+              $ref: '#/components/schemas/BaseUnitString'
+            ageSeconds:
+              $ref: '#/components/schemas/BaseUnitString'
+            fresh:
+              type: boolean
+        capabilities:
+          type: object
+          additionalProperties: false
+          required: [FXRP, USDT0]
+          properties:
+            FXRP:
+              type: object
+              additionalProperties: false
+              required: [available, token]
+              properties:
+                available:
+                  const: true
+                token:
+                  $ref: '#/components/schemas/EvmAddress'
+            USDT0:
+              $ref: '#/components/schemas/Usdt0Capability'
+
+    Health:
+      type: object
+      additionalProperties: false
+      required: [status, service]
+      properties:
+        status:
+          const: ok
+        service:
+          const: paymorph-web
+    Readiness:
+      type: object
+      additionalProperties: false
+      required: [status, database, coston2, fxrp, usdt0]
+      properties:
+        status:
+          const: ready
+        database:
+          const: ready
+        coston2:
+          const: ready
+        fxrp:
+          const: ready
+        usdt0:
+          oneOf:
+            - type: object
+              additionalProperties: false
+              required: [status]
+              properties:
+                status:
+                  const: ready
+            - type: object
+              additionalProperties: false
+              required: [status, reason]
+              properties:
+                status:
+                  const: degraded
+                reason:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+
+    AdminAttempt:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - paymentId
+        - status
+        - invoiceId
+        - createdAt
+        - updatedAt
+        - hashes
+        - jobs
+      properties:
+        id:
+          type: string
+          format: uuid
+        paymentId:
+          $ref: '#/components/schemas/Hash32'
+        status:
+          $ref: '#/components/schemas/AttemptStatus'
+        invoiceId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        hashes:
+          type: object
+          additionalProperties: false
+          required: [xrplTxHash, flareTxHash, userOpHash]
+          properties:
+            xrplTxHash:
+              $ref: '#/components/schemas/NullableTransactionHash'
+            flareTxHash:
+              $ref: '#/components/schemas/NullableTransactionHash'
+            userOpHash:
+              anyOf:
+                - $ref: '#/components/schemas/Hash32'
+                - type: 'null'
+        jobs:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [id, jobType, status, attempts, nextRunAt, lastErrorCode]
+            properties:
+              id:
+                type: string
+                format: uuid
+              jobType:
+                $ref: '#/components/schemas/JobType'
+              status:
+                $ref: '#/components/schemas/JobStatus'
+              attempts:
+                type: integer
+                minimum: 0
+              nextRunAt:
+                type: string
+                format: date-time
+              lastErrorCode:
+                type: [string, 'null']
+                maxLength: 100
+    AdminAttemptList:
+      type: object
+      additionalProperties: false
+      required: [items, nextCursor]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminAttempt'
+        nextCursor:
+          type: [string, 'null']
+          maxLength: 512
+    RetryAttemptRequest:
+      type: object
+      additionalProperties: false
+      required: [jobType]
+      properties:
+        jobType:
+          $ref: '#/components/schemas/JobType'
+    JobRetry:
+      type: object
+      additionalProperties: false
+      required: [jobId, attemptId, jobType, status, nextRunAt]
+      properties:
+        jobId:
+          type: string
+          format: uuid
+        attemptId:
+          type: string
+          format: uuid
+        jobType:
+          $ref: '#/components/schemas/JobType'
+        status:
+          const: READY
+        nextRunAt:
+          type: string
+          format: date-time
+    RecoveryDiagnosis:
+      type: object
+      additionalProperties: false
+      required:
+        - attemptId
+        - eligible
+        - reason
+        - originalXrplTxHash
+        - transactionUsed
+        - settlementFound
+        - diagnosedAt
+      properties:
+        attemptId:
+          type: string
+          format: uuid
+        eligible:
+          type: boolean
+        reason:
+          type: string
+          pattern: '^[A-Z0-9_]+$'
+          maxLength: 100
+        originalXrplTxHash:
+          $ref: '#/components/schemas/TransactionHash'
+        transactionUsed:
+          type: boolean
+        settlementFound:
+          type: boolean
+        diagnosedAt:
+          type: string
+          format: date-time
+    RecoveryPayload:
+      type: object
+      additionalProperties: false
+      required:
+        - attemptId
+        - payloadUuid
+        - qrPngUrl
+        - deeplinkUrl
+        - websocketUrl
+        - expiresAt
+        - recoveryAsset
+        - warning
+      properties:
+        attemptId:
+          type: string
+          format: uuid
+        payloadUuid:
+          type: string
+          format: uuid
+        qrPngUrl:
+          type: string
+          format: uri
+        deeplinkUrl:
+          type: string
+          format: uri
+        websocketUrl:
+          type: string
+          format: uri
+        expiresAt:
+          type: string
+          format: date-time
+        recoveryAsset:
+          const: FXRP
+        warning:
+          type: string
+          minLength: 1
+          maxLength: 500
+
+    AuthNonceEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, error, requestId]
+      properties:
+        data:
+          $ref: '#/components/schemas/AuthNonce'
+        error:
+          type: 'null'
+        requestId:
+          $ref: '#/components/schemas/RequestId'
+    MerchantEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, error, requestId]
+      properties:
+        data:
+          $ref: '#/components/schemas/MerchantProfile'
+        error:
+          type: 'null'
+        requestId:
+          $ref: '#/components/schemas/RequestId'
+    MerchantAuthEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, error, requestId]
+      properties:
+        data:
+          $ref: '#/components/schemas/MerchantAuthResult'
+        error:
+          type: 'null'
+        requestId:
+          $ref: '#/components/schemas/RequestId'
+    LogoutEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, error, requestId]
+      properties:
+        data:
+          $ref: '#/components/schemas/LogoutResult'
+        error:
+          type: 'null'
+        requestId:
+          $ref: '#/components/schemas/RequestId'
+    InvoiceEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, error, requestId]
+      properties:
+        data:
+          $ref: '#/components/schemas/Invoice'
+        error:
+          type: 'null'
+        requestId:
+          $ref: '#/components/schemas/RequestId'
+    InvoiceListEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, error, requestId]
+      properties:
+        data:
+          $ref: '#/components/schemas/InvoiceList'
+        error:
+          type: 'null'
+        requestId:
+          $ref: '#/components/schemas/RequestId'
+    PublicInvoiceEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, error, requestId]
+      properties:
+        data:
+          $ref: '#/components/schemas/PublicInvoice'
+        error:
+          type: 'null'
+        requestId:
+          $ref: '#/components/schemas/RequestId'
+    PayerSignInStartEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, error, requestId]
+      properties:
+        data:
+          $ref: '#/components/schemas/PayerSignInStart'
+        error:
+          type: 'null'
+        requestId:
+          $ref: '#/components/schemas/RequestId'
+    PayerSignInStatusEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, error, requestId]
+      properties:
+        data:
+          $ref: '#/components/schemas/PayerSignInResult'
+        error:
+          type: 'null'
+        requestId:
+          $ref: '#/components/schemas/RequestId'
+    QuoteEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, error, requestId]
+      properties:
+        data:
+          $ref: '#/components/schemas/Quote'
+        error:
+          type: 'null'
+        requestId:
+          $ref: '#/components/schemas/RequestId'
+    PaymentPayloadEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, error, requestId]
+      properties:
+        data:
+          $ref: '#/components/schemas/PaymentPayload'
+        error:
+          type: 'null'
+        requestId:
+          $ref: '#/components/schemas/RequestId'
+    AttemptEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, error, requestId]
+      properties:
+        data:
+          $ref: '#/components/schemas/Attempt'
+        error:
+          type: 'null'
+        requestId:
+          $ref: '#/components/schemas/RequestId'
+    ReceiptEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, error, requestId]
+      properties:
+        data:
+          $ref: '#/components/schemas/Receipt'
+        error:
+          type: 'null'
+        requestId:
+          $ref: '#/components/schemas/RequestId'
+    WebhookAckEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, error, requestId]
+      properties:
+        data:
+          $ref: '#/components/schemas/WebhookAck'
+        error:
+          type: 'null'
+        requestId:
+          $ref: '#/components/schemas/RequestId'
+    NetworkEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, error, requestId]
+      properties:
+        data:
+          $ref: '#/components/schemas/NetworkMetadata'
+        error:
+          type: 'null'
+        requestId:
+          $ref: '#/components/schemas/RequestId'
+    HealthEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, error, requestId]
+      properties:
+        data:
+          $ref: '#/components/schemas/Health'
+        error:
+          type: 'null'
+        requestId:
+          $ref: '#/components/schemas/RequestId'
+    ReadinessEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, error, requestId]
+      properties:
+        data:
+          $ref: '#/components/schemas/Readiness'
+        error:
+          type: 'null'
+        requestId:
+          $ref: '#/components/schemas/RequestId'
+    AdminAttemptListEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, error, requestId]
+      properties:
+        data:
+          $ref: '#/components/schemas/AdminAttemptList'
+        error:
+          type: 'null'
+        requestId:
+          $ref: '#/components/schemas/RequestId'
+    JobRetryEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, error, requestId]
+      properties:
+        data:
+          $ref: '#/components/schemas/JobRetry'
+        error:
+          type: 'null'
+        requestId:
+          $ref: '#/components/schemas/RequestId'
+    RecoveryDiagnosisEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, error, requestId]
+      properties:
+        data:
+          $ref: '#/components/schemas/RecoveryDiagnosis'
+        error:
+          type: 'null'
+        requestId:
+          $ref: '#/components/schemas/RequestId'
+    RecoveryPayloadEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, error, requestId]
+      properties:
+        data:
+          $ref: '#/components/schemas/RecoveryPayload'
+        error:
+          type: 'null'
+        requestId:
+          $ref: '#/components/schemas/RequestId'

@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: paymorph
+      POSTGRES_USER: paymorph
+      POSTGRES_PASSWORD: paymorph
+    ports:
+      - '5432:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U paymorph -d paymorph']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - paymorph-postgres:/var/lib/postgresql/data
+
+volumes:
+  paymorph-postgres:

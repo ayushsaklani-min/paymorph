@@ -1,0 +1,536 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum InvoiceStatus {
+  DRAFT
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+enum Denomination {
+  XRP
+  USD
+}
+
+enum SettlementAsset {
+  FXRP
+  USDT0
+}
+
+enum PayloadKind {
+  SIGN_IN
+  PAYMENT
+  RECOVERY
+}
+
+enum PayloadStatus {
+  CREATED
+  OPENED
+  SIGNED
+  REJECTED
+  EXPIRED
+}
+
+enum AttemptStatus {
+  CREATED
+  IDENTIFYING
+  IDENTIFIED
+  QUOTED
+  XAMAN_CREATED
+  AWAITING_SIGNATURE
+  XRPL_SIGNED
+  XRPL_VALIDATED
+  USEROP_UPLOADED
+  FDC_REQUESTED
+  FDC_READY
+  FLARE_SUBMITTED
+  FLARE_CONFIRMED
+  SETTLED
+  REJECTED
+  QUOTE_EXPIRED
+  XRPL_FAILED
+  EXECUTION_REVERTED
+  RECOVERY_REQUIRED
+  RECOVERED
+  CANCELLED
+}
+
+enum JobType {
+  VALIDATE_XRPL
+  VALIDATE_RECOVERY_XRPL
+  REQUEST_RECOVERY_FDC
+  REQUEST_FDC
+  SUBMIT_FLARE
+  INDEX_EVENTS
+  RECONCILE
+  RECOVERY_DIAGNOSIS
+}
+
+enum JobStatus {
+  READY
+  RUNNING
+  RETRY
+  SUCCEEDED
+  DEAD
+}
+
+enum FdcRequestStatus {
+  PREPARED
+  SUBMITTED
+  PENDING
+  READY
+  FAILED
+}
+
+enum FlareSubmissionStatus {
+  SUBMITTED
+  CONFIRMED
+  REPLACED
+  REVERTED
+}
+
+enum RecoveryRequestStatus {
+  PREPARED
+  SUBMITTED
+  XRPL_SIGNED
+  XRPL_VALIDATED
+  FAILED
+}
+
+enum RecoveryFdcStatus {
+  PREPARED
+  SUBMITTED
+  PENDING
+  READY
+  FAILED
+}
+
+enum RecoveryExecutionStage {
+  MARKER
+  ORIGINAL
+}
+
+enum RecoveryExecutionStatus {
+  RESERVED
+  SUBMITTED
+  DELAYED
+  CONFIRMED
+  FAILED
+}
+
+model Merchant {
+  id               String          @id @default(uuid())
+  walletAddress    String          @unique
+  displayName      String
+  logoUrl          String?
+  defaultAsset     SettlementAsset @default(FXRP)
+  webhookUrl       String?
+  webhookSecretEnc String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  invoices         Invoice[]
+  sessions         Session[]
+  auditLogs        AuditLog[]
+}
+
+model Session {
+  id         String   @id @default(uuid())
+  merchantId String
+  tokenHash  String   @unique
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  merchant   Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  @@index([merchantId, expiresAt])
+}
+
+model AuthNonce {
+  id            String   @id @default(uuid())
+  walletAddress String
+  nonceHash     String
+  expiresAt     DateTime
+  usedAt        DateTime?
+  createdAt     DateTime @default(now())
+
+  @@index([walletAddress, expiresAt])
+}
+
+model Invoice {
+  id              String             @id @default(uuid())
+  merchantId      String
+  publicSlug      String             @unique
+  title           String
+  description     String?
+  externalRef     String?
+  denomination    Denomination
+  amountBaseUnits Decimal            @db.Decimal(78, 0)
+  settlementAsset SettlementAsset
+  status          InvoiceStatus      @default(DRAFT)
+  expiresAt       DateTime
+  publishedAt     DateTime?
+  cancelledAt     DateTime?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  merchant        Merchant           @relation(fields: [merchantId], references: [id])
+  recipients      InvoiceRecipient[]
+  attempts        PaymentAttempt[]
+  quotes           Quote[]
+  payerSessions    PayerSession[]
+
+  @@index([merchantId, createdAt])
+  @@index([status, expiresAt])
+}
+
+model InvoiceRecipient {
+  id        String  @id @default(uuid())
+  invoiceId String
+  position  Int
+  label     String
+  address   String
+  bps       Int
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@unique([invoiceId, position])
+  @@index([invoiceId])
+}
+
+model PayerSession {
+  id                String           @id @default(uuid())
+  invoiceId         String
+  network           String
+  sessionTokenHash  String           @unique
+  xrplAccount       String?
+  xamanUserTokenEnc String?
+  signInPayloadId   String?
+  expiresAt         DateTime
+  createdAt         DateTime         @default(now())
+  invoice           Invoice          @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  attempts          PaymentAttempt[]
+  payloads           XamanPayload[]
+
+  @@index([invoiceId, expiresAt])
+}
+
+model Quote {
+  id                     String         @id @default(uuid())
+  invoiceId              String
+  payerXrplAccount       String
+  personalAccount        String
+  personalAccountNonce   Decimal        @db.Decimal(78, 0)
+  xrpUsdValue            Decimal?       @db.Decimal(78, 0)
+  xrpUsdDecimals         Int?
+  xrpUsdTimestamp        DateTime?
+  ftsoFeedId              String?
+  invoiceOutBaseUnits    Decimal        @db.Decimal(78, 0)
+  serviceFeeOutBaseUnits Decimal        @db.Decimal(78, 0)
+  serviceFeeBps          Int
+  maxFxrpInputUBA        Decimal        @db.Decimal(78, 0)
+  protocolMintFeeUBA     Decimal        @db.Decimal(78, 0)
+  executorFeeUBA         Decimal        @db.Decimal(78, 0)
+  directMintFeeBips      Decimal        @db.Decimal(78, 0)
+  directMintMinimumFeeUBA Decimal       @db.Decimal(78, 0)
+  xrplPaymentDrops       Decimal        @db.Decimal(78, 0)
+  slippageBps            Int
+  route                  String
+  poolFee                Int?
+  userOpHash             String
+  userOpDataEnc          String
+  memoHex                String
+  directMintAddress      String
+  assetManagerAddress    String
+  fxrpAddress             String
+  expiresAt              DateTime
+  settlementDeadline     DateTime
+  createdAt              DateTime       @default(now())
+  invoice                Invoice        @relation(fields: [invoiceId], references: [id])
+  attempt                PaymentAttempt?
+
+  @@index([invoiceId, createdAt])
+}
+
+model PaymentAttempt {
+  id               String         @id @default(uuid())
+  paymentId        String         @unique
+  invoiceId        String
+  payerSessionId   String
+  quoteId          String         @unique
+  status           AttemptStatus  @default(CREATED)
+  payerXrplAccount String
+  personalAccount  String
+  xamanPayloadUuid String?        @unique
+  xrplTxHash       String?        @unique
+  xrplLedgerIndex  BigInt?
+  xrplLastLedgerSequence BigInt?
+  xrplValidatedAt  DateTime?
+  flareTxHash      String?        @unique
+  flareSubmittedAt DateTime?
+  failureCode      String?
+  failureMessage   String?
+  recoveryTxHash   String?         @unique
+  settledAt        DateTime?
+  version          Int            @default(0)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  invoice          Invoice        @relation(fields: [invoiceId], references: [id])
+  payerSession     PayerSession   @relation(fields: [payerSessionId], references: [id])
+  quote            Quote          @relation(fields: [quoteId], references: [id])
+  payloads         XamanPayload[]
+  jobs             ExecutorJob[]
+  chainEvents      ChainEvent[]
+  fdcRequest       FdcRequest?
+  flareSubmissions FlareSubmission[]
+  executorNonceReservations ExecutorNonceReservation[]
+  recoveryRequests RecoveryRequest[]
+
+  @@index([invoiceId, createdAt])
+  @@index([status, updatedAt])
+}
+
+model FdcRequest {
+  id              String           @id @default(uuid())
+  attemptId       String           @unique
+  status          FdcRequestStatus @default(PREPARED)
+  requestBytes    String
+  verifierRequest Json
+  votingRoundId   BigInt?
+  proofJson       Json?
+  lastError       String?
+  submittedAt     DateTime?
+  readyAt         DateTime?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  attempt         PaymentAttempt   @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+
+  @@index([status, updatedAt])
+}
+
+model FlareSubmission {
+  id                 String                @id @default(uuid())
+  attemptId          String
+  transactionHash    String                @unique
+  nonce              BigInt
+  status             FlareSubmissionStatus @default(SUBMITTED)
+  replacementForHash String?
+  receiptJson        Json?
+  submittedAt        DateTime              @default(now())
+  confirmedAt        DateTime?
+  attempt            PaymentAttempt        @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+
+  @@index([attemptId, submittedAt])
+}
+
+model ExecutorNonceReservation {
+  id                String         @id @default(uuid())
+  attemptId         String
+  generation        Int            @default(0)
+  chainId           String
+  executorAddress   String
+  nonce             BigInt
+  transactionHash   String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  attempt           PaymentAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  recoveryExecution RecoveryExecution?
+
+  @@unique([attemptId, generation])
+  @@unique([chainId, executorAddress, nonce])
+  @@index([chainId, executorAddress, createdAt])
+}
+
+model XamanPayload {
+  id             String          @id @default(uuid())
+  attemptId      String?
+  payerSessionId String?
+  kind           PayloadKind
+  payloadUuid    String          @unique
+  status         PayloadStatus   @default(CREATED)
+  qrPngUrl       String?
+  deeplinkUrl    String?
+  websocketUrl   String?
+  txId           String?
+  expiresAt      DateTime
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  attempt        PaymentAttempt? @relation(fields: [attemptId], references: [id])
+  payerSession   PayerSession?   @relation(fields: [payerSessionId], references: [id])
+
+  @@index([attemptId, kind])
+  @@index([payerSessionId, kind])
+}
+
+model RecoveryRequest {
+  id                  String                @id @default(uuid())
+  attemptId           String
+  generation          Int
+  status              RecoveryRequestStatus @default(PREPARED)
+  requestJson         Json
+  diagnosisJson       Json
+  providerPayloadUuid String?               @unique
+  xrplTxHash          String?               @unique
+  xrplLedgerIndex     BigInt?
+  xrplValidatedAt     DateTime?
+  lastError           String?
+  expiresAt           DateTime?
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  attempt             PaymentAttempt        @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  fdcRequest          RecoveryFdcRequest?
+  executions          RecoveryExecution[]
+
+  @@unique([attemptId, generation])
+  @@index([status, updatedAt])
+}
+
+model RecoveryFdcRequest {
+  id                String            @id @default(uuid())
+  recoveryRequestId String            @unique
+  status            RecoveryFdcStatus @default(PREPARED)
+  requestBytes      String
+  verifierRequest   Json
+  votingRoundId     BigInt?
+  proofJson         Json?
+  lastError         String?
+  submittedAt       DateTime?
+  readyAt           DateTime?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  recoveryRequest   RecoveryRequest   @relation(fields: [recoveryRequestId], references: [id], onDelete: Cascade)
+
+  @@index([status, updatedAt])
+}
+
+model RecoveryExecution {
+  id                   String                  @id @default(uuid())
+  recoveryRequestId    String
+  stage                RecoveryExecutionStage
+  executionGeneration  Int                     @default(0)
+  status               RecoveryExecutionStatus @default(RESERVED)
+  nonceReservationId   String?                 @unique
+  transactionHash      String?                 @unique
+  receiptJson          Json?
+  evidenceJson         Json?
+  lastError            String?
+  submittedAt          DateTime?
+  confirmedAt          DateTime?
+  createdAt            DateTime                @default(now())
+  updatedAt            DateTime                @updatedAt
+  recoveryRequest      RecoveryRequest         @relation(fields: [recoveryRequestId], references: [id], onDelete: Cascade)
+  nonceReservation     ExecutorNonceReservation? @relation(fields: [nonceReservationId], references: [id])
+
+  @@unique([recoveryRequestId, stage, executionGeneration])
+  @@index([status, updatedAt])
+}
+
+model ExecutorJob {
+  id            String         @id @default(uuid())
+  attemptId     String
+  jobType       JobType
+  generation    Int            @default(0)
+  status        JobStatus      @default(READY)
+  attempts      Int            @default(0)
+  maxAttempts   Int            @default(12)
+  nextRunAt     DateTime       @default(now())
+  lockedBy      String?
+  lockedUntil   DateTime?
+  lastErrorCode String?
+  lastError     String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  attempt       PaymentAttempt @relation(fields: [attemptId], references: [id])
+
+  @@unique([attemptId, jobType, generation])
+  @@index([status, nextRunAt])
+}
+
+model ChainEvent {
+  id          String         @id @default(uuid())
+  attemptId   String
+  chain       String
+  chainId     String
+  txHash      String
+  logIndex    Int
+  blockNumber BigInt
+  eventName   String
+  payloadJson Json
+  createdAt   DateTime       @default(now())
+  attempt     PaymentAttempt @relation(fields: [attemptId], references: [id])
+
+  @@unique([chainId, txHash, logIndex])
+  @@index([attemptId, eventName])
+}
+
+model WebhookEvent {
+  id          String    @id @default(uuid())
+  provider    String
+  deliveryKey String
+  headersJson Json
+  bodyJson    Json
+  processedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@unique([provider, deliveryKey])
+}
+
+model IdempotencyRecord {
+  id             String   @id @default(uuid())
+  scope          String
+  idempotencyKey String
+  requestHash    String
+  responseStatus Int?
+  responseJson   Json?
+  expiresAt      DateTime
+  createdAt      DateTime @default(now())
+
+  @@unique([scope, idempotencyKey])
+  @@index([expiresAt])
+}
+
+model RateLimitBucket {
+  key         String   @id
+  count       Int      @default(1)
+  windowStart DateTime
+  expiresAt   DateTime
+  updatedAt   DateTime @updatedAt
+
+  @@index([expiresAt])
+}
+
+model AuditLog {
+  id         String    @id @default(uuid())
+  merchantId String?
+  actorType  String
+  actorId    String?
+  action     String
+  entityType String
+  entityId   String?
+  ipHash     String?
+  metadata   Json?
+  createdAt  DateTime  @default(now())
+  merchant   Merchant? @relation(fields: [merchantId], references: [id])
+
+  @@index([merchantId, createdAt])
+}
+
+model Deployment {
+  id             String   @id @default(uuid())
+  network        String
+  version        String
+  routerAddress  String
+  adapterAddress String
+  fxrpAddress    String
+  usdt0Address   String
+  swapRouter     String
+  deployTxHash   String
+  manifestJson   Json
+  createdAt      DateTime @default(now())
+
+  @@unique([network, version])
+}

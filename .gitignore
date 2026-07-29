@@ -1,0 +1,43 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# framework/build output
+.next/
+dist/
+build/
+out/
+cache/
+artifacts/
+coverage/
+playwright-report/
+test-results/
+*.tsbuildinfo
+
+# Foundry
+packages/contracts/broadcast/
+packages/contracts/cache/
+packages/contracts/out/
+packages/contracts/lib/
+
+# Prisma/local data
+packages/db/generated/
+*.db
+*.db-journal
+
+# logs and editors
+*.log
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# local smoke artifacts
+live-smoke/

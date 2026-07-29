@@ -1,0 +1,55 @@
+{
+  "name": "paymorph",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.27.0",
+  "pnpm": {
+    "overrides": {
+      "axios": "1.18.1",
+      "brace-expansion": "5.0.8",
+      "postcss": "8.5.23",
+      "sharp": "0.35.3",
+      "ws": "8.21.1"
+    }
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "dependencies": {
+    "@paymorph/db": "workspace:*",
+    "@paymorph/shared": "workspace:*",
+    "viem": "2.55.8"
+  },
+  "scripts": {
+    "dev": "dotenv -e .env.local -- pnpm --parallel --filter @paymorph/web --filter @paymorph/executor dev",
+    "build": "pnpm -r --if-present build",
+    "lint": "pnpm -r --if-present lint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "test": "pnpm -r --if-present test",
+    "test:e2e": "pnpm --filter @paymorph/web test:e2e",
+    "test:contracts": "pnpm --dir packages/contracts test",
+    "test:live": "dotenv -e .env.local -- tsx scripts/live-smoke.ts",
+    "test:live:recovery": "dotenv -e .env.local -- tsx scripts/live-recovery-smoke.ts",
+    "db:generate": "pnpm --filter @paymorph/db generate",
+    "db:migrate": "dotenv -e .env.local -- pnpm --filter @paymorph/db migrate",
+    "db:seed": "dotenv -e .env.local -- tsx scripts/seed.ts",
+    "db:cleanup": "dotenv -e .env.local -- tsx scripts/cleanup-expired.ts",
+    "contracts:deploy:coston2": "dotenv -e .env.local -- pnpm --dir packages/contracts deploy:coston2",
+    "network:resolve": "dotenv -e .env.local -- tsx scripts/resolve-network.ts",
+    "verify:deployment": "dotenv -e .env.local -- tsx scripts/verify-deployment.ts",
+    "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "@types/node": "^24.0.0",
+    "dotenv-cli": "^10.0.0",
+    "eslint": "^9.0.0",
+    "prettier": "^3.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.0.0",
+    "vitest": "^4.1.10"
+  }
+}

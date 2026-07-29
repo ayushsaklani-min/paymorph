@@ -1,0 +1,12 @@
+export const COSTON2_CHAIN_ID = 114;
+export const XRPL_NETWORK = 'testnet' as const;
+export const XRP_DECIMALS = 6;
+export const FXRP_DECIMALS = 6;
+export const MAX_RECIPIENTS = 10;
+export const TOTAL_BPS = 10_000;
+export const MAX_SERVICE_FEE_BPS = 300;
+export const DEFAULT_SERVICE_FEE_BPS = 50;
+export const XAMAN_CUSTOM_INSTRUCTION = 0xfe;
+export const XAMAN_RECOVERY_INSTRUCTION = 0xe0;
+export const SMART_ACCOUNT_MEMO_BYTES = 42;
+export const XRP_USD_FEED_ID = '0x015852502f55534400000000000000000000000000' as const;

@@ -285,6 +285,10 @@ job and cannot retry deterministic terminal or recovery states.
 - Local testing may use an explicit `MUTATION_ALLOWED_ORIGINS` allowlist while
   retaining the public HTTPS `APP_URL` required for Xaman callbacks. Origins
   remain exact-match only; this is not a wildcard or CSRF bypass.
+- Root document hydration warnings are suppressed only at the `html` and
+  `body` boundary to tolerate attributes injected by browser security
+  extensions before React hydrates. The application itself does not render
+  variable server/client markup at that boundary.
 
 ## Open verification items
 

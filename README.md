@@ -73,6 +73,22 @@ The authoritative phase ledger is maintained in
 
 ## Architecture
 
+## Hosted checkout button
+
+Create an active invoice or payment link first, then retain a normal anchor as
+the no-JavaScript fallback. The loader never has a private API key and only
+opens the existing hosted checkout URL:
+
+```html
+<a href="https://your-host/pay/your-invoice-slug">Pay with PayMorph</a>
+<span
+  data-paymorph-button
+  data-mode="modal"
+  data-checkout-url="https://your-host/pay/your-invoice-slug"
+></span>
+<script async src="https://your-host/paymorph-button.js"></script>
+```
+
 ```text
 Merchant EVM wallet ─── EIP-191 sign-in ───┐
                                            │

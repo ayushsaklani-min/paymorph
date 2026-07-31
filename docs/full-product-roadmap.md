@@ -50,7 +50,7 @@ Increment 2 is in progress: the merchant dashboard, payment evidence views,
 and persisted invoice templates are implemented; payment links now materialize
 the same canonical immutable invoices used by the direct checkout. Payment
 requests are implemented as named canonical invoices. POS, collection
-analytics, and the public developer platform are not yet implemented.
+analytics, and the public developer platform are in progress.
 
 The baseline is the starting point, not the completion claim for every product
 surface in the DOCX.

@@ -343,6 +343,12 @@ job and cannot retry deterministic terminal or recovery states.
   URL encoder because a local QR package is unavailable in this environment;
   the checkout URL is intentionally public, but this provider dependency must
   be replaced with a bundled encoder before production.
+- Developer-platform foundation: merchants can issue hashed scoped `pm_test_`
+  keys (secret revealed once), `/api/v1/invoices` uses bearer scopes and the
+  same idempotent invoice service, and `@paymorph/node` exposes invoice calls
+  plus exact webhook verification. A durable outbound delivery ledger is
+  transactionally enqueued only with a `SETTLED` transition backed by decoded
+  `PaymentSettled` evidence; the retry runner signs `timestamp.rawBody`.
 
 ## Open verification items
 

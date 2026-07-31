@@ -12,6 +12,11 @@ export function PaymentLinkCheckout({ slug }: { slug: string }) {
       setPending(true);
       setError(undefined);
       idempotencyKey.current ??= crypto.randomUUID();
+      void fetch(`/api/public/payment-links/${slug}/analytics`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ eventType: 'CHECKOUT_STARTED', eventKey: idempotencyKey.current }),
+      });
       const response = await fetch(`/api/public/payment-links/${slug}/checkout`, {
         method: 'POST',
         headers: { 'idempotency-key': idempotencyKey.current },

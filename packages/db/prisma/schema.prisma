@@ -259,9 +259,22 @@ model PaymentLink {
   updatedAt        DateTime          @updatedAt
   merchant         Merchant          @relation(fields: [merchantId], references: [id], onDelete: Cascade)
   invoices         Invoice[]
+  analyticsEvents  PaymentLinkAnalyticsEvent[]
 
   @@index([merchantId, createdAt])
   @@index([status, expiresAt])
+}
+
+model PaymentLinkAnalyticsEvent {
+  id            String   @id @default(uuid())
+  paymentLinkId String
+  eventType     String
+  eventKey      String
+  createdAt     DateTime @default(now())
+  paymentLink   PaymentLink @relation(fields: [paymentLinkId], references: [id], onDelete: Cascade)
+
+  @@unique([paymentLinkId, eventType, eventKey])
+  @@index([paymentLinkId, createdAt])
 }
 
 model PaymentRequest {

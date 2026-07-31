@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { db, PaymentLinkStatus } from '@paymorph/db';
 import { TestnetNotice } from '@paymorph/ui';
 import { PaymentLinkCheckout } from '@/features/payment-links/payment-link-checkout';
+import { PaymentLinkAnalytics } from '@/features/payment-links/payment-link-analytics';
 
 export default async function PaymentLinkPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -24,6 +25,7 @@ export default async function PaymentLinkPage({ params }: { params: Promise<{ sl
           payment.
         </p>
         <PaymentLinkCheckout slug={link.slug} />
+        <PaymentLinkAnalytics slug={link.slug} />
         <TestnetNotice className="mt-6 rounded-xl bg-white/[0.04] px-4 py-3 text-sm text-[var(--muted)]" />
       </section>
     </main>

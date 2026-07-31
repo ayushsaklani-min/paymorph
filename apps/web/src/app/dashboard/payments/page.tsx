@@ -1,40 +1,128 @@
+import { formatBaseUnits } from '@paymorph/shared';
 import { db } from '@paymorph/db';
 import { requireMerchant } from '@/lib/server/auth/session';
+
+function label(status: string): string {
+  return status
+    .replaceAll('_', ' ')
+    .toLowerCase()
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function tone(status: string): string {
+  if (status === 'SETTLED') return 'border-emerald-400/40 bg-emerald-400/10 text-emerald-100';
+  if (
+    ['REJECTED', 'QUOTE_EXPIRED', 'XRPL_FAILED', 'EXECUTION_REVERTED', 'CANCELLED'].includes(status)
+  ) {
+    return 'border-amber-300/40 bg-amber-300/10 text-amber-100';
+  }
+  return 'border-sky-300/30 bg-sky-300/10 text-sky-100';
+}
 
 export default async function PaymentsPage() {
   const merchant = await requireMerchant();
   const attempts = await db.paymentAttempt.findMany({
     where: { invoice: { merchantId: merchant.id } },
-    include: { invoice: { select: { title: true } } },
+    select: {
+      id: true,
+      paymentId: true,
+      status: true,
+      payerXrplAccount: true,
+      createdAt: true,
+      updatedAt: true,
+      xrplTxHash: true,
+      flareTxHash: true,
+      invoice: { select: { title: true, settlementAsset: true } },
+      quote: { select: { xrplPaymentDrops: true, invoiceOutBaseUnits: true } },
+    },
     orderBy: { createdAt: 'desc' },
     take: 100,
   });
+
   return (
-    <main className="py-12">
-      <p className="text-sm text-[var(--muted)]">Cross-chain history</p>
-      <h1 className="mt-2 text-4xl font-semibold tracking-tight">Payments</h1>
+    <main className="py-10 sm:py-12">
+      <div className="flex flex-wrap items-end justify-between gap-5">
+        <div>
+          <p className="text-sm font-medium text-[var(--muted)]">Settlement operations</p>
+          <h1 className="mt-2 text-4xl font-semibold tracking-tight">Payments</h1>
+          <p className="mt-3 max-w-2xl leading-7 text-[var(--muted)]">
+            Follow every payment from Xaman approval to independently verified Coston2 settlement.
+          </p>
+        </div>
+        <a
+          className="rounded-full bg-[var(--accent)] px-5 py-3 font-semibold text-[var(--accent-ink)] transition hover:brightness-105"
+          href="/dashboard/invoices/new"
+        >
+          Create invoice
+        </a>
+      </div>
+
       {attempts.length === 0 ? (
-        <div className="mt-10 rounded-2xl border border-dashed border-[var(--line)] p-10 text-center">
+        <div className="mt-10 rounded-3xl border border-dashed border-[var(--line)] bg-[var(--surface)] px-6 py-14 text-center">
           <p className="text-lg font-medium">No payment attempts yet.</p>
-          <p className="mt-2 text-[var(--muted)]">
-            Attempts appear after an identified payer creates a quote.
+          <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[var(--muted)]">
+            Attempts appear when an identified payer creates a protected quote from one of your
+            invoices.
           </p>
         </div>
       ) : (
-        <div className="mt-10 space-y-3">
-          {attempts.map((attempt) => (
-            <a
-              className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5"
-              href={`/receipt/${attempt.id}`}
-              key={attempt.id}
-            >
-              <div>
-                <p className="font-medium">{attempt.invoice.title}</p>
-                <p className="mt-1 font-mono text-xs text-[var(--muted)]">{attempt.paymentId}</p>
-              </div>
-              <span>{attempt.status}</span>
-            </a>
-          ))}
+        <div className="mt-10 overflow-x-auto rounded-3xl border border-[var(--line)] bg-[var(--surface)]">
+          <table className="w-full min-w-[58rem] border-collapse text-left text-sm">
+            <thead className="bg-white/[0.025] text-xs uppercase tracking-wide text-[var(--muted)]">
+              <tr>
+                <th className="px-6 py-4 font-medium">Invoice</th>
+                <th className="px-6 py-4 font-medium">Payer</th>
+                <th className="px-6 py-4 font-medium">XRP paid</th>
+                <th className="px-6 py-4 font-medium">Settlement</th>
+                <th className="px-6 py-4 font-medium">Phase</th>
+                <th className="px-6 py-4 font-medium">Evidence</th>
+              </tr>
+            </thead>
+            <tbody>
+              {attempts.map((attempt) => (
+                <tr
+                  className="border-t border-[var(--line)] transition hover:bg-white/[0.02]"
+                  key={attempt.id}
+                >
+                  <td className="px-6 py-4">
+                    <a
+                      className="font-medium underline-offset-4 hover:text-[var(--accent)] hover:underline"
+                      href={`/dashboard/payments/${attempt.id}`}
+                    >
+                      {attempt.invoice.title}
+                    </a>
+                    <p className="mt-1 font-mono text-xs text-[var(--muted)]">
+                      {attempt.paymentId.slice(0, 16)}…
+                    </p>
+                  </td>
+                  <td className="px-6 py-4 font-mono text-xs text-[var(--muted)]">
+                    {attempt.payerXrplAccount.slice(0, 6)}…{attempt.payerXrplAccount.slice(-4)}
+                  </td>
+                  <td className="px-6 py-4">
+                    {formatBaseUnits(BigInt(attempt.quote.xrplPaymentDrops.toFixed()), 6)} XRP
+                  </td>
+                  <td className="px-6 py-4">
+                    {formatBaseUnits(BigInt(attempt.quote.invoiceOutBaseUnits.toFixed()), 6)}{' '}
+                    {attempt.invoice.settlementAsset}
+                  </td>
+                  <td className="px-6 py-4">
+                    <span
+                      className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-medium ${tone(attempt.status)}`}
+                    >
+                      {label(attempt.status)}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-xs">
+                    {attempt.xrplTxHash || attempt.flareTxHash ? (
+                      <span className="font-medium text-emerald-200">Available</span>
+                    ) : (
+                      <span className="text-[var(--muted)]">Pending</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </main>

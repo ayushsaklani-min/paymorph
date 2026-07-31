@@ -315,6 +315,10 @@ job and cannot retry deterministic terminal or recovery states.
   hackathon P0 merchant shell, collection surfaces, and developer platform;
   refunds, subscriptions, escrow, mainnet, and unverified USDT0 remain
   explicitly deferred.
+- Increment 1 has started with merchant-scoped, read-only dashboard summary,
+  funnel, and UTC timeseries APIs plus a redesigned overview, payment history,
+  and payment evidence-detail surface. These are projections over canonical
+  attempts; the UI/API never infer final settlement from the projections.
 
 ## Open verification items
 

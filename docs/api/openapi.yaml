@@ -33,8 +33,81 @@ tags:
   - name: Providers
   - name: Network
   - name: Operations
+  - name: Dashboard
 
 paths:
+  /api/dashboard/summary:
+    get:
+      tags: [Dashboard]
+      operationId: getDashboardSummary
+      summary: Get merchant-scoped settlement and operational projections
+      description: Dashboard data is a read-only projection. It does not prove settlement.
+      x-implementation-status: implemented
+      security:
+        - MerchantCookie: []
+      responses:
+        '200':
+          description: Merchant dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardSummaryEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/dashboard/funnel:
+    get:
+      tags: [Dashboard]
+      operationId: getDashboardFunnel
+      summary: Get merchant-scoped canonical payment funnel counts
+      x-implementation-status: implemented
+      security:
+        - MerchantCookie: []
+      responses:
+        '200':
+          description: Funnel counts derived from canonical payment attempts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardFunnelEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/dashboard/timeseries:
+    get:
+      tags: [Dashboard]
+      operationId: getDashboardTimeseries
+      summary: Get up to 90 UTC days of merchant payment projections
+      x-implementation-status: implemented
+      security:
+        - MerchantCookie: []
+      parameters:
+        - name: days
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 90
+            default: 14
+      responses:
+        '200':
+          description: Daily created and finally settled payment projections
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardTimeseriesEnvelope'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
   /api/auth/nonce:
     post:
       tags: [Authentication]
@@ -2411,6 +2484,145 @@ components:
           type: string
           minLength: 1
           maxLength: 500
+    DashboardPeriod:
+      type: object
+      additionalProperties: false
+      required: [settledPayments, fxrpBaseUnits, usdt0BaseUnits]
+      properties:
+        settledPayments:
+          type: integer
+          minimum: 0
+        fxrpBaseUnits:
+          $ref: '#/components/schemas/BaseUnitString'
+        usdt0BaseUnits:
+          $ref: '#/components/schemas/BaseUnitString'
+    DashboardOperational:
+      type: object
+      additionalProperties: false
+      required: [pendingPayments, activeInvoices, medianSettlementSeconds]
+      properties:
+        pendingPayments:
+          type: integer
+          minimum: 0
+        activeInvoices:
+          type: integer
+          minimum: 0
+        medianSettlementSeconds:
+          type: [integer, 'null']
+          minimum: 0
+    DashboardFunnel:
+      type: object
+      additionalProperties: false
+      required: [created, signed, xrplValidated, fdcReady, settled]
+      properties:
+        created:
+          type: integer
+          minimum: 0
+        signed:
+          type: integer
+          minimum: 0
+        xrplValidated:
+          type: integer
+          minimum: 0
+        fdcReady:
+          type: integer
+          minimum: 0
+        settled:
+          type: integer
+          minimum: 0
+    DashboardRecentPayment:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - paymentId
+        - status
+        - payerAlias
+        - invoiceTitle
+        - settlementAsset
+        - xrplPaymentDrops
+        - settlementBaseUnits
+        - createdAt
+        - updatedAt
+        - xrplTxHash
+        - flareTxHash
+      properties:
+        id:
+          type: string
+          format: uuid
+        paymentId:
+          type: string
+          minLength: 1
+          maxLength: 128
+        status:
+          $ref: '#/components/schemas/AttemptStatus'
+        payerAlias:
+          type: string
+          minLength: 8
+          maxLength: 32
+        invoiceTitle:
+          type: string
+          minLength: 1
+          maxLength: 160
+        settlementAsset:
+          $ref: '#/components/schemas/SettlementAsset'
+        xrplPaymentDrops:
+          $ref: '#/components/schemas/BaseUnitString'
+        settlementBaseUnits:
+          $ref: '#/components/schemas/BaseUnitString'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        xrplTxHash:
+          $ref: '#/components/schemas/NullableTransactionHash'
+        flareTxHash:
+          $ref: '#/components/schemas/NullableTransactionHash'
+    DashboardSummary:
+      type: object
+      additionalProperties: false
+      required: [periods, operational, funnel, recent]
+      properties:
+        periods:
+          type: object
+          additionalProperties: false
+          required: [today, last7Days, monthToDate, allTime]
+          properties:
+            today:
+              $ref: '#/components/schemas/DashboardPeriod'
+            last7Days:
+              $ref: '#/components/schemas/DashboardPeriod'
+            monthToDate:
+              $ref: '#/components/schemas/DashboardPeriod'
+            allTime:
+              $ref: '#/components/schemas/DashboardPeriod'
+        operational:
+          $ref: '#/components/schemas/DashboardOperational'
+        funnel:
+          $ref: '#/components/schemas/DashboardFunnel'
+        recent:
+          type: array
+          maxItems: 8
+          items:
+            $ref: '#/components/schemas/DashboardRecentPayment'
+    DashboardTimeseriesPoint:
+      type: object
+      additionalProperties: false
+      required: [date, created, settled, fxrpBaseUnits]
+      properties:
+        date:
+          type: string
+          format: date
+        created:
+          type: integer
+          minimum: 0
+        settled:
+          type: integer
+          minimum: 0
+        fxrpBaseUnits:
+          $ref: '#/components/schemas/BaseUnitString'
 
     AuthNonceEnvelope:
       type: object
@@ -2419,6 +2631,42 @@ components:
       properties:
         data:
           $ref: '#/components/schemas/AuthNonce'
+        error:
+          type: 'null'
+        requestId:
+          $ref: '#/components/schemas/RequestId'
+    DashboardSummaryEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, error, requestId]
+      properties:
+        data:
+          $ref: '#/components/schemas/DashboardSummary'
+        error:
+          type: 'null'
+        requestId:
+          $ref: '#/components/schemas/RequestId'
+    DashboardFunnelEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, error, requestId]
+      properties:
+        data:
+          $ref: '#/components/schemas/DashboardFunnel'
+        error:
+          type: 'null'
+        requestId:
+          $ref: '#/components/schemas/RequestId'
+    DashboardTimeseriesEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, error, requestId]
+      properties:
+        data:
+          type: array
+          maxItems: 90
+          items:
+            $ref: '#/components/schemas/DashboardTimeseriesPoint'
         error:
           type: 'null'
         requestId:

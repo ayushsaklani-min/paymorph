@@ -37,6 +37,47 @@ tags:
   - name: Dashboard
 
 paths:
+  /api/v1/invoices:
+    get:
+      tags: [Invoices]
+      operationId: v1ListInvoices
+      summary: List invoices with a scoped bearer API key
+      x-implementation-status: implemented
+      security: [{ BearerApiKey: [] }]
+      responses:
+        '200': { description: Merchant-scoped invoice list }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [Invoices]
+      operationId: v1CreateInvoice
+      summary: Create a merchant invoice with a scoped bearer API key
+      x-implementation-status: implemented
+      security: [{ BearerApiKey: [] }]
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateInvoiceRequest' }
+      responses:
+        '201': { description: Invoice created }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /api/v1/payments/{id}/receipt:
+    get:
+      tags: [Receipts]
+      operationId: v1GetPaymentReceipt
+      summary: Fetch a final verified receipt with a scoped bearer API key
+      x-implementation-status: implemented
+      security: [{ BearerApiKey: [] }]
+      parameters:
+        - $ref: '#/components/parameters/UuidPathId'
+      responses:
+        '200': { description: Final receipt evidence }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
   /api/payment-links:
     get:
       tags: [Payment Links]
@@ -1131,6 +1172,11 @@ components:
       in: cookie
       name: paymorph_session
       description: Opaque seven-day merchant session; HttpOnly, SameSite=Lax, Secure outside local development.
+    BearerApiKey:
+      type: http
+      scheme: bearer
+      bearerFormat: pm_test_ API key
+      description: Scoped test API key. Secrets are returned once at creation and stored only as hashes.
     PayerCookie:
       type: apiKey
       in: cookie

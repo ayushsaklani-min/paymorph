@@ -2658,13 +2658,15 @@ components:
     Readiness:
       type: object
       additionalProperties: false
-      required: [status, database, coston2, fxrp, usdt0]
+      required: [status, database, coston2, fdc, fxrp, usdt0]
       properties:
         status:
           const: ready
         database:
           const: ready
         coston2:
+          const: ready
+        fdc:
           const: ready
         fxrp:
           const: ready

@@ -85,15 +85,18 @@ and payload-creation transitions.
 - Encrypted Xaman tokens, webhook secrets, and committed user-operation bytes.
 - Executor signing key never enters browser or web build output.
 - Registry discovery, bytecode checks, chain ID checks, feed freshness, route
-  allowlisting, quote expiry, nonce binding, and exact transaction verification.
+  allowlisting, authenticated FDC verifier preflight, quote expiry, nonce
+  binding, and exact transaction verification.
 - Contract `nonReentrant`, pause, roles, replay protection, bounded recipients,
   exact bps, fee cap, deadline, and zero residual balance invariants.
 
 ## Degraded operation
 
 If USDT0 token/router/factory/pool/liquidity checks fail, the capability endpoint
-returns a typed reason and checkout offers FXRP only. If FDC or executor is
-delayed after a valid payment, the attempt stays pending and reconciliation
-continues. Deterministic mismatches stop automatically and surface operator
-diagnostics. Recovery follows the official `0xE0` flow only when eligibility is
-proven.
+returns a typed reason and checkout offers FXRP only. Before a quote can ask a
+payer to sign XRP, PayMorph must receive an authenticated response from the FDC
+XRP indexer; an unavailable or unauthorized verifier blocks quote creation. If
+FDC or executor is delayed after a valid payment, the attempt stays pending and
+reconciliation continues. Deterministic mismatches stop automatically and
+surface operator diagnostics. Recovery follows the official `0xE0` flow only
+when eligibility is proven.

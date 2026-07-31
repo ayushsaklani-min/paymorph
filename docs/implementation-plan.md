@@ -59,6 +59,18 @@ artifacts are required; fixtures do not satisfy it.
   merchant-wallet sign-in navigation after the UI refresh. This is browser
   surface coverage, not live settlement evidence.
 
+## FDC admission update — 2026-08-01
+
+- Readiness and FXRP quote creation now make an authenticated, read-only XRP
+  indexer request to the configured FDC verifier. Missing, unauthorized,
+  malformed, or unavailable verifier responses prevent quote creation before a
+  payer can sign XRP. The local public Coston2 verifier key and the live
+  `/api/ready` response were verified; this is not an FDC proof or settlement
+  artifact.
+- `@paymorph/db` now includes its development source in the injected workspace
+  package. A normal `pnpm install` followed by executor startup was verified,
+  so the source executor no longer resolves a missing `@paymorph/db/src` path.
+
 ## Product-platform update — 2026-07-31
 
 - Merchant operating shell, templates, payment links, requests, POS, public
@@ -77,7 +89,7 @@ artifacts are required; fixtures do not satisfy it.
   acceptance environment.
 - Local migration `20260731140000_webhook_delivery_schedule` is applied to the
   native PostgreSQL database, bringing the local schema to 15 migrations.
-- Latest focused verification passed: `pnpm test` (191 total automated tests,
+- Latest focused verification passed: `pnpm test` (194 total automated tests,
   including 29 Foundry unit/fuzz/invariant tests), web lint/typecheck and
   production build, SDK build/typecheck, Prisma generation/deploy, and format
   check. A single `pnpm verify` wrapper invocation exceeded the shell's

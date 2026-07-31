@@ -32,8 +32,10 @@ router contract.
 
 1. Open the merchant’s checkout page.
 2. Use Xaman SignIn to bind the payer’s XRPL Testnet account.
-3. Request an exact quote. The quote commits the exact payer amount and
-   settlement operation before the XRP payment is signed.
+3. Request an exact quote. Before issuing it, PayMorph verifies that the
+   configured FDC XRP verifier accepts an authenticated, read-only indexer
+   request. The quote then commits the exact payer amount and settlement
+   operation before the XRP payment is signed.
 4. Scan the Xaman QR code or open the native Xaman request.
 5. Review and approve the exact XRP Testnet payment in Xaman.
 6. Keep the checkout open while PayMorph verifies the signature and guides the
@@ -313,6 +315,7 @@ Useful local routes:
 - http://localhost:3000/explorer — public settled-payment evidence search
 - http://localhost:3000/network — read-only network diagnostics
 - http://localhost:3000/api/health — web process health check
+- http://localhost:3000/api/ready — database, Coston2, FXRP, and authenticated FDC verifier readiness
 
 ### 4. Configure Xaman callback delivery
 
@@ -337,7 +340,9 @@ Before starting a live payment:
 1. Confirm PostgreSQL, the web app, and executor are running.
 2. Fund the executor with C2FLR on Coston2.
 3. Fund the payer’s XRPL Testnet account with test XRP.
-4. Confirm the network diagnostics page reports the FXRP path as ready.
+4. Confirm `http://localhost:3000/api/ready` reports database, FXRP, and FDC
+   readiness, then confirm the network diagnostics page reports the FXRP path
+   as ready.
 5. Create and publish a small FXRP invoice.
 6. Open its public checkout in the same browser session.
 7. Complete Xaman SignIn, request an exact quote, and approve the exact payment.

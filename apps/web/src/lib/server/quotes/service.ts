@@ -12,6 +12,7 @@ import {
 import { getAddress, isAddress, type Address } from 'viem';
 import { getPayerRuntimeConfig } from '../payer-session/config.js';
 import { hashPayerSessionToken } from '../payer-session/cookie.js';
+import { assertConfiguredFdcVerifierReady } from '../fdc/verifier-readiness.js';
 import { getConfiguredFlareProvider, resolveConfiguredNetwork } from '../network.js';
 
 const routerReadAbi = [
@@ -77,6 +78,13 @@ export async function createFxrpQuote(input: {
   if (invoice.status !== InvoiceStatus.ACTIVE || invoice.expiresAt <= now) {
     throw new DomainError('INVOICE_NOT_ACTIVE', 'Invoice is not active');
   }
+
+  await assertConfiguredFdcVerifierReady().catch(() => {
+    throw new DomainError(
+      'QUOTE_ROUTE_UNAVAILABLE',
+      'Flare Data Connector verifier is not ready. Do not send an XRP payment yet.',
+    );
+  });
 
   const network = await resolveConfiguredNetwork();
   if (!network.xrpUsd.fresh) {

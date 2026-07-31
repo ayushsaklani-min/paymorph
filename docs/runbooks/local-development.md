@@ -34,6 +34,11 @@ pnpm db:migrate
 pnpm db:seed
 ```
 
+Run a normal `pnpm install` again after changing a workspace package manifest.
+PayMorph uses injected workspace packages for deployable-process isolation, and
+the install recreates those local package links. Do not copy package folders
+into an application manually.
+
 ## Run
 
 ```bash
@@ -42,6 +47,12 @@ pnpm dev
 
 The web process runs at `http://localhost:3000`. The executor is an always-on
 separate process and must have C2FLR only when live processing is enabled.
+
+`GET /api/ready` additionally checks PostgreSQL, the live Coston2 FXRP route,
+and an authenticated read-only request to the configured FDC XRP indexer.
+Resolve a non-200 response before creating a quote: PayMorph intentionally
+refuses to ask a payer to sign XRP when the FDC verifier key or endpoint is not
+usable.
 
 ## Browser acceptance
 

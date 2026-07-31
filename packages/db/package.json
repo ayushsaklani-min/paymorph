@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "files": [
+    "src",
     "dist",
     "generated",
     "package.json"

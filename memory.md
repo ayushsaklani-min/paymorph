@@ -106,6 +106,17 @@ verification items".
   `PLAYWRIGHT_BROWSER_CHANNEL=chrome pnpm test:e2e`. The configured default
   remains Playwright Chromium for CI. This covers the rendered shell after the
   UI refresh; it does not prove any credentialed settlement behavior.
+- FDC admission hardening (2026-08-01): `/api/ready` and FXRP quote creation
+  now require an authenticated, read-only XRP indexer response from the
+  configured FDC verifier. This prevents a payer from being asked to sign when
+  the verifier key is missing, unauthorized, malformed, or unavailable. The
+  local documented public Coston2 testnet key was verified through the actual
+  readiness endpoint and against the previously validated XRPL transaction;
+  this is not a proof, mint, or settlement artifact.
+- Local executor startup hardening (2026-08-01): the injected `@paymorph/db`
+  package now includes its declared development source export. After a normal
+  workspace install, the executor started successfully with the configured
+  FDC verifier; startup is not evidence of an XRPL, FDC, or Coston2 payment.
 
 ## Decisions
 
@@ -391,10 +402,13 @@ job and cannot retry deterministic terminal or recovery states.
 - Recheck official SparkDEX deployment, factory, quoter, fee-500 pool,
   liquidity, and exact-output simulation before enabling USDT0.
 - Exact Xaman real-webhook HMAC fixture before hosted launch.
-- Complete the active real mobile Xaman Testnet SignIn request, then run the
-  payment, FDC, and Coston2 live gate. Local tests cover payload construction,
-  unresolved/signed normalization, HMAC rejection, token handling, and status
-  derivation.
+- The most recent real XRPL payment
+  (`813BF07EA6B0C402907207B9FA49AA6CC45876B1E8B164C2BEABE9B4EB8F973C`)
+  validates exactly but remains `RECOVERY_REQUIRED`: its FDC request was
+  rejected with HTTP 401 before the verifier key was configured. It must not be
+  manually rewound. The corrected key now produces a valid prepared FDC request
+  for that hash; a fresh tiny checkout is still required for the canonical live
+  settlement smoke.
 - Run database seed, queue lease tests, and projection rebuild against the
   configured native or hosted database.
 - Extend browser coverage from the current public-shell smoke to the
@@ -412,7 +426,8 @@ job and cannot retry deterministic terminal or recovery states.
 
 ## Next action
 
-Create a fresh tiny FXRP Testnet checkout, complete Xaman SignIn and the exact
-XRP payment, then run `RUN_LIVE_TESTNET=1 LIVE_ATTEMPT_ID=<attempt-id> pnpm
-test:live` to retain the authoritative XRPL/FDC/Coston2 receipt artifact. Keep
-USDT0 disabled until ADR 0006's full route gate passes.
+With `/api/ready` returning FDC readiness, create a fresh tiny FXRP Testnet
+checkout, complete Xaman SignIn and the exact XRP payment, then run
+`RUN_LIVE_TESTNET=1 LIVE_ATTEMPT_ID=<attempt-id> pnpm test:live` to retain the
+authoritative XRPL/FDC/Coston2 receipt artifact. Keep USDT0 disabled until ADR
+0006's full route gate passes.

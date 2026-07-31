@@ -52,22 +52,19 @@ return does not by itself advance the payment.
 
 ## What is implemented
 
-| Area                             | Status                 | Notes                                                                                                                                |
-| -------------------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| Merchant wallet login            | Implemented            | EIP-191 one-time challenge bound to Coston2 chain ID 114.                                                                            |
-| Invoice creation and publication | Implemented            | Immutable financial terms and 1–10 recipient splits totaling 10,000 bps.                                                             |
-| Invoice templates                | Implemented            | Merchant-scoped reusable defaults; templates never create a payment or settlement.                                                   |
-| Hosted payment links             | Implemented            | Reusable and single-use `/l/:slug` links materialize canonical immutable invoices.                                                   |
-| Payment requests                 | Implemented            | Named, expiring requests create one canonical invoice; outbound email is not configured.                                             |
-| Public checkout                  | Implemented            | Payer-scoped Xaman SignIn, exact quotes, QR/deeplink payment requests.                                                               |
-| Live payment guidance            | Implemented            | State-driven Xaman → XRPL → FDC → Coston2 timeline and safe next steps.                                                              |
-| XRPL validation                  | Implemented            | Validates the exact signed transaction, account, amount, destination, and memo commitment.                                           |
-| FDC and Coston2 worker pipeline  | Implemented            | Durable, leased, idempotent jobs with restart checkpoints.                                                                           |
-| FXRP settlement                  | Implemented            | Router deployed to Coston2; final settlement still requires a live testnet smoke receipt.                                            |
-| USDT0 exact-output settlement    | Intentionally disabled | The configured Coston2 SparkDEX route does not currently pass runtime bytecode and liquidity checks.                                 |
-| Recovery (`0xE0`)                | Partially implemented  | Diagnostics and payer disclosure are present; an official live recovery test remains a gate.                                         |
-| WooCommerce gateway              | Implemented MVP        | Server-side invoice creation and signed post-settlement paid-order transition; requires WordPress/WooCommerce testnet configuration. |
-| Mainnet support                  | Not supported          | Testnet project only.                                                                                                                |
+| Area                                    | Status                 | Notes                                                                                                                          |
+| --------------------------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Merchant operating shell                | Implemented            | EIP-191 sign-in, dashboard projections, payment evidence views, invoices, templates, and settings.                             |
+| Collection surfaces                     | Implemented            | Reusable/single-use links, requests, analytics, and POS create canonical invoices only.                                        |
+| Public checkout                         | Implemented            | Payer-scoped Xaman SignIn, exact quotes, payment QR/deeplink, and an evidence-driven Xaman → XRPL → FDC → Coston2 timeline.    |
+| Executor pipeline                       | Implemented            | Leased durable XRPL validation, FDC, Coston2 submission, event indexing, restart checkpoints, and recovery diagnostics.        |
+| Developer platform                      | Implemented            | Scoped `pm_test_` keys, `/api/v1` invoice/receipt routes, SDK, hosted button, encrypted webhook settings, and delivery outbox. |
+| Explorer and projections                | Implemented            | Public settlement evidence explorer plus marketplace and read-only treasury projections.                                       |
+| WooCommerce gateway                     | MVP implemented        | Server-side invoice mapping and verified post-settlement paid-order transition; needs WordPress/WooCommerce acceptance.        |
+| FXRP settlement                         | Code complete          | Router deployed to Coston2; a retained end-to-end testnet receipt is still required.                                           |
+| USDT0 exact-output settlement           | Intentionally disabled | The configured Coston2 route does not pass required runtime bytecode and liquidity checks.                                     |
+| Recovery (`0xE0`)                       | Partially implemented  | Diagnostics and payer disclosure exist; an official live recovery test remains a gate.                                         |
+| Refunds, subscriptions, escrow, mainnet | Deferred               | Explicitly outside the current testnet blueprint delivery scope.                                                               |
 
 The authoritative phase ledger is maintained in
 [docs/implementation-plan.md](docs/implementation-plan.md).
@@ -101,6 +98,36 @@ checks PayMorph's timestamped exact-body HMAC and marks the matching order paid
 only on a `payment.settled` webhook that PayMorph emits from decoded router
 evidence. See the integration [setup and operational notes](apps/woocommerce-gateway/README.md).
 
+## Developer platform and webhooks
+
+The API contract is [docs/api/openapi.yaml](docs/api/openapi.yaml). API keys
+are scoped, hashed `pm_test_` keys; they are returned once, never sent to the
+browser, and need a UUID `Idempotency-Key` on every mutation.
+
+| Endpoint                            | Required scope   | Purpose                              |
+| ----------------------------------- | ---------------- | ------------------------------------ |
+| `GET /api/v1/invoices`              | `invoices:read`  | List merchant invoices               |
+| `POST /api/v1/invoices`             | `invoices:write` | Create a merchant draft invoice      |
+| `POST /api/v1/invoices/:id/publish` | `invoices:write` | Publish immutable terms idempotently |
+| `GET /api/v1/payments/:id/receipt`  | `payments:read`  | Fetch final verified evidence        |
+
+The workspace `@paymorph/node` SDK exposes invoice helpers and exact-body
+webhook verification. The hosted button has no private key and retains a
+normal anchor as its no-JavaScript fallback.
+
+Configure an HTTPS merchant webhook endpoint and secret in Settings, then run
+the delivery worker on a schedule at least once per minute:
+
+```bash
+pnpm webhooks:deliver
+```
+
+PayMorph signs `timestamp + '.' + exact raw body` with HMAC-SHA256. Deliveries
+are leased, use deterministic exponential backoff from one minute to 24 hours,
+and become terminal after 12 attempts. `payment.settled` is created only from
+decoded `PaymentSettled` evidence; a successful delivery is not settlement
+proof.
+
 ```text
 Merchant EVM wallet ─── EIP-191 sign-in ───┐
                                            │
@@ -129,10 +156,11 @@ XRPL Testnet ── validated payment ──> FDC proof ──────┤
 apps/
   web/               Next.js dashboard, checkout, public API, receipt UI
   executor/          Durable XRPL/FDC/Coston2 worker
-  woocommerce-gateway/ Server-side testnet WooCommerce payment gateway
+  woocommerce-gateway/ Server-side testnet WooCommerce payment gateway MVP
 packages/
   contracts/         Solidity router, adapter, Foundry tests, deployment manifest
   db/                Prisma schema, generated client, transactional job queue
+  sdk/               @paymorph/node server SDK
   shared/            State machine, validation, amount math, ABIs, provider types
   ui/                Shared accessible React components
 scripts/             Network inspection, seed, deployment verification, live smoke
@@ -279,6 +307,10 @@ Useful local routes:
 
 - http://localhost:3000/login — merchant wallet sign-in
 - http://localhost:3000/dashboard — merchant invoices
+- http://localhost:3000/dashboard/payment-links — hosted collections
+- http://localhost:3000/dashboard/pos — merchant QR terminal
+- http://localhost:3000/dashboard/developers — API key management
+- http://localhost:3000/explorer — public settled-payment evidence search
 - http://localhost:3000/network — read-only network diagnostics
 - http://localhost:3000/api/health — web process health check
 
@@ -333,10 +365,23 @@ Never manually turn a failed live run into success.
 | `pnpm test:e2e`                 | Run Playwright browser journeys when Chromium is installed.       |
 | `pnpm db:migrate`               | Apply Prisma migrations.                                          |
 | `pnpm db:seed`                  | Seed development data.                                            |
+| `pnpm webhooks:deliver`         | Deliver due merchant webhook events once.                         |
 | `pnpm network:resolve`          | Inspect runtime network and registry configuration.               |
 | `pnpm verify:deployment`        | Verify the configured deployment.                                 |
 | `pnpm contracts:deploy:coston2` | Deploy contracts to Coston2 with testnet-only keys.               |
 | `pnpm test:live`                | Run the opt-in real testnet receipt verifier.                     |
+
+Latest local verification (2026-07-31):
+
+- `pnpm test` passed: 191 automated tests, including 29 Foundry
+  unit/fuzz/invariant tests.
+- Web lint, typecheck, and production build, SDK build/typecheck, Prisma
+  generation/migration deploy, and formatting checks passed.
+- The all-in-one `pnpm verify` command was interrupted by the shell's
+  124-second timeout during a repeated production build; focused checks passed
+  independently.
+- Playwright Chromium and PHP/WordPress are not installed on this machine, so
+  browser and WooCommerce runtime acceptance remain external gates.
 
 ## API and operations
 
@@ -356,10 +401,15 @@ in [memory.md](memory.md) and the implementation plan. In particular:
 
 - A retained end-to-end tiny FXRP testnet receipt is required to mark the FDC
   and Coston2 finalization path live-verified.
+- There is currently no local `SETTLED` attempt. Complete a fresh tiny FXRP
+  checkout, then run `RUN_LIVE_TESTNET=1 LIVE_ATTEMPT_ID=<attempt-uuid> pnpm
+test:live` to retain the independent receipt artifact.
 - USDT0 must remain disabled until an official Coston2 router, factory, pool,
   liquidity, exact-output quote, and simulation all pass runtime checks.
 - The official `0xE0` recovery sequence still needs a real testnet acceptance
   artifact.
+- The WooCommerce gateway requires an installed WordPress/WooCommerce test
+  environment before it can be called live-ready.
 - A production release needs a stable HTTPS host, managed PostgreSQL, secret
   management, monitoring, backups, an external security review, and mainnet
   specific protocol validation. It must not reuse this testnet setup.

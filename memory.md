@@ -342,6 +342,10 @@ job and cannot retry deterministic terminal or recovery states.
   publication retries, and marks an order paid only after the WordPress REST
   endpoint verifies the exact-body PayMorph webhook HMAC. WordPress/WooCommerce
   acceptance is still required; this is not a claim of an installed live store.
+- The root README now aligns the current merchant, collection, developer,
+  webhook, explorer, projection, and WooCommerce surfaces with their verified
+  status. It explicitly records the retained live-settlement, browser, and
+  WordPress acceptance gates rather than presenting implementation as proof.
 - Payment requests now create exactly one ACTIVE canonical invoice within the
   same database transaction and expose that invoice's existing public checkout
   URL. Request cancellation atomically cancels the underlying invoice. Email

@@ -43,6 +43,28 @@ pnpm dev
 The web process runs at `http://localhost:3000`. The executor is an always-on
 separate process and must have C2FLR only when live processing is enabled.
 
+## Browser acceptance
+
+Run the browser smoke suite with Playwright's managed Chromium when it is
+available:
+
+```bash
+pnpm test:e2e
+```
+
+If the managed Chromium download is unavailable on a local Windows machine but
+Google Chrome is installed, use the installed browser explicitly. This is a
+local fallback only; CI continues to use Playwright's default Chromium:
+
+```powershell
+$env:PLAYWRIGHT_BROWSER_CHANNEL = 'chrome'
+pnpm test:e2e
+```
+
+The browser smoke confirms the public testnet disclosure and the landing-to-
+merchant sign-in journey. It does not substitute for the credentialed Xaman,
+FDC, and Coston2 live-settlement smoke.
+
 ## Merchant webhook delivery
 
 Configure an HTTPS endpoint and secret in merchant settings. PayMorph encrypts

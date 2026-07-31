@@ -50,6 +50,15 @@ artifacts are required; fixtures do not satisfy it.
 - Credentialed Xaman/XRPL/FDC/Coston2 smoke: not run; it still requires a
   stable public HTTPS callback, database, FDC readiness, and retained receipts.
 
+## Browser acceptance update — 2026-08-01
+
+- Playwright's managed Chromium download still exceeded the local shell limit,
+  but the two browser smoke journeys passed against the locally installed
+  Google Chrome using `PLAYWRIGHT_BROWSER_CHANNEL=chrome pnpm test:e2e`.
+  They verify the evidence-first testnet disclosure and the landing-to-
+  merchant-wallet sign-in navigation after the UI refresh. This is browser
+  surface coverage, not live settlement evidence.
+
 ## Product-platform update — 2026-07-31
 
 - Merchant operating shell, templates, payment links, requests, POS, public

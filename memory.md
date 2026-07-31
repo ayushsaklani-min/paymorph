@@ -101,6 +101,11 @@ verification items".
   and receipt surfaces were refreshed using NullPay only as a local visual
   reference; no code, assets, wording, or settlement behavior was copied or
   changed. Web typecheck, lint, 94 web tests, and the production build passed.
+- Browser acceptance update (2026-08-01): the public disclosure and
+  landing-to-merchant-wallet sign-in journeys pass in local Google Chrome via
+  `PLAYWRIGHT_BROWSER_CHANNEL=chrome pnpm test:e2e`. The configured default
+  remains Playwright Chromium for CI. This covers the rendered shell after the
+  UI refresh; it does not prove any credentialed settlement behavior.
 
 ## Decisions
 
@@ -392,9 +397,10 @@ job and cannot retry deterministic terminal or recovery states.
   derivation.
 - Run database seed, queue lease tests, and projection rebuild against the
   configured native or hosted database.
-- Install Playwright Chromium and run the browser journeys. The source and
-  production Next.js build pass; the browser binary could not be downloaded on
-  this machine.
+- Extend browser coverage from the current public-shell smoke to the
+  credentialed checkout and merchant collection flows once deterministic
+  browser fixtures are available. The current local Chrome fallback passed;
+  Playwright's managed Chromium download exceeded the local shell limit.
 - On 2026-07-31, the local database contains no `SETTLED` payment attempt
   (two `QUOTE_EXPIRED`, one `RECOVERY_REQUIRED`, and one
   `AWAITING_SIGNATURE`). There is therefore no eligible attempt for

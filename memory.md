@@ -15,6 +15,10 @@ Receipts must be reconstructed from on-chain evidence.
 - Normative product blueprint:
   `docs/reference/PayMorph_Complete_Blueprint.pdf` (version 1.0, 51 pages,
   dated 2026-07-27).
+- Expanded merchant-platform product blueprint:
+  `docs/reference/PayMorph_Full_Product_Blueprint.docx` (received 2026-07-31).
+  It is aligned with the normative evidence model and governs product-surface
+  expansion; the PDF remains authoritative for payment-protocol invariants.
 - Repository instructions: `AGENTS.md`.
 - Architecture decisions: `docs/architecture.md` and `docs/adr/`.
 - API contract: `docs/api/openapi.yaml`.
@@ -306,6 +310,11 @@ job and cannot retry deterministic terminal or recovery states.
   the payer and merchant journeys, exact evidence boundaries, deployed FXRP
   router, native WSL PostgreSQL workflow, Xaman callback setup, commands, and
   the remaining live-testnet gates without claiming unverified settlement.
+- The full-product DOCX has been imported into `docs/reference/` and expanded
+  into `docs/full-product-roadmap.md`. Immediate delivery scope is the
+  hackathon P0 merchant shell, collection surfaces, and developer platform;
+  refunds, subscriptions, escrow, mainnet, and unverified USDT0 remain
+  explicitly deferred.
 
 ## Open verification items
 

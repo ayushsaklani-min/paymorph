@@ -117,6 +117,13 @@ verification items".
   package now includes its declared development source export. After a normal
   workspace install, the executor started successfully with the configured
   FDC verifier; startup is not evidence of an XRPL, FDC, or Coston2 payment.
+- Recovery execution reconciliation (2026-08-01): the durable `0xE0` recovery
+  implementation already persists recovery-FDC, marker, and original Coston2
+  checkpoints and verifies the evidence before `RECOVERED`. The runbook and
+  phase ledger now reflect that code-complete status; receipt decoding and the
+  independent live verifier also reject any recovery marker/original user
+  operation or PayMorph settlement. An official recovery artifact is still an
+  external live gate.
 
 ## Decisions
 

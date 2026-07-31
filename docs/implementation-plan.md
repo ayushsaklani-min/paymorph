@@ -19,7 +19,7 @@ to fixture behavior.
 | 7     | FDC executor, Coston2 submission, event decoding                          | real tiny FXRP smoke                   | Code complete; live gate           |
 | 8     | USDT0 route, exact-output settlement/refund                               | real smoke or explicit disabled reason | Complete; route disabled           |
 | 9     | Receipts, event reconstruction, reconciliation, export                    | projection rebuild test                | Code complete; DB gate             |
-| 10    | `0xE0` recovery diagnostics and payer flow                                | reproducible official recovery test    | Partial; official gate             |
+| 10    | `0xE0` recovery diagnostics and payer flow                                | reproducible official recovery test    | Code complete; official gate       |
 | 11    | Abuse controls, admin, logs/metrics, accessibility, UX                    | security checklist + all suites        | Partial                            |
 | 12    | Containers, hosted config, smoke artifact, submission docs                | README-driven judge flow               | Local complete; host gate          |
 
@@ -70,6 +70,17 @@ artifacts are required; fixtures do not satisfy it.
 - `@paymorph/db` now includes its development source in the injected workspace
   package. A normal `pnpm install` followed by executor startup was verified,
   so the source executor no longer resolves a missing `@paymorph/db/src` path.
+
+## Recovery execution update — 2026-08-01
+
+- The recovery executor durably checkpoints the recovery FDC request/proof and
+  its marker/original Coston2 submissions. `RECOVERED` is guarded by persisted,
+  decoded evidence for both receipts; it rejects a recovery user operation or
+  merchant settlement.
+- `pnpm test:live:recovery` now independently re-validates the exact `0xE0`
+  XRPL payment, the marker/original receipt evidence, and the absence of a
+  PayMorph settlement before writing an ignored `live-smoke/` artifact. This
+  completes the code phase, not the official credentialed testnet gate.
 
 ## Product-platform update — 2026-07-31
 

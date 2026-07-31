@@ -269,15 +269,33 @@ export function decodeDirectMintReceipt(
     recipientsPaid: [],
   } satisfies DirectMintReceiptEvidence;
 
+  const recoveryUserOperation = parseEventLogs({
+    abi: iMasterAccountControllerAbi,
+    eventName: 'UserOperationExecuted',
+    logs: macLogs,
+    strict: true,
+  }).find((event) => isAddressEqual(event.args.personalAccount, request.personalAccount));
+  const recoveryRouterLogs = receipt.logs.filter((log) =>
+    isAddressEqual(log.address, addresses.payMorphRouterAddress),
+  );
+  const recoverySettlement = parseEventLogs({
+    abi: payMorphRouterEventsAbi,
+    eventName: 'PaymentSettled',
+    logs: recoveryRouterLogs,
+    strict: true,
+  })[0];
+
   if (request.purpose === 'RECOVERY_MARKER') {
     if (
       request.expectedNetMintUBA <= 0n ||
-      masterAccountMint.amountUBA !== request.expectedNetMintUBA
+      masterAccountMint.amountUBA !== request.expectedNetMintUBA ||
+      recoveryUserOperation !== undefined ||
+      recoverySettlement !== undefined
     ) {
       return failed(
         'EVIDENCE_MISMATCH',
         false,
-        'Recovery marker minted amount does not match the planned positive net mint',
+        'Recovery marker must mint the planned amount without executing or settling a payment',
         receipt.transactionHash,
       );
     }
@@ -315,25 +333,10 @@ export function decodeDirectMintReceipt(
   }
 
   if (request.purpose === 'RECOVERY_ORIGINAL') {
-    const unexpectedUserOperation = parseEventLogs({
-      abi: iMasterAccountControllerAbi,
-      eventName: 'UserOperationExecuted',
-      logs: macLogs,
-      strict: true,
-    }).find((event) => isAddressEqual(event.args.personalAccount, request.personalAccount));
-    const routerLogs = receipt.logs.filter((log) =>
-      isAddressEqual(log.address, addresses.payMorphRouterAddress),
-    );
-    const unexpectedSettlement = parseEventLogs({
-      abi: payMorphRouterEventsAbi,
-      eventName: 'PaymentSettled',
-      logs: routerLogs,
-      strict: true,
-    })[0];
     if (
       masterAccountMint.amountUBA <= 0n ||
-      unexpectedUserOperation !== undefined ||
-      unexpectedSettlement !== undefined
+      recoveryUserOperation !== undefined ||
+      recoverySettlement !== undefined
     ) {
       return failed(
         'EVIDENCE_MISMATCH',

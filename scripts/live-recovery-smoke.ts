@@ -1,5 +1,8 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { payMorphRouterEventsAbi } from '../apps/executor/src/adapters/flare/abis.js';
+import { validateXrplPayment } from '../apps/executor/src/adapters/xrpl/validator.js';
+import { parseRecoveryXrplExpectation } from '../apps/executor/src/worker/recovery-request.js';
 import { db } from '../packages/db/src/index.js';
 import { createCoston2PublicClient, FlareNetworkProvider } from '../packages/shared/src/index.js';
 import { getAddress, parseAbi, parseEventLogs, type Hex } from 'viem';
@@ -32,6 +35,11 @@ const recovery = attempt.recoveryRequests[0];
 if (!recovery || recovery.status !== 'XRPL_VALIDATED' || !recovery.xrplTxHash) {
   throw new Error('Latest recovery request is not XRPL_VALIDATED');
 }
+const recoveryExpectation = parseRecoveryXrplExpectation(recovery.requestJson);
+const originalTransactionId = normalizeBytes32(attempt.xrplTxHash);
+if (recoveryExpectation.targetTransactionId !== originalTransactionId) {
+  throw new Error('Recovery request does not target the original XRPL transaction');
+}
 const marker = recovery.executions.find((execution) => execution.stage === 'MARKER');
 const original = recovery.executions.find((execution) => execution.stage === 'ORIGINAL');
 if (!marker?.transactionHash || !original?.transactionHash) {
@@ -47,16 +55,17 @@ const xrplResponse = await fetch(xrplRpc, {
     params: [{ transaction: recovery.xrplTxHash, binary: false, api_version: 2 }],
   }),
 });
-const xrpl = (await xrplResponse.json()) as {
-  result?: { validated?: boolean; meta?: { TransactionResult?: string }; ledger_index?: number };
-};
-if (
-  !xrplResponse.ok ||
-  xrpl.result?.validated !== true ||
-  xrpl.result.meta?.TransactionResult !== 'tesSUCCESS'
-) {
-  throw new Error('Recovery XRPL transaction is not independently validated as tesSUCCESS');
-}
+const xrpl = (await xrplResponse.json()) as unknown;
+if (!xrplResponse.ok) throw new Error(`Recovery XRPL lookup returned HTTP ${xrplResponse.status}`);
+const validatedRecovery = validateXrplPayment(xrpl, {
+  transactionHash: recovery.xrplTxHash,
+  payerAccount: attempt.payerXrplAccount,
+  destination: recoveryExpectation.destination,
+  amountDrops: recoveryExpectation.amountDrops,
+  memoHex: recoveryExpectation.memoHex,
+  memoOpcode: 'E0',
+  lastLedgerSequence: recoveryExpectation.lastLedgerSequence,
+});
 
 const client = createCoston2PublicClient(process.env.COSTON2_RPC_URL);
 const provider = new FlareNetworkProvider(client, {
@@ -90,7 +99,6 @@ const ignored = parseEventLogs({
   logs: markerLogs,
   strict: true,
 });
-const originalTransactionId = normalizeBytes32(attempt.xrplTxHash);
 if (
   !ignored.some(
     (event) =>
@@ -126,13 +134,35 @@ if (
 ) {
   throw new Error('Recovery original unexpectedly executed the merchant user operation');
 }
+const markerUserOperations = parseEventLogs({
+  abi: macAbi,
+  eventName: 'UserOperationExecuted',
+  logs: markerLogs,
+  strict: true,
+});
+if (markerUserOperations.length > 0) {
+  throw new Error('Recovery marker unexpectedly executed a user operation');
+}
+const recoverySettlementEvents = [markerReceipt, originalReceipt].flatMap((receipt) =>
+  parseEventLogs({
+    abi: payMorphRouterEventsAbi,
+    eventName: 'PaymentSettled',
+    logs: receipt.logs.filter(
+      (log) => log.address.toLowerCase() === contracts.payMorphRouter.toLowerCase(),
+    ),
+    strict: true,
+  }),
+);
+if (recoverySettlementEvents.length > 0) {
+  throw new Error('Recovery marker or original unexpectedly settled a PayMorph invoice');
+}
 
 const artifact = {
   verifiedAt: new Date().toISOString(),
   attemptId,
   originalXrplTransactionHash: attempt.xrplTxHash,
   recoveryXrplTransactionHash: recovery.xrplTxHash,
-  recoveryXrplLedgerIndex: xrpl.result.ledger_index,
+  recoveryXrplLedgerIndex: validatedRecovery.ledgerIndex,
   markerFlareTransactionHash: marker.transactionHash,
   markerFlareBlockNumber: markerReceipt.blockNumber.toString(),
   originalFlareTransactionHash: original.transactionHash,

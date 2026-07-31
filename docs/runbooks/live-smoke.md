@@ -38,9 +38,9 @@ After completing an official tiny `0xE0` recovery and reaching `RECOVERED`, run:
 RUN_LIVE_RECOVERY=1 LIVE_ATTEMPT_ID=<uuid> pnpm test:live:recovery
 ```
 
-The recovery verifier independently requires the recovery XRP transaction to be
-validated `tesSUCCESS`, resolves the current Coston2 Master Account Controller,
-checks both Coston2 receipts, requires matching `IgnoreMemoSet` and positive
-original `DirectMintingExecuted` evidence, and rejects any
-`UserOperationExecuted` in the original replay. It writes
+The recovery verifier independently re-validates the exact recovery XRP
+Payment, resolves the current Coston2 Master Account Controller, checks both
+Coston2 receipts, requires matching `IgnoreMemoSet` and positive original
+`DirectMintingExecuted` evidence, and rejects any `UserOperationExecuted` or
+PayMorph `PaymentSettled` event in either recovery transaction. It writes
 `live-smoke/<attempt-id>-recovery.json`.

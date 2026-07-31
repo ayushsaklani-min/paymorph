@@ -639,6 +639,8 @@ export class PrismaExecutorStore implements ExecutorStore {
           originalEvidence.transactionHash.toLowerCase() !==
             originalRecord.transactionHash.toLowerCase() ||
           !markerEvidence.ignoreMemo ||
+          markerEvidence.userOperation !== undefined ||
+          markerEvidence.paymentSettled !== undefined ||
           markerEvidence.smartAccountMint.transactionId.toLowerCase() !==
             recoveryTransactionId.toLowerCase() ||
           markerEvidence.smartAccountMint.mintedAmountUBA <= 0n ||

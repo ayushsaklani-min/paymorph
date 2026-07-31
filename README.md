@@ -65,7 +65,7 @@ return does not by itself advance the payment.
 | WooCommerce gateway                     | MVP implemented        | Server-side invoice mapping and verified post-settlement paid-order transition; needs WordPress/WooCommerce acceptance.        |
 | FXRP settlement                         | Code complete          | Router deployed to Coston2; a retained end-to-end testnet receipt is still required.                                           |
 | USDT0 exact-output settlement           | Intentionally disabled | The configured Coston2 route does not pass required runtime bytecode and liquidity checks.                                     |
-| Recovery (`0xE0`)                       | Partially implemented  | Diagnostics and payer disclosure exist; an official live recovery test remains a gate.                                         |
+| Recovery (`0xE0`)                       | Code complete          | Durable recovery checkpoints and an independent verifier exist; an official live recovery artifact remains a gate.             |
 | Refunds, subscriptions, escrow, mainnet | Deferred               | Explicitly outside the current testnet blueprint delivery scope.                                                               |
 
 The authoritative phase ledger is maintained in
@@ -375,6 +375,7 @@ Never manually turn a failed live run into success.
 | `pnpm verify:deployment`        | Verify the configured deployment.                                 |
 | `pnpm contracts:deploy:coston2` | Deploy contracts to Coston2 with testnet-only keys.               |
 | `pnpm test:live`                | Run the opt-in real testnet receipt verifier.                     |
+| `pnpm test:live:recovery`       | Verify and archive an evidence-backed official recovery.          |
 
 Latest local verification (2026-07-31):
 
@@ -411,8 +412,8 @@ in [memory.md](memory.md) and the implementation plan. In particular:
 test:live` to retain the independent receipt artifact.
 - USDT0 must remain disabled until an official Coston2 router, factory, pool,
   liquidity, exact-output quote, and simulation all pass runtime checks.
-- The official `0xE0` recovery sequence still needs a real testnet acceptance
-  artifact.
+- The official `0xE0` recovery sequence has a durable implementation and
+  independent verifier, but still needs a real testnet acceptance artifact.
 - The WooCommerce gateway requires an installed WordPress/WooCommerce test
   environment before it can be called live-ready.
 - A production release needs a stable HTTPS host, managed PostgreSQL, secret

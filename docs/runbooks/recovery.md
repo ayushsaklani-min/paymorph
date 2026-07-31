@@ -3,8 +3,10 @@
 ## Status and user promise
 
 This runbook defines the official PayMorph `0xE0` recovery path for a failed
-Smart Account direct mint. The implementation and credentialed Coston2 recovery
-scenario are scheduled for Phase 10 and are not yet live-gate evidence.
+Smart Account direct mint. The durable implementation is present, including
+recovery-FDC and distinct marker/original Coston2 checkpoints. An official
+credentialed Coston2 recovery scenario has not yet produced a retained live
+acceptance artifact.
 
 A validated XRP payment failure must never be hidden. Recovery does not return
 native XRP and does not complete the merchant invoice. When eligible, a second
@@ -214,8 +216,10 @@ Phase 10 is complete only when either:
 Local mocks may test state guards, idempotency, payload parsing, and event
 reconstruction, but they are not proof that official `0xE0` recovery works.
 
-The current implementation stops after authoritative recovery-payload
-persistence and exact recovery XRPL validation. Durable recovery-FDC
-checkpoints, distinct marker/original Flare submission checkpoints, and an
-evidence-enforced `RECOVERED` transition are still required. The presence of
-finalizer primitives alone is not Phase 10 completion.
+The executor persists the recovery FDC request/proof and two distinct Coston2
+execution checkpoints. It only marks the original attempt `RECOVERED` after
+both confirmed receipts prove the recovery marker, a positive original mint,
+the absent user operation, and the absent merchant settlement. The opt-in
+`pnpm test:live:recovery` verifier independently repeats those checks and
+archives the transaction identifiers. This is code-complete, but remains a
+live acceptance gate until an official testnet artifact is retained.

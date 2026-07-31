@@ -227,6 +227,16 @@ describe('0xE0 recovery diagnostics', () => {
         },
       },
     });
+    expect(
+      decodeDirectMintReceipt(recoveryMarkerReceipt(marker, true), marker, {
+        assetManagerAddress: ASSET_MANAGER,
+        masterAccountControllerAddress: MASTER_ACCOUNT_CONTROLLER,
+        payMorphRouterAddress: ROUTER,
+      }),
+    ).toMatchObject({
+      status: 'FAILED',
+      code: 'EVIDENCE_MISMATCH',
+    });
 
     const original = recoveryOriginalRequest();
     const originalResult = decodeDirectMintReceipt(
@@ -398,8 +408,11 @@ function directMintEvidenceLogs(transactionId: Hex, memoData: Hex, amountUBA: bi
   ];
 }
 
-function recoveryMarkerReceipt(request: RecoveryMarkerFinalizeRequest): TransactionReceipt {
-  return receiptWithLogs([
+function recoveryMarkerReceipt(
+  request: RecoveryMarkerFinalizeRequest,
+  includeUnexpectedUserOperation = false,
+): TransactionReceipt {
+  const logs = [
     ...directMintEvidenceLogs(
       request.transactionId,
       request.proof.data.responseBody.firstMemoData,
@@ -418,7 +431,22 @@ function recoveryMarkerReceipt(request: RecoveryMarkerFinalizeRequest): Transact
       '0x',
       2,
     ),
-  ]);
+  ];
+  if (includeUnexpectedUserOperation) {
+    logs.push(
+      log(
+        MASTER_ACCOUNT_CONTROLLER,
+        encodeEventTopics({
+          abi: iMasterAccountControllerAbi,
+          eventName: 'UserOperationExecuted',
+          args: { personalAccount: PERSONAL_ACCOUNT },
+        }),
+        encodeAbiParameters([{ type: 'uint256' }], [NONCE]),
+        3,
+      ),
+    );
+  }
+  return receiptWithLogs(logs);
 }
 
 function recoveryOriginalReceipt(

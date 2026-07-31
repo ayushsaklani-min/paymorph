@@ -27,6 +27,7 @@ tags:
   - name: Authentication
   - name: Merchant
   - name: Invoices
+  - name: Payment Links
   - name: Payer
   - name: Attempts
   - name: Receipts
@@ -36,6 +37,101 @@ tags:
   - name: Dashboard
 
 paths:
+  /api/payment-links:
+    get:
+      tags: [Payment Links]
+      operationId: listPaymentLinks
+      summary: List the authenticated merchant's hosted collection links
+      x-implementation-status: implemented
+      security:
+        - MerchantCookie: []
+      responses:
+        '200':
+          description: Merchant-owned payment links
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentLinkListEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      tags: [Payment Links]
+      operationId: createPaymentLink
+      summary: Create a single-use or reusable hosted collection link
+      description: Each checkout creates or returns a canonical immutable invoice; this route never creates a payment attempt.
+      x-implementation-status: implemented
+      security:
+        - MerchantCookie: []
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentLinkCreateRequest'
+      responses:
+        '201':
+          description: Payment link created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentLinkEnvelope'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/payment-links/{id}/archive:
+    post:
+      tags: [Payment Links]
+      operationId: archivePaymentLink
+      summary: Stop a merchant-owned link from accepting new checkouts
+      x-implementation-status: implemented
+      security:
+        - MerchantCookie: []
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/UuidPathId'
+      responses:
+        '200':
+          description: Payment link archived; existing invoices and evidence are retained
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentLinkEnvelope'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/public/payment-links/{slug}/checkout:
+    post:
+      tags: [Payment Links]
+      operationId: startPaymentLinkCheckout
+      summary: Materialize the canonical invoice for a hosted payment-link checkout
+      description: A single-use link returns its one canonical invoice. A reusable link creates a new immutable active invoice.
+      x-implementation-status: implemented
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 128
+      responses:
+        '201':
+          description: Checkout invoice materialized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentLinkCheckoutEnvelope'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
   /api/invoice-templates:
     get:
       tags: [Invoices]
@@ -1599,6 +1695,107 @@ components:
         updatedAt:
           type: string
           format: date-time
+    PaymentLinkDefaults:
+      type: object
+      additionalProperties: false
+      required: [title, denomination, amount, settlementAsset, expiresInHours, recipients]
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 80
+        description:
+          type: string
+          maxLength: 500
+        denomination:
+          $ref: '#/components/schemas/Denomination'
+        amount:
+          $ref: '#/components/schemas/PositiveDisplayAmountString'
+        settlementAsset:
+          $ref: '#/components/schemas/SettlementAsset'
+        expiresInHours:
+          type: integer
+          minimum: 1
+          maximum: 720
+        recipients:
+          type: array
+          minItems: 1
+          maxItems: 10
+          items:
+            $ref: '#/components/schemas/RecipientInput'
+    PaymentLinkCreateRequest:
+      type: object
+      additionalProperties: false
+      required: [name, mode, defaults]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 80
+        mode:
+          type: string
+          enum: [SINGLE_USE, REUSABLE]
+        defaults:
+          $ref: '#/components/schemas/PaymentLinkDefaults'
+        expiresAt:
+          type: string
+          format: date-time
+    PaymentLink:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          id,
+          merchantId,
+          slug,
+          name,
+          mode,
+          status,
+          defaultsJson,
+          expiresAt,
+          archivedAt,
+          singleUseInvoiceId,
+          createdAt,
+          updatedAt,
+        ]
+      properties:
+        id:
+          type: string
+          format: uuid
+        merchantId:
+          type: string
+          format: uuid
+        slug:
+          type: string
+          minLength: 1
+          maxLength: 128
+        name:
+          type: string
+          minLength: 1
+          maxLength: 80
+        mode:
+          type: string
+          enum: [SINGLE_USE, REUSABLE]
+        status:
+          type: string
+          enum: [ACTIVE, ARCHIVED]
+        defaultsJson:
+          $ref: '#/components/schemas/PaymentLinkDefaults'
+        expiresAt:
+          type: [string, 'null']
+          format: date-time
+        archivedAt:
+          type: [string, 'null']
+          format: date-time
+        singleUseInvoiceId:
+          type: [string, 'null']
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
     Invoice:
       type: object
       additionalProperties: false
@@ -2849,6 +3046,49 @@ components:
           maxItems: 100
           items:
             $ref: '#/components/schemas/InvoiceTemplate'
+        error:
+          type: 'null'
+        requestId:
+          $ref: '#/components/schemas/RequestId'
+    PaymentLinkEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, error, requestId]
+      properties:
+        data:
+          $ref: '#/components/schemas/PaymentLink'
+        error:
+          type: 'null'
+        requestId:
+          $ref: '#/components/schemas/RequestId'
+    PaymentLinkListEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, error, requestId]
+      properties:
+        data:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/PaymentLink'
+        error:
+          type: 'null'
+        requestId:
+          $ref: '#/components/schemas/RequestId'
+    PaymentLinkCheckoutEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, error, requestId]
+      properties:
+        data:
+          type: object
+          additionalProperties: false
+          required: [invoiceSlug]
+          properties:
+            invoiceSlug:
+              type: string
+              minLength: 1
+              maxLength: 128
         error:
           type: 'null'
         requestId:

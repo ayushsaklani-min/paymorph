@@ -25,6 +25,16 @@ enum SettlementAsset {
   USDT0
 }
 
+enum PaymentLinkMode {
+  SINGLE_USE
+  REUSABLE
+}
+
+enum PaymentLinkStatus {
+  ACTIVE
+  ARCHIVED
+}
+
 enum PayloadKind {
   SIGN_IN
   PAYMENT
@@ -138,6 +148,7 @@ model Merchant {
   updatedAt        DateTime        @updatedAt
   invoices         Invoice[]
   invoiceTemplates InvoiceTemplate[]
+  paymentLinks     PaymentLink[]
   sessions         Session[]
   auditLogs        AuditLog[]
 }
@@ -185,9 +196,12 @@ model Invoice {
   attempts        PaymentAttempt[]
   quotes           Quote[]
   payerSessions    PayerSession[]
+  paymentLinkId    String?
+  paymentLink      PaymentLink?       @relation(fields: [paymentLinkId], references: [id])
 
   @@index([merchantId, createdAt])
   @@index([status, expiresAt])
+  @@index([paymentLinkId, createdAt])
 }
 
 model InvoiceRecipient {
@@ -214,6 +228,26 @@ model InvoiceTemplate {
 
   @@unique([merchantId, name])
   @@index([merchantId, createdAt])
+}
+
+model PaymentLink {
+  id               String            @id @default(uuid())
+  merchantId       String
+  slug             String            @unique
+  name             String
+  mode             PaymentLinkMode
+  status           PaymentLinkStatus @default(ACTIVE)
+  defaultsJson     Json
+  expiresAt        DateTime?
+  archivedAt       DateTime?
+  singleUseInvoiceId String?         @unique
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  merchant         Merchant          @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  invoices         Invoice[]
+
+  @@index([merchantId, createdAt])
+  @@index([status, expiresAt])
 }
 
 model PayerSession {

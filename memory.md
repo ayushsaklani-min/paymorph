@@ -325,6 +325,12 @@ job and cannot retry deterministic terminal or recovery states.
   dashboard lets a merchant save a template or prefill a fresh immutable
   invoice from it. A template itself can never create a payment attempt or
   settlement.
+- Payment links are now a distinct, merchant-owned collection surface. A
+  reusable link materializes one new ACTIVE canonical invoice per idempotent
+  checkout; a single-use link atomically reuses its one materialized invoice.
+  Link archiving blocks new checkouts but never deletes invoices, attempts, or
+  receipts. The new local migration is applied; link checkout is not yet a
+  retained live-settlement artifact.
 
 ## Open verification items
 

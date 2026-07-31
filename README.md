@@ -23,8 +23,9 @@ router contract.
 
 1. Sign in with a Coston2-compatible EVM wallet such as MetaMask.
 2. Create an invoice with an immutable amount, settlement asset, expiry, and
-   one or more recipient splits.
-3. Publish the invoice and share its public checkout URL.
+   one or more recipient splits; optionally save those defaults as a template.
+3. Publish the invoice, or create a reusable/single-use payment link that
+   materializes the same canonical invoice at checkout.
 4. Follow the live settlement timeline or review the final verifiable receipt.
 
 ### Payer journey
@@ -55,6 +56,8 @@ return does not by itself advance the payment.
 | -------------------------------- | ---------------------- | ---------------------------------------------------------------------------------------------------- |
 | Merchant wallet login            | Implemented            | EIP-191 one-time challenge bound to Coston2 chain ID 114.                                            |
 | Invoice creation and publication | Implemented            | Immutable financial terms and 1–10 recipient splits totaling 10,000 bps.                             |
+| Invoice templates                | Implemented            | Merchant-scoped reusable defaults; templates never create a payment or settlement.                   |
+| Hosted payment links             | Implemented            | Reusable and single-use `/l/:slug` links materialize canonical immutable invoices.                   |
 | Public checkout                  | Implemented            | Payer-scoped Xaman SignIn, exact quotes, QR/deeplink payment requests.                               |
 | Live payment guidance            | Implemented            | State-driven Xaman → XRPL → FDC → Coston2 timeline and safe next steps.                              |
 | XRPL validation                  | Implemented            | Validates the exact signed transaction, account, amount, destination, and memo commitment.           |

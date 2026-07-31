@@ -36,6 +36,7 @@
     "db:migrate": "dotenv -e .env.local -- pnpm --filter @paymorph/db migrate",
     "db:seed": "dotenv -e .env.local -- tsx scripts/seed.ts",
     "db:cleanup": "dotenv -e .env.local -- tsx scripts/cleanup-expired.ts",
+    "webhooks:deliver": "dotenv -e .env.local -- tsx scripts/deliver-merchant-webhooks.ts",
     "contracts:deploy:coston2": "dotenv -e .env.local -- pnpm --dir packages/contracts deploy:coston2",
     "network:resolve": "dotenv -e .env.local -- tsx scripts/resolve-network.ts",
     "verify:deployment": "dotenv -e .env.local -- tsx scripts/verify-deployment.ts",

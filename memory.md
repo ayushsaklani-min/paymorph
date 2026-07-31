@@ -289,6 +289,10 @@ job and cannot retry deterministic terminal or recovery states.
   `body` boundary to tolerate attributes injected by browser security
   extensions before React hydrates. The application itself does not render
   variable server/client markup at that boundary.
+- A `beforeInteractive` root guard removes only known pre-hydration extension
+  marker attributes (`bis_skin_checked` and `__processed_ddc*`) for the first
+  1.5 seconds. This avoids extension-caused nested hydration mismatches while
+  leaving application markup and all payment data untouched.
 
 ## Open verification items
 

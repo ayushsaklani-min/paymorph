@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: PayMorph API
-  version: 0.4.0
+  version: 0.5.0
   description: |
     Normative HTTP contract for the PayMorph XRPL Testnet to Flare Coston2
     checkout. Every JSON response uses `{ data, error, requestId }`.
@@ -76,13 +76,23 @@ paths:
       summary: List hosted collection links with a scoped bearer API key
       x-implementation-status: implemented
       security: [{ BearerApiKey: [] }]
+      parameters:
+        - name: cursor
+          in: query
+          schema: { type: string, minLength: 1, maxLength: 512 }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100, default: 25 }
+        - name: status
+          in: query
+          schema: { type: string, enum: [ACTIVE, ARCHIVED] }
       responses:
         '200':
           description: Merchant-scoped payment links
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaymentLinkListEnvelope'
+                $ref: '#/components/schemas/PaymentLinkPageEnvelope'
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
     post:
@@ -3356,6 +3366,30 @@ components:
           type: 'null'
         requestId:
           $ref: '#/components/schemas/RequestId'
+    PaymentLinkPageEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, error, requestId]
+      properties:
+        data:
+          $ref: '#/components/schemas/PaymentLinkPage'
+        error:
+          type: 'null'
+        requestId:
+          $ref: '#/components/schemas/RequestId'
+    PaymentLinkPage:
+      type: object
+      additionalProperties: false
+      required: [items, nextCursor]
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/PaymentLink'
+        nextCursor:
+          type: [string, 'null']
+          maxLength: 512
     PaymentLinkCheckoutEnvelope:
       type: object
       additionalProperties: false

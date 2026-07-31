@@ -22,6 +22,7 @@ describe('PayMorphClient payment-link helpers', () => {
       { name: 'Collection link' },
       '00000000-0000-4000-8000-000000000001',
     );
+    await client.listPaymentLinks(new URLSearchParams({ limit: '25', status: 'ACTIVE' }));
     await client.createPaymentLinkCheckout('link-id', '00000000-0000-4000-8000-000000000002');
     await client.archivePaymentLink('link-id', '00000000-0000-4000-8000-000000000003');
     await client.listPayments();
@@ -38,6 +39,16 @@ describe('PayMorphClient payment-link helpers', () => {
     });
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
+      'https://merchant.example/api/v1/payment-links?limit=25&status=ACTIVE',
+      {
+        headers: {
+          authorization: 'Bearer pm_test_example',
+          'content-type': 'application/json',
+        },
+      },
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      3,
       'https://merchant.example/api/v1/payment-links/link-id/checkout',
       {
         method: 'POST',
@@ -49,7 +60,7 @@ describe('PayMorphClient payment-link helpers', () => {
       },
     );
     expect(fetchMock).toHaveBeenNthCalledWith(
-      3,
+      4,
       'https://merchant.example/api/v1/payment-links/link-id/archive',
       {
         method: 'POST',
@@ -60,14 +71,14 @@ describe('PayMorphClient payment-link helpers', () => {
         },
       },
     );
-    expect(fetchMock).toHaveBeenNthCalledWith(4, 'https://merchant.example/api/v1/payments', {
+    expect(fetchMock).toHaveBeenNthCalledWith(5, 'https://merchant.example/api/v1/payments', {
       headers: {
         authorization: 'Bearer pm_test_example',
         'content-type': 'application/json',
       },
     });
     expect(fetchMock).toHaveBeenNthCalledWith(
-      5,
+      6,
       'https://merchant.example/api/v1/payments/attempt-id/receipt',
       {
         headers: {

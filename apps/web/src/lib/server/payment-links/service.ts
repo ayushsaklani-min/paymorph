@@ -15,6 +15,33 @@ import { invoiceTemplateRecipientSchema } from '../invoices/templates.js';
 
 const MIN_EXPIRY_MS = 15 * 60 * 1_000;
 const MAX_EXPIRY_MS = 30 * 24 * 60 * 60 * 1_000;
+const DEFAULT_LIST_LIMIT = 25;
+const MAX_LIST_LIMIT = 100;
+
+const paymentLinkListQuerySchema = z.strictObject({
+  cursor: z.string().min(1).max(512).optional(),
+  limit: z
+    .string()
+    .regex(/^[1-9]\d*$/)
+    .transform(Number)
+    .pipe(z.number().int().min(1).max(MAX_LIST_LIMIT))
+    .optional(),
+  status: z.enum(['ACTIVE', 'ARCHIVED']).optional(),
+});
+
+const paymentLinkCursorSchema = z.strictObject({
+  version: z.literal(1),
+  createdAt: z.iso.datetime(),
+  id: z.uuid(),
+});
+
+type PaymentLinkCursor = { createdAt: Date; id: string };
+
+export type PaymentLinkListQuery = {
+  cursor: PaymentLinkCursor | null;
+  limit: number;
+  status?: PaymentLinkStatus;
+};
 
 export const paymentLinkDefaultsSchema = z
   .strictObject({
@@ -66,6 +93,76 @@ export type CreatePaymentLinkInput = z.infer<typeof createPaymentLinkSchema>;
 
 export async function listPaymentLinks(merchantId: string): Promise<PaymentLink[]> {
   return db.paymentLink.findMany({ where: { merchantId }, orderBy: { createdAt: 'desc' } });
+}
+
+/** Versioned integration listing with stable pagination; the dashboard keeps its full local list. */
+export async function listMerchantPaymentLinks(
+  merchantId: string,
+  searchParams: URLSearchParams,
+): Promise<{ items: PaymentLink[]; nextCursor: string | null }> {
+  const query = parsePaymentLinkListQuery(searchParams);
+  const cursorFilter: Prisma.PaymentLinkWhereInput =
+    query.cursor === null
+      ? {}
+      : {
+          OR: [
+            { createdAt: { lt: query.cursor.createdAt } },
+            { createdAt: query.cursor.createdAt, id: { lt: query.cursor.id } },
+          ],
+        };
+  const links = await db.paymentLink.findMany({
+    where: {
+      merchantId,
+      ...cursorFilter,
+      ...(query.status === undefined ? {} : { status: query.status }),
+    },
+    orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+    take: query.limit + 1,
+  });
+  const hasNextPage = links.length > query.limit;
+  const items = hasNextPage ? links.slice(0, query.limit) : links;
+  const last = items.at(-1);
+  return {
+    items,
+    nextCursor: hasNextPage && last !== undefined ? encodePaymentLinkCursor(last) : null,
+  };
+}
+
+export function parsePaymentLinkListQuery(searchParams: URLSearchParams): PaymentLinkListQuery {
+  const values: Record<string, string> = {};
+  for (const [key, value] of searchParams.entries()) {
+    if (values[key] !== undefined) {
+      throw new DomainError('VALIDATION_ERROR', `Query parameter "${key}" must appear once`);
+    }
+    values[key] = value;
+  }
+  const parsed = paymentLinkListQuerySchema.parse(values);
+  return {
+    cursor: parsed.cursor === undefined ? null : decodePaymentLinkCursor(parsed.cursor),
+    limit: parsed.limit ?? DEFAULT_LIST_LIMIT,
+    ...(parsed.status === undefined ? {} : { status: PaymentLinkStatus[parsed.status] }),
+  };
+}
+
+export function encodePaymentLinkCursor(link: PaymentLinkCursor): string {
+  return Buffer.from(
+    JSON.stringify({ version: 1, createdAt: link.createdAt.toISOString(), id: link.id }),
+    'utf8',
+  ).toString('base64url');
+}
+
+export function decodePaymentLinkCursor(value: string): PaymentLinkCursor {
+  try {
+    if (!/^[A-Za-z0-9_-]+$/.test(value)) throw new Error('Cursor is not base64url');
+    const payload = paymentLinkCursorSchema.parse(
+      JSON.parse(Buffer.from(value, 'base64url').toString('utf8')),
+    );
+    const cursor = { createdAt: new Date(payload.createdAt), id: payload.id };
+    if (encodePaymentLinkCursor(cursor) !== value) throw new Error('Cursor is not canonical');
+    return cursor;
+  } catch {
+    throw new DomainError('VALIDATION_ERROR', 'Payment-link cursor is invalid');
+  }
 }
 
 export async function createPaymentLink(

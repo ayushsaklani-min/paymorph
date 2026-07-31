@@ -118,6 +118,9 @@ artifacts are required; fixtures do not satisfy it.
   cursor-paginated `payments:read` resource. It exposes canonical base-unit
   amounts and evidence checkpoints only; it never returns raw Xaman payloads,
   FDC proof data, or decrypted user operations.
+- Its versioned payment-link list now uses the same cursor-pagination contract,
+  while the merchant-cookie dashboard endpoint retains its intentionally simple
+  full-list response.
 - The current read-only Coston2 resolution and router-verification scripts pass
   with FXRP available. USDT0 remains disabled under its existing no-code swap
   router safety gate; neither script broadcasts a transaction.

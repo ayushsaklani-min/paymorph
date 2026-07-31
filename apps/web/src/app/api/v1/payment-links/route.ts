@@ -4,13 +4,16 @@ import { executeIdempotentMutation } from '@/lib/server/idempotency';
 import {
   createPaymentLink,
   createPaymentLinkSchema,
-  listPaymentLinks,
+  listMerchantPaymentLinks,
 } from '@/lib/server/payment-links/service';
 
 export async function GET(request: Request): Promise<Response> {
   try {
     const key = await requireApiKey(request, 'payment-links:read');
-    return jsonSuccess(request, await listPaymentLinks(key.merchantId));
+    return jsonSuccess(
+      request,
+      await listMerchantPaymentLinks(key.merchantId, new URL(request.url).searchParams),
+    );
   } catch (error) {
     return jsonError(request, error);
   }

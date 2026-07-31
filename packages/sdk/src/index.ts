@@ -21,8 +21,9 @@ export class PayMorphClient {
       headers: { 'idempotency-key': idempotencyKey },
     });
   }
-  async listPaymentLinks(): Promise<unknown> {
-    return this.request('/api/v1/payment-links');
+  async listPaymentLinks(searchParams = new URLSearchParams()): Promise<unknown> {
+    const query = searchParams.toString();
+    return this.request(`/api/v1/payment-links${query ? `?${query}` : ''}`);
   }
   async createPaymentLink(input: unknown, idempotencyKey = crypto.randomUUID()): Promise<unknown> {
     return this.request('/api/v1/payment-links', {

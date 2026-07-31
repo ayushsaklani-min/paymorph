@@ -164,6 +164,14 @@ verification items".
   advance an attempt. Local acceptance used a temporary read-only key and then
   revoked it; the 207-test workspace suite, workspace lint/typecheck, format,
   contract gate, and current isolated web production build all passed.
+- Payment-link API pagination (2026-08-01): `GET /api/v1/payment-links` now
+  accepts canonical `cursor`, `limit` (1–100), and `status` parameters and
+  returns a merchant-scoped `{ items, nextCursor }` page under the existing
+  `payment-links:read` scope. The cookie-authenticated dashboard retains its
+  complete local list; no payment link, invoice, attempt, provider payload, or
+  chain state is created by the read-only API. Its parser/pagination coverage,
+  full 119-test web suite, SDK test/typecheck/lint, web typecheck/lint, and
+  focused Chrome browser journeys passed.
 - Read-only testnet revalidation (2026-08-01): the configured Coston2 registry,
   AssetManagerFXRP, MasterAccountController, FTSO feed, FXRP token, and deployed
   PayMorph router all resolved and verified at current chain blocks. FXRP is

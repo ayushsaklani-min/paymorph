@@ -111,7 +111,7 @@ browser, and need a UUID `Idempotency-Key` on every mutation.
 | `GET /api/v1/invoices`                    | `invoices:read`       | List merchant invoices                |
 | `POST /api/v1/invoices`                   | `invoices:write`      | Create a merchant draft invoice       |
 | `POST /api/v1/invoices/:id/publish`       | `invoices:write`      | Publish immutable terms idempotently  |
-| `GET /api/v1/payment-links`               | `payment-links:read`  | List merchant hosted collection links |
+| `GET /api/v1/payment-links`               | `payment-links:read`  | List hosted links with cursor paging  |
 | `POST /api/v1/payment-links`              | `payment-links:write` | Create a hosted collection link       |
 | `POST /api/v1/payment-links/:id/checkout` | `payment-links:write` | Launch the canonical hosted checkout  |
 | `POST /api/v1/payment-links/:id/archive`  | `payment-links:write` | Archive a collection link             |

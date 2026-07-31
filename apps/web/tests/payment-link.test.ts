@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   createPaymentLinkSchema,
+  decodePaymentLinkCursor,
+  encodePaymentLinkCursor,
+  parsePaymentLinkListQuery,
   paymentLinkDefaultsSchema,
 } from '../src/lib/server/payment-links/service.js';
 
@@ -40,4 +43,44 @@ describe('payment link validation', () => {
       }),
     ).toThrow(/10,000 bps/);
   });
+});
+
+const linkKey = {
+  id: '44444444-4444-4444-8444-444444444444',
+  createdAt: new Date('2026-08-01T12:34:56.789Z'),
+};
+
+describe('payment-link API pagination', () => {
+  it('parses documented filters and defaults', () => {
+    expect(parsePaymentLinkListQuery(new URLSearchParams())).toEqual({ cursor: null, limit: 25 });
+    expect(
+      parsePaymentLinkListQuery(new URLSearchParams('limit=100&status=ARCHIVED')),
+    ).toMatchObject({
+      limit: 100,
+      status: 'ARCHIVED',
+    });
+  });
+
+  it.each([
+    'limit=0',
+    'limit=101',
+    'status=UNKNOWN',
+    'extra=value',
+    'status=ACTIVE&status=ARCHIVED',
+  ])('rejects an invalid or ambiguous query: %s', (query) => {
+    expect(() => parsePaymentLinkListQuery(new URLSearchParams(query))).toThrow();
+  });
+
+  it('round-trips an opaque stable cursor', () => {
+    const encoded = encodePaymentLinkCursor(linkKey);
+    expect(encoded).toMatch(/^[A-Za-z0-9_-]+$/);
+    expect(decodePaymentLinkCursor(encoded)).toEqual(linkKey);
+  });
+
+  it.each(['', 'not+a+base64url+cursor', Buffer.from('{}').toString('base64url')])(
+    'rejects an invalid cursor without exposing parser details: %s',
+    (cursor) => {
+      expect(() => decodePaymentLinkCursor(cursor)).toThrow('Payment-link cursor is invalid');
+    },
+  );
 });

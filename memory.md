@@ -293,6 +293,10 @@ job and cannot retry deterministic terminal or recovery states.
   marker attributes (`bis_skin_checked` and `__processed_ddc*`) for the first
   1.5 seconds. This avoids extension-caused nested hydration mismatches while
   leaving application markup and all payment data untouched.
+- The payer checkout retains the Xaman payment QR after scanning and advances
+  to the status timeline only after the payer-bound server route fetches and
+  verifies a signed authoritative Xaman payload. Socket notifications now
+  trigger that verification rather than causing an unverified redirect.
 
 ## Open verification items
 

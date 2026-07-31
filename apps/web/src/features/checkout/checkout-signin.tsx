@@ -42,6 +42,11 @@ interface PaymentPayload {
   expiresAt: string;
 }
 
+interface PaymentResolution {
+  attemptId: string;
+  signed: boolean;
+}
+
 function apiMessage<T>(envelope: ApiEnvelope<T>, fallback: string): string {
   return envelope.error?.message ?? fallback;
 }
@@ -52,8 +57,10 @@ export function CheckoutSignIn({ invoiceSlug }: { invoiceSlug: string }) {
   const [busy, setBusy] = useState(false);
   const [quote, setQuote] = useState<Quote | null>(null);
   const [payment, setPayment] = useState<PaymentPayload | null>(null);
+  const [paymentProgress, setPaymentProgress] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const resolvingRef = useRef(false);
+  const resolvingPaymentRef = useRef(false);
   const quoteIdempotencyKeyRef = useRef<string | null>(null);
   const paymentIdempotencyRef = useRef<{ quoteId: string; key: string } | null>(null);
 
@@ -80,16 +87,53 @@ export function CheckoutSignIn({ invoiceSlug }: { invoiceSlug: string }) {
     }
   }, [payload]);
 
-  useEffect(() => {
-    if (payment === null) return;
-    const socket = new WebSocket(payment.websocketUrl);
-    socket.addEventListener('message', () => {
+  const resolvePayment = useCallback(async () => {
+    if (payment === null || resolvingPaymentRef.current) return;
+    resolvingPaymentRef.current = true;
+    setError(null);
+    setPaymentProgress('Checking the signed payment with Xaman…');
+    try {
+      const response = await fetch(
+        `/api/attempts/${encodeURIComponent(payment.attemptId)}/resolve-payment`,
+        {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'content-type': 'application/json' },
+          body: '{}',
+        },
+      );
+      const envelope = (await response.json()) as ApiEnvelope<PaymentResolution>;
+      if (!response.ok || envelope.data === null) {
+        throw new Error(apiMessage(envelope, 'Unable to verify the Xaman payment'));
+      }
+      if (!envelope.data.signed) {
+        setPaymentProgress('Waiting for approval in Xaman. Keep this page open after signing.');
+        return;
+      }
       window.location.assign(
         `/pay/${encodeURIComponent(invoiceSlug)}/status/${encodeURIComponent(payment.attemptId)}`,
       );
+    } catch (caught) {
+      setPaymentProgress(null);
+      setError(caught instanceof Error ? caught.message : 'Unable to verify the Xaman payment');
+    } finally {
+      resolvingPaymentRef.current = false;
+    }
+  }, [invoiceSlug, payment]);
+
+  useEffect(() => {
+    if (payment === null) return;
+    let socket: WebSocket;
+    try {
+      socket = new WebSocket(payment.websocketUrl);
+    } catch {
+      return;
+    }
+    socket.addEventListener('message', () => {
+      void resolvePayment();
     });
     return () => socket.close();
-  }, [invoiceSlug, payment]);
+  }, [payment, resolvePayment]);
 
   useEffect(() => {
     if (payload !== null && resolution === null) {
@@ -198,6 +242,9 @@ export function CheckoutSignIn({ invoiceSlug }: { invoiceSlug: string }) {
         throw new Error(apiMessage(envelope, 'Unable to create the XRP payment request'));
       }
       setPayment(envelope.data);
+      setPaymentProgress(
+        'Scan the QR code or open Xaman, then approve the exact XRP Testnet payment.',
+      );
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Unable to create the payment request');
     } finally {
@@ -381,6 +428,9 @@ export function CheckoutSignIn({ invoiceSlug }: { invoiceSlug: string }) {
                       />
                     </div>
                     <div>
+                      <p aria-live="polite" className="text-sm leading-6 text-[var(--muted)]">
+                        {paymentProgress}
+                      </p>
                       <a
                         className="inline-flex rounded-xl border border-[var(--accent)] px-4 py-2.5 font-semibold text-[var(--accent)]"
                         href={payment.deeplinkUrl}
@@ -389,12 +439,17 @@ export function CheckoutSignIn({ invoiceSlug }: { invoiceSlug: string }) {
                       >
                         Open payment in Xaman
                       </a>
-                      <a
+                      <button
                         className="mt-3 block text-sm text-[var(--muted)] underline underline-offset-4"
-                        href={`/pay/${encodeURIComponent(invoiceSlug)}/status/${payment.attemptId}`}
+                        onClick={() => void resolvePayment()}
+                        type="button"
                       >
-                        Check settlement status
-                      </a>
+                        I approved in Xaman — continue
+                      </button>
+                      <p className="mt-3 text-xs text-[var(--muted)]">
+                        PayMorph automatically continues to settlement after it verifies your
+                        signature.
+                      </p>
                     </div>
                   </div>
                 )}

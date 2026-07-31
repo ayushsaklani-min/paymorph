@@ -46,11 +46,13 @@ Implemented baseline capabilities:
   FXRP-only deployed Coston2 router;
 - mobile-oriented, evidence-driven checkout and settlement timeline.
 
-Increment 2 is in progress: the merchant dashboard, payment evidence views,
-and persisted invoice templates are implemented; payment links now materialize
-the same canonical immutable invoices used by the direct checkout. Payment
-requests are implemented as named canonical invoices. POS, collection
-analytics, and the public developer platform are in progress.
+Increments 1, 2, and 5 are implemented as evidence-preserving product
+projections: the merchant dashboard, payment evidence views, templates,
+payment links, payment requests, POS, collection analytics, explorer,
+marketplace, and treasury all reuse canonical invoices and attempts. Increment
+3 includes the scoped invoice API, SDK, hosted button, and signed webhook
+outbox. Increment 4 has a WooCommerce MVP; WordPress/WooCommerce testnet
+acceptance remains required before it can be called live-ready.
 
 The baseline is the starting point, not the completion claim for every product
 surface in the DOCX.

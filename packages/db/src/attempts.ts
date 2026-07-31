@@ -83,6 +83,7 @@ export async function transitionAttempt(input: {
               type: 'payment.settled',
               data: {
                 attemptId: current.id,
+                invoiceId: current.invoiceId,
                 receiptPath: `/receipts/${current.id}`,
                 flareTxHash: input.settlementEvidence!.txHash,
               },

@@ -15,6 +15,12 @@ export class PayMorphClient {
       body: JSON.stringify(input),
     });
   }
+  async publishInvoice(id: string, idempotencyKey = crypto.randomUUID()): Promise<unknown> {
+    return this.request(`/api/v1/invoices/${encodeURIComponent(id)}/publish`, {
+      method: 'POST',
+      headers: { 'idempotency-key': idempotencyKey },
+    });
+  }
   private async request(path: string, init: RequestInit = {}): Promise<unknown> {
     const response = await fetch(`${this.baseUrl}${path}`, {
       ...init,

@@ -85,6 +85,10 @@ export async function publishInvoice(
       include: { recipients: { orderBy: { position: 'asc' } } },
     });
     if (!invoice) throw new DomainError('FORBIDDEN', 'Invoice not found');
+    // Publication may be retried by a server integration after its response is
+    // lost. Returning the already-active immutable invoice is safe; every
+    // other terminal/non-draft state remains rejected.
+    if (invoice.status === InvoiceStatus.ACTIVE) return invoice;
     if (invoice.status !== InvoiceStatus.DRAFT) {
       throw new DomainError('VALIDATION_ERROR', 'Only draft invoices can be published');
     }

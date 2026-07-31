@@ -77,6 +77,22 @@ paths:
         '200': { description: Final receipt evidence }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
+  /api/v1/invoices/{id}/publish:
+    post:
+      tags: [Invoices]
+      operationId: v1PublishInvoice
+      summary: Publish an integration-created draft invoice
+      description: Publishing freezes financial terms. The operation never creates a payment attempt.
+      x-implementation-status: implemented
+      security: [{ BearerApiKey: [] }]
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/UuidPathId'
+      responses:
+        '200': { description: Active immutable invoice }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
 
   /api/payment-links:
     get:

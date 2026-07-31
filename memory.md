@@ -336,6 +336,12 @@ job and cannot retry deterministic terminal or recovery states.
   terminal 12-attempt failure boundary. The delivery schedule is operational
   metadata only; it never establishes payment finality, which remains bound to
   decoded `PaymentSettled` evidence.
+- A testnet-only WooCommerce gateway lives in `apps/woocommerce-gateway`. It
+  creates and publishes a merchant-scoped canonical invoice through the
+  server-side `/api/v1` API, persists the external-order mapping before
+  publication retries, and marks an order paid only after the WordPress REST
+  endpoint verifies the exact-body PayMorph webhook HMAC. WordPress/WooCommerce
+  acceptance is still required; this is not a claim of an installed live store.
 - Payment requests now create exactly one ACTIVE canonical invoice within the
   same database transaction and expose that invoice's existing public checkout
   URL. Request cancellation atomically cancels the underlying invoice. Email

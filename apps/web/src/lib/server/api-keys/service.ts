@@ -51,6 +51,15 @@ export async function authenticateApiKey(raw: string, required: ApiKeyScope): Pr
   void db.apiKey.update({ where: { id: candidate.id }, data: { lastUsedAt: new Date() } });
   return candidate;
 }
+
+export async function revokeApiKey(merchantId: string, id: string): Promise<ApiKey> {
+  const result = await db.apiKey.updateMany({
+    where: { id, merchantId, status: ApiKeyStatus.ACTIVE },
+    data: { status: ApiKeyStatus.REVOKED, revokedAt: new Date() },
+  });
+  if (result.count !== 1) throw new DomainError('VALIDATION_ERROR', 'API key cannot be revoked');
+  return db.apiKey.findUniqueOrThrow({ where: { id } });
+}
 function hash(value: string) {
   return createHash('sha256').update(value).digest('hex');
 }

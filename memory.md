@@ -331,6 +331,11 @@ job and cannot retry deterministic terminal or recovery states.
   Link archiving blocks new checkouts but never deletes invoices, attempts, or
   receipts. The new local migration is applied; link checkout is not yet a
   retained live-settlement artifact.
+- Merchant `payment.settled` webhook delivery now uses a leased outbox with
+  durable deterministic exponential backoff, stale-lease recovery, and a
+  terminal 12-attempt failure boundary. The delivery schedule is operational
+  metadata only; it never establishes payment finality, which remains bound to
+  decoded `PaymentSettled` evidence.
 - Payment requests now create exactly one ACTIVE canonical invoice within the
   same database transaction and expose that invoice's existing public checkout
   URL. Request cancellation atomically cancels the underlying invoice. Email

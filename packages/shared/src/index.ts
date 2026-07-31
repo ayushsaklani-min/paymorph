@@ -7,5 +7,6 @@ export * from './domain/quote.js';
 export * from './providers/flare/index.js';
 export * from './schemas/invoice.js';
 export * from './security/encryption.js';
+export * from './merchant-webhooks.js';
 export * from './smart-account/encoder.js';
 export * from './state-machine/attempt.js';

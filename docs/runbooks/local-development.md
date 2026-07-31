@@ -54,6 +54,12 @@ Run the durable delivery worker on a schedule in addition to the executor:
 pnpm webhooks:deliver
 ```
 
+Schedule the command at least once a minute in a deployed environment. Each
+delivery is atomically leased, has deterministic exponential retry delays (one
+minute through a maximum of 24 hours), and becomes `FAILED` after 12 attempts.
+A stale lease is recovered only after five minutes; do not run a second custom
+sender against the same table.
+
 Only a persisted decoded `PaymentSettled` transition creates a
 `payment.settled` delivery record. Delivery success is never settlement proof.
 

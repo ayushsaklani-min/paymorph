@@ -1,6 +1,11 @@
 import { db, type MerchantWebhookDelivery } from '@paymorph/db';
-import { decryptSensitive, parseEncryptionKey } from '@paymorph/shared';
-import { signMerchantWebhook } from './signing.js';
+import {
+  decryptSensitive,
+  merchantWebhookRetryAt,
+  MERCHANT_WEBHOOK_MAX_ATTEMPTS,
+  parseEncryptionKey,
+  signMerchantWebhook,
+} from '@paymorph/shared';
 
 export async function enqueueSettlementWebhook(input: {
   merchantId: string;
@@ -29,16 +34,21 @@ export async function deliverMerchantWebhook(deliveryId: string): Promise<Mercha
   if (!delivery.merchant.webhookUrl || !delivery.merchant.webhookSecretEnc)
     return db.merchantWebhookDelivery.update({
       where: { id: deliveryId },
-      data: { status: 'FAILED', lastError: 'WEBHOOK_NOT_CONFIGURED', attempts: { increment: 1 } },
+      data: {
+        status: 'FAILED',
+        lastError: 'WEBHOOK_NOT_CONFIGURED',
+        attempts: { increment: 1 },
+        lockedAt: null,
+      },
     });
-  const key = parseEncryptionKey(process.env.DATA_ENCRYPTION_KEY_V1 ?? '');
-  const secret = decryptSensitive(delivery.merchant.webhookSecretEnc, {
-    key,
-    aad: `merchant-webhook:${delivery.merchantId}`,
-  }).toString('utf8');
-  const body = JSON.stringify(delivery.payloadJson);
-  const timestamp = Math.floor(Date.now() / 1000).toString();
   try {
+    const key = parseEncryptionKey(process.env.DATA_ENCRYPTION_KEY_V1 ?? '');
+    const secret = decryptSensitive(delivery.merchant.webhookSecretEnc, {
+      key,
+      aad: `merchant-webhook:${delivery.merchantId}`,
+    }).toString('utf8');
+    const body = JSON.stringify(delivery.payloadJson);
+    const timestamp = Math.floor(Date.now() / 1000).toString();
     const response = await fetch(delivery.merchant.webhookUrl, {
       method: 'POST',
       headers: {
@@ -58,15 +68,20 @@ export async function deliverMerchantWebhook(deliveryId: string): Promise<Mercha
         attempts: { increment: 1 },
         deliveredAt: new Date(),
         lastError: null,
+        lockedAt: null,
       },
     });
   } catch (error) {
+    const attempt = delivery.attempts + 1;
+    const now = new Date();
     return db.merchantWebhookDelivery.update({
       where: { id: deliveryId },
       data: {
-        status: 'PENDING',
-        attempts: { increment: 1 },
+        status: attempt >= MERCHANT_WEBHOOK_MAX_ATTEMPTS ? 'FAILED' : 'PENDING',
+        attempts: attempt,
         lastError: error instanceof Error ? error.message.slice(0, 500) : 'DELIVERY_ERROR',
+        nextAttemptAt: merchantWebhookRetryAt(now, attempt),
+        lockedAt: null,
       },
     });
   }

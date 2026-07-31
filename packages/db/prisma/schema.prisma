@@ -320,6 +320,8 @@ model MerchantWebhookDelivery {
   payloadJson Json
   status      String   @default("PENDING")
   attempts    Int      @default(0)
+  nextAttemptAt DateTime @default(now())
+  lockedAt    DateTime?
   deliveredAt DateTime?
   lastError   String?
   createdAt   DateTime @default(now())
@@ -327,6 +329,7 @@ model MerchantWebhookDelivery {
 
   @@index([merchantId, createdAt])
   @@index([status, createdAt])
+  @@index([status, nextAttemptAt])
 }
 
 model PayerSession {

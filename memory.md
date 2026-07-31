@@ -384,10 +384,18 @@ job and cannot retry deterministic terminal or recovery states.
 - Install Playwright Chromium and run the browser journeys. The source and
   production Next.js build pass; the browser binary could not be downloaded on
   this machine.
+- On 2026-07-31, the local database contains no `SETTLED` payment attempt
+  (two `QUOTE_EXPIRED`, one `RECOVERY_REQUIRED`, and one
+  `AWAITING_SIGNATURE`). There is therefore no eligible attempt for
+  `pnpm test:live`; a fresh tiny FXRP Xaman checkout is required before the
+  retained live-smoke artifact can be generated.
+- PHP/WordPress is not installed on this machine, so the WooCommerce plugin has
+  been type-reviewed and documented but has not received a local `php -l` or
+  WordPress/WooCommerce acceptance run.
 
 ## Next action
 
-After the payer approves the active Testnet SignIn, resolve it authoritatively,
-create the immutable quote and exact XRP payment request, then continue the
-credentialed tiny-value XRPL/FDC/Coston2 smoke. Keep USDT0 disabled until ADR
-0006's full route gate passes.
+Create a fresh tiny FXRP Testnet checkout, complete Xaman SignIn and the exact
+XRP payment, then run `RUN_LIVE_TESTNET=1 LIVE_ATTEMPT_ID=<attempt-id> pnpm
+test:live` to retain the authoritative XRPL/FDC/Coston2 receipt artifact. Keep
+USDT0 disabled until ADR 0006's full route gate passes.

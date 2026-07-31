@@ -50,6 +50,33 @@ artifacts are required; fixtures do not satisfy it.
 - Credentialed Xaman/XRPL/FDC/Coston2 smoke: not run; it still requires a
   stable public HTTPS callback, database, FDC readiness, and retained receipts.
 
+## Product-platform update — 2026-07-31
+
+- Merchant operating shell, templates, payment links, requests, POS, public
+  explorer, marketplace projection, and read-only treasury projection are
+  implemented over the canonical invoice/attempt evidence model.
+- The developer platform now has scoped hashed test API keys, the versioned
+  invoice and receipt endpoints, idempotent API invoice publication,
+  `@paymorph/node`, a hosted checkout button, encrypted merchant webhook
+  settings, and a leased, signed webhook outbox with deterministic exponential
+  retries. `payment.settled` remains created only from decoded
+  `PaymentSettled` evidence.
+- A testnet-only WooCommerce gateway MVP creates and publishes a canonical
+  invoice server-side, persists its external order mapping before retry, and
+  changes a WooCommerce order to paid only after exact-body HMAC verification
+  of that evidence-backed webhook. It still needs a WordPress/WooCommerce
+  acceptance environment.
+- Local migration `20260731140000_webhook_delivery_schedule` is applied to the
+  native PostgreSQL database, bringing the local schema to 15 migrations.
+- Latest focused verification passed: `pnpm test` (191 total automated tests,
+  including 29 Foundry unit/fuzz/invariant tests), web lint/typecheck and
+  production build, SDK build/typecheck, Prisma generation/deploy, and format
+  check. A single `pnpm verify` wrapper invocation exceeded the shell's
+  124-second timeout during its repeated production-build stage; no test or
+  build failure was reported by the focused checks. PHP/WordPress is not
+  installed locally, so plugin syntax and external-order acceptance remain
+  unexecuted.
+
 ## Cross-phase workstreams
 
 ### Contracts

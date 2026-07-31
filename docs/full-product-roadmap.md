@@ -49,8 +49,8 @@ Implemented baseline capabilities:
 Increment 2 is in progress: the merchant dashboard, payment evidence views,
 and persisted invoice templates are implemented; payment links now materialize
 the same canonical immutable invoices used by the direct checkout. Payment
-requests, POS, link analytics, and the public developer platform are not yet
-implemented.
+requests are implemented as named canonical invoices. POS, collection
+analytics, and the public developer platform are not yet implemented.
 
 The baseline is the starting point, not the completion claim for every product
 surface in the DOCX.

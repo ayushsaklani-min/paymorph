@@ -34,6 +34,7 @@ export default async function DashboardLayout({ children }: Readonly<{ children:
               ['Payments', '/dashboard/payments'],
               ['Invoices', '/dashboard/invoices'],
               ['Payment links', '/dashboard/payment-links'],
+              ['Requests', '/dashboard/payment-requests'],
               ['Network', '/network'],
               ['Settings', '/dashboard/settings'],
             ].map(([label, href]) => (

@@ -331,6 +331,11 @@ job and cannot retry deterministic terminal or recovery states.
   Link archiving blocks new checkouts but never deletes invoices, attempts, or
   receipts. The new local migration is applied; link checkout is not yet a
   retained live-settlement artifact.
+- Payment requests now create exactly one ACTIVE canonical invoice within the
+  same database transaction and expose that invoice's existing public checkout
+  URL. Request cancellation atomically cancels the underlying invoice. Email
+  and delivery/open tracking are deliberately not claimed: this testnet build
+  stores optional recipient context for merchant reference only.
 
 ## Open verification items
 

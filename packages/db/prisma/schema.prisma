@@ -35,6 +35,11 @@ enum PaymentLinkStatus {
   ARCHIVED
 }
 
+enum PaymentRequestStatus {
+  ACTIVE
+  CANCELLED
+}
+
 enum PayloadKind {
   SIGN_IN
   PAYMENT
@@ -149,6 +154,7 @@ model Merchant {
   invoices         Invoice[]
   invoiceTemplates InvoiceTemplate[]
   paymentLinks     PaymentLink[]
+  paymentRequests  PaymentRequest[]
   sessions         Session[]
   auditLogs        AuditLog[]
 }
@@ -198,6 +204,7 @@ model Invoice {
   payerSessions    PayerSession[]
   paymentLinkId    String?
   paymentLink      PaymentLink?       @relation(fields: [paymentLinkId], references: [id])
+  paymentRequest   PaymentRequest?
 
   @@index([merchantId, createdAt])
   @@index([status, expiresAt])
@@ -248,6 +255,24 @@ model PaymentLink {
 
   @@index([merchantId, createdAt])
   @@index([status, expiresAt])
+}
+
+model PaymentRequest {
+  id            String               @id @default(uuid())
+  merchantId    String
+  invoiceId     String               @unique
+  reference     String
+  recipientName String?
+  recipientEmail String?
+  status        PaymentRequestStatus @default(ACTIVE)
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  cancelledAt   DateTime?
+  merchant      Merchant             @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  invoice       Invoice              @relation(fields: [invoiceId], references: [id], onDelete: Restrict)
+
+  @@index([merchantId, createdAt])
+  @@index([status, createdAt])
 }
 
 model PayerSession {

@@ -161,6 +161,7 @@ model Merchant {
   paymentLinks     PaymentLink[]
   paymentRequests  PaymentRequest[]
   apiKeys          ApiKey[]
+  merchantWebhookDeliveries MerchantWebhookDelivery[]
   sessions         Session[]
   auditLogs        AuditLog[]
 }
@@ -297,6 +298,22 @@ model ApiKey {
 
   @@index([merchantId, createdAt])
   @@index([status, expiresAt])
+}
+
+model MerchantWebhookDelivery {
+  id          String   @id @default(uuid())
+  merchantId  String
+  eventType   String
+  payloadJson Json
+  status      String   @default("PENDING")
+  attempts    Int      @default(0)
+  deliveredAt DateTime?
+  lastError   String?
+  createdAt   DateTime @default(now())
+  merchant    Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  @@index([merchantId, createdAt])
+  @@index([status, createdAt])
 }
 
 model PayerSession {

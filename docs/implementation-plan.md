@@ -118,6 +118,9 @@ artifacts are required; fixtures do not satisfy it.
   cursor-paginated `payments:read` resource. It exposes canonical base-unit
   amounts and evidence checkpoints only; it never returns raw Xaman payloads,
   FDC proof data, or decrypted user operations.
+- The current read-only Coston2 resolution and router-verification scripts pass
+  with FXRP available. USDT0 remains disabled under its existing no-code swap
+  router safety gate; neither script broadcasts a transaction.
 - A testnet-only WooCommerce gateway MVP creates and publishes a canonical
   invoice server-side, persists its external order mapping before retry, and
   changes a WooCommerce order to paid only after exact-body HMAC verification

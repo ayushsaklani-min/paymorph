@@ -159,6 +159,11 @@ verification items".
   advance an attempt. Local acceptance used a temporary read-only key and then
   revoked it; the 207-test workspace suite, workspace lint/typecheck, format,
   contract gate, and current isolated web production build all passed.
+- Read-only testnet revalidation (2026-08-01): the configured Coston2 registry,
+  AssetManagerFXRP, MasterAccountController, FTSO feed, FXRP token, and deployed
+  PayMorph router all resolved and verified at current chain blocks. FXRP is
+  available; USDT0 remains intentionally disabled because its configured swap
+  router has no bytecode. These checks sent no XRPL or Coston2 transaction.
 
 ## Decisions
 

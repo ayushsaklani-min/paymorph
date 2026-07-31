@@ -1,6 +1,6 @@
 # PayMorph project memory
 
-Last updated: 2026-07-31
+Last updated: 2026-08-01
 
 ## Product objective
 
@@ -51,7 +51,7 @@ verification items".
 - Blueprint moved to `docs/reference/`.
 - The clean pnpm monorepo, strict TypeScript configuration, CI, containers,
   Prisma migrations, seed tooling, API contract, and runbooks are implemented.
-- The local verification gate passes: format, lint, typecheck, 174 automated
+- The local verification gate passes: format, lint, typecheck, 195 automated
   tests, all production builds, 29 Foundry unit/fuzz/invariant tests, Prisma
   generation/validation, and the OpenAPI structural check.
 - Phase 2 read-only Flare provider, direct-mint amount solver, capability gate,
@@ -130,6 +130,18 @@ verification items".
   `pnpm db:cleanup` removed only expired operational data. The local Chrome
   browser smoke also passed after the native WSL PostgreSQL keepalive was
   restored. Neither action creates a payment attempt or chain transaction.
+- Developer API expansion (2026-08-01): scoped bearer-key integrations now
+  list/create/archive payment links and launch their canonical hosted checkout.
+  The launch route delegates to the existing serializable link service, so it
+  creates or reuses only the canonical invoice and never an independent payment
+  session/attempt. `payment-links:read` and `payment-links:write` are separate
+  least-privilege scopes. A local acceptance run created/listed/launched/
+  archived a link and revoked its temporary key without creating a payment
+  payload or chain transaction. The final API checkpoint passed the full 195
+  test suite, all workspace lint/typecheck checks, formatting, and the explicit
+  29-test Foundry gate. The all-in-one production build command exceeded this
+  shell's 95-second limit without reporting a source failure; the individual
+  web production build passed before the final test-only assertion refinement.
 
 ## Decisions
 

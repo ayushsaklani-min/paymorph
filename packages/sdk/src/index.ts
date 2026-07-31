@@ -21,6 +21,34 @@ export class PayMorphClient {
       headers: { 'idempotency-key': idempotencyKey },
     });
   }
+  async listPaymentLinks(): Promise<unknown> {
+    return this.request('/api/v1/payment-links');
+  }
+  async createPaymentLink(input: unknown, idempotencyKey = crypto.randomUUID()): Promise<unknown> {
+    return this.request('/api/v1/payment-links', {
+      method: 'POST',
+      headers: { 'idempotency-key': idempotencyKey },
+      body: JSON.stringify(input),
+    });
+  }
+  async archivePaymentLink(id: string, idempotencyKey = crypto.randomUUID()): Promise<unknown> {
+    return this.request(`/api/v1/payment-links/${encodeURIComponent(id)}/archive`, {
+      method: 'POST',
+      headers: { 'idempotency-key': idempotencyKey },
+    });
+  }
+  async createPaymentLinkCheckout(
+    id: string,
+    idempotencyKey = crypto.randomUUID(),
+  ): Promise<unknown> {
+    return this.request(`/api/v1/payment-links/${encodeURIComponent(id)}/checkout`, {
+      method: 'POST',
+      headers: { 'idempotency-key': idempotencyKey },
+    });
+  }
+  async getPaymentReceipt(id: string): Promise<unknown> {
+    return this.request(`/api/v1/payments/${encodeURIComponent(id)}/receipt`);
+  }
   private async request(path: string, init: RequestInit = {}): Promise<unknown> {
     const response = await fetch(`${this.baseUrl}${path}`, {
       ...init,

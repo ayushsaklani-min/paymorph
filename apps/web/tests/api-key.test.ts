@@ -6,7 +6,7 @@ describe('API key validation', () => {
     expect(
       createApiKeySchema.parse({
         name: 'Store backend',
-        scopes: ['invoices:read', 'invoices:write'],
+        scopes: ['invoices:read', 'payment-links:write'],
       }),
     ).toMatchObject({ name: 'Store backend' });
   });

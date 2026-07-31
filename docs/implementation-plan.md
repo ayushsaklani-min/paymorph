@@ -104,6 +104,12 @@ artifacts are required; fixtures do not satisfy it.
   settings, and a leased, signed webhook outbox with deterministic exponential
   retries. `payment.settled` remains created only from decoded
   `PaymentSettled` evidence.
+- The versioned bearer API now also manages payment links with dedicated
+  `payment-links:read` and `payment-links:write` scopes. Its checkout launch
+  materializes the same canonical invoice used by the public link, preserves
+  single-use serialization, and returns the hosted URL without creating a
+  payment attempt. Local acceptance covered create, list, launch, archive, and
+  temporary-key revocation.
 - A testnet-only WooCommerce gateway MVP creates and publishes a canonical
   invoice server-side, persists its external order mapping before retry, and
   changes a WooCommerce order to paid only after exact-body HMAC verification
@@ -111,12 +117,13 @@ artifacts are required; fixtures do not satisfy it.
   acceptance environment.
 - Local migration `20260731140000_webhook_delivery_schedule` is applied to the
   native PostgreSQL database, bringing the local schema to 15 migrations.
-- Latest focused verification passed: `pnpm test` (194 total automated tests,
-  including 29 Foundry unit/fuzz/invariant tests), web lint/typecheck and
-  production build, SDK build/typecheck, Prisma generation/deploy, and format
-  check. A single `pnpm verify` wrapper invocation exceeded the shell's
-  124-second timeout during its repeated production-build stage; no test or
-  build failure was reported by the focused checks. PHP/WordPress is not
+- Latest focused verification passed: `pnpm test` (195 total automated tests,
+  including 29 Foundry unit/fuzz/invariant tests), all workspace lint/typecheck,
+  format check, and the explicit contract gate. A single `pnpm verify` wrapper
+  invocation exceeded the local shell's 95-second timeout during its repeated
+  production-build stage; no source, lint, type, or test failure was reported.
+  The web production build passed before a final test-only assertion adjustment.
+  PHP/WordPress is not
   installed locally, so plugin syntax and external-order acceptance remain
   unexecuted.
 

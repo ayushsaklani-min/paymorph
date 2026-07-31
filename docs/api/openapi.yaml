@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: PayMorph API
-  version: 0.2.0
+  version: 0.3.0
   description: |
     Normative HTTP contract for the PayMorph XRPL Testnet to Flare Coston2
     checkout. Every JSON response uses `{ data, error, requestId }`.
@@ -37,6 +37,83 @@ tags:
   - name: Dashboard
 
 paths:
+  /api/v1/payment-links:
+    get:
+      tags: [Payment Links]
+      operationId: v1ListPaymentLinks
+      summary: List hosted collection links with a scoped bearer API key
+      x-implementation-status: implemented
+      security: [{ BearerApiKey: [] }]
+      responses:
+        '200':
+          description: Merchant-scoped payment links
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentLinkListEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [Payment Links]
+      operationId: v1CreatePaymentLink
+      summary: Create a hosted collection link with a scoped bearer API key
+      description: Creating a link does not create an invoice, payment attempt, or settlement.
+      x-implementation-status: implemented
+      security: [{ BearerApiKey: [] }]
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PaymentLinkCreateRequest' }
+      responses:
+        '201':
+          description: Payment link created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentLinkEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /api/v1/payment-links/{id}/archive:
+    post:
+      tags: [Payment Links]
+      operationId: v1ArchivePaymentLink
+      summary: Archive a hosted collection link with a scoped bearer API key
+      x-implementation-status: implemented
+      security: [{ BearerApiKey: [] }]
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/UuidPathId'
+      responses:
+        '200':
+          description: Archived payment link; canonical invoices and evidence are retained
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentLinkEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /api/v1/payment-links/{id}/checkout:
+    post:
+      tags: [Payment Links]
+      operationId: v1CreatePaymentLinkCheckout
+      summary: Materialize a canonical hosted checkout from a merchant-owned link
+      description: The response references the canonical immutable invoice. It never creates a parallel checkout session or payment attempt.
+      x-implementation-status: implemented
+      security: [{ BearerApiKey: [] }]
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/UuidPathId'
+      responses:
+        '201':
+          description: Canonical invoice checkout launched
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckoutLaunchEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
   /api/v1/invoices:
     get:
       tags: [Invoices]
@@ -3153,6 +3230,27 @@ components:
               type: string
               minLength: 1
               maxLength: 128
+        error:
+          type: 'null'
+        requestId:
+          $ref: '#/components/schemas/RequestId'
+    CheckoutLaunchEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, error, requestId]
+      properties:
+        data:
+          type: object
+          additionalProperties: false
+          required: [invoiceSlug, checkoutUrl]
+          properties:
+            invoiceSlug:
+              type: string
+              minLength: 1
+              maxLength: 128
+            checkoutUrl:
+              type: string
+              format: uri
         error:
           type: 'null'
         requestId:

@@ -50,8 +50,8 @@ Increments 1, 2, and 5 are implemented as evidence-preserving product
 projections: the merchant dashboard, payment evidence views, templates,
 payment links, payment requests, POS, collection analytics, explorer,
 marketplace, and treasury all reuse canonical invoices and attempts. Increment
-3 includes the scoped invoice API, SDK, hosted button, and signed webhook
-outbox. Increment 4 has a WooCommerce MVP; WordPress/WooCommerce testnet
+3 includes the scoped invoice/payment-link API, SDK, hosted button, and signed
+webhook outbox. Increment 4 has a WooCommerce MVP; WordPress/WooCommerce testnet
 acceptance remains required before it can be called live-ready.
 
 The baseline is the starting point, not the completion claim for every product

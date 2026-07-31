@@ -94,6 +94,23 @@ export async function archivePaymentLink(merchantId: string, id: string): Promis
   return db.paymentLink.findUniqueOrThrow({ where: { id } });
 }
 
+/**
+ * A bearer-key integration may start checkout only for one of its own links.
+ * The actual materialization remains in the same serializable public-link
+ * service, so single-use replay protection is identical for every surface.
+ */
+export async function startMerchantPaymentLinkCheckout(
+  merchantId: string,
+  id: string,
+): Promise<{ invoiceSlug: string }> {
+  const link = await db.paymentLink.findFirst({
+    where: { id, merchantId },
+    select: { slug: true },
+  });
+  if (!link) throw new DomainError('FORBIDDEN', 'Payment link not found');
+  return startPaymentLinkCheckout(link.slug);
+}
+
 export async function startPaymentLinkCheckout(slug: string): Promise<{ invoiceSlug: string }> {
   return db.$transaction(
     async (transaction) => {

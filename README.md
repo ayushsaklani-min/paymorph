@@ -106,16 +106,20 @@ The API contract is [docs/api/openapi.yaml](docs/api/openapi.yaml). API keys
 are scoped, hashed `pm_test_` keys; they are returned once, never sent to the
 browser, and need a UUID `Idempotency-Key` on every mutation.
 
-| Endpoint                            | Required scope   | Purpose                              |
-| ----------------------------------- | ---------------- | ------------------------------------ |
-| `GET /api/v1/invoices`              | `invoices:read`  | List merchant invoices               |
-| `POST /api/v1/invoices`             | `invoices:write` | Create a merchant draft invoice      |
-| `POST /api/v1/invoices/:id/publish` | `invoices:write` | Publish immutable terms idempotently |
-| `GET /api/v1/payments/:id/receipt`  | `payments:read`  | Fetch final verified evidence        |
+| Endpoint                                  | Required scope        | Purpose                               |
+| ----------------------------------------- | --------------------- | ------------------------------------- |
+| `GET /api/v1/invoices`                    | `invoices:read`       | List merchant invoices                |
+| `POST /api/v1/invoices`                   | `invoices:write`      | Create a merchant draft invoice       |
+| `POST /api/v1/invoices/:id/publish`       | `invoices:write`      | Publish immutable terms idempotently  |
+| `GET /api/v1/payment-links`               | `payment-links:read`  | List merchant hosted collection links |
+| `POST /api/v1/payment-links`              | `payment-links:write` | Create a hosted collection link       |
+| `POST /api/v1/payment-links/:id/checkout` | `payment-links:write` | Launch the canonical hosted checkout  |
+| `POST /api/v1/payment-links/:id/archive`  | `payment-links:write` | Archive a collection link             |
+| `GET /api/v1/payments/:id/receipt`        | `payments:read`       | Fetch final verified evidence         |
 
-The workspace `@paymorph/node` SDK exposes invoice helpers and exact-body
-webhook verification. The hosted button has no private key and retains a
-normal anchor as its no-JavaScript fallback.
+The workspace `@paymorph/node` SDK exposes invoice, payment-link, checkout,
+receipt, and exact-body webhook-verification helpers. The hosted button has no
+private key and retains a normal anchor as its no-JavaScript fallback.
 
 Configure an HTTPS merchant webhook endpoint and secret in Settings, then run
 the delivery worker on a schedule at least once per minute:
@@ -379,18 +383,19 @@ Never manually turn a failed live run into success.
 
 Latest local verification (2026-08-01):
 
-- `pnpm test` passed: 194 automated tests, including 29 Foundry
+- `pnpm test` passed: 195 automated tests, including 29 Foundry
   unit/fuzz/invariant tests.
-- Repository typechecking and formatting checks passed. Executor lint/build and
-  the full contract suite passed after the recovery hardening checkpoint.
+- Repository linting, typechecking, and formatting checks passed. The explicit
+  full contract suite passed after the payment-link API checkpoint.
 - `pnpm db:seed` and `pnpm db:cleanup` passed against native WSL PostgreSQL;
   the seed upserts only the deterministic demo merchant/invoice and cleanup
   removes expired operational records only.
 - The two browser smoke journeys passed in locally installed Google Chrome via
   `PLAYWRIGHT_BROWSER_CHANNEL=chrome pnpm test:e2e`.
-- The all-in-one `pnpm verify` command was interrupted by the shell's
-  124-second timeout during a repeated production build; focused checks passed
-  independently.
+- The all-in-one `pnpm verify` command exceeded the local shell's 95-second
+  timeout during its repeated production-build stage; focused checks passed
+  independently, including a web production build before a final test-only
+  assertion adjustment.
 - Playwright's managed Chromium and PHP/WordPress are not installed on this
   machine, so the default Chromium path and WooCommerce runtime acceptance
   remain external gates.

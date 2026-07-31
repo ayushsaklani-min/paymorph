@@ -4,7 +4,13 @@ import { db, ApiKeyStatus, type ApiKey } from '@paymorph/db';
 import { DomainError } from '@paymorph/shared';
 import { z } from 'zod';
 
-const scopes = ['invoices:read', 'invoices:write', 'payments:read'] as const;
+const scopes = [
+  'invoices:read',
+  'invoices:write',
+  'payment-links:read',
+  'payment-links:write',
+  'payments:read',
+] as const;
 export const createApiKeySchema = z.strictObject({
   name: z.string().trim().min(1).max(80),
   scopes: z.array(z.enum(scopes)).min(1).max(scopes.length),

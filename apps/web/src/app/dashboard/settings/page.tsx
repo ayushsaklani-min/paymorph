@@ -12,6 +12,7 @@ export default async function SettingsPage() {
         defaultAsset={merchant.defaultAsset}
         displayName={merchant.displayName}
         logoUrl={merchant.logoUrl}
+        webhookUrl={merchant.webhookUrl}
       />
     </main>
   );

@@ -6,10 +6,12 @@ export function MerchantProfileForm({
   displayName,
   logoUrl,
   defaultAsset,
+  webhookUrl,
 }: {
   displayName: string;
   logoUrl: string | null;
   defaultAsset: 'FXRP' | 'USDT0';
+  webhookUrl: string | null;
 }) {
   const [status, setStatus] = useState<string>();
 
@@ -22,6 +24,8 @@ export function MerchantProfileForm({
         displayName: formData.get('displayName'),
         logoUrl: formData.get('logoUrl') || null,
         defaultAsset: formData.get('defaultAsset'),
+        webhookUrl: formData.get('webhookUrl') || null,
+        ...(formData.get('webhookSecret') ? { webhookSecret: formData.get('webhookSecret') } : {}),
       }),
     });
     const envelope = (await response.json()) as { error?: { message: string } };
@@ -43,6 +47,31 @@ export function MerchantProfileForm({
           required
         />
       </label>
+      <fieldset className="space-y-4 border-t border-[var(--line)] pt-5">
+        <legend className="text-sm font-medium text-[var(--ink)]">Merchant webhooks</legend>
+        <label className="block text-sm text-[var(--muted)]">
+          Endpoint URL
+          <input
+            className={inputClass}
+            defaultValue={webhookUrl ?? ''}
+            name="webhookUrl"
+            type="url"
+          />
+        </label>
+        <label className="block text-sm text-[var(--muted)]">
+          Signing secret
+          <input
+            className={inputClass}
+            minLength={16}
+            name="webhookSecret"
+            placeholder="Leave blank to keep existing secret"
+            type="password"
+          />
+        </label>
+        <p className="text-xs text-[var(--muted)]">
+          PayMorph signs `timestamp.rawBody`. The secret is encrypted and never shown again.
+        </p>
+      </fieldset>
       <label className="block text-sm text-[var(--muted)]">
         Logo URL
         <input className={inputClass} defaultValue={logoUrl ?? ''} name="logoUrl" type="url" />

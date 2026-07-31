@@ -24,11 +24,23 @@ export class PayMorphClient {
         ...init.headers,
       },
     });
-    const body = await response.json();
-    if (!response.ok)
-      throw new Error(body.error?.message ?? `PayMorph API error ${response.status}`);
+    const body: unknown = await response.json();
+    if (!response.ok) throw new Error(errorMessage(body, response.status));
+    if (!isObject(body) || !('data' in body))
+      throw new Error('PayMorph API returned an invalid envelope');
     return body.data;
   }
+}
+
+function errorMessage(body: unknown, status: number): string {
+  if (isObject(body) && isObject(body.error) && typeof body.error.message === 'string') {
+    return body.error.message;
+  }
+  return `PayMorph API error ${status}`;
+}
+
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
 }
 export function verifyWebhook(
   secret: string,

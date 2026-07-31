@@ -17,12 +17,20 @@ export default async function InvoicesPage() {
           <p className="text-sm text-[var(--muted)]">Merchant workspace</p>
           <h1 className="mt-2 text-4xl font-semibold tracking-tight">Invoices</h1>
         </div>
-        <a
-          className="rounded-full bg-[var(--accent)] px-5 py-3 font-semibold text-[var(--accent-ink)]"
-          href="/dashboard/invoices/new"
-        >
-          New invoice
-        </a>
+        <div className="flex flex-wrap gap-3">
+          <a
+            className="rounded-full border border-[var(--line)] px-5 py-3 font-semibold"
+            href="/dashboard/invoices/templates"
+          >
+            Templates
+          </a>
+          <a
+            className="rounded-full bg-[var(--accent)] px-5 py-3 font-semibold text-[var(--accent-ink)]"
+            href="/dashboard/invoices/new"
+          >
+            New invoice
+          </a>
+        </div>
       </div>
 
       {invoices.length === 0 ? (

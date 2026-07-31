@@ -1,6 +1,6 @@
 # PayMorph project memory
 
-Last updated: 2026-07-29
+Last updated: 2026-07-31
 
 ## Product objective
 
@@ -319,6 +319,12 @@ job and cannot retry deterministic terminal or recovery states.
   funnel, and UTC timeseries APIs plus a redesigned overview, payment history,
   and payment evidence-detail surface. These are projections over canonical
   attempts; the UI/API never infer final settlement from the projections.
+- Merchant-scoped invoice templates are now persisted with a dedicated Prisma
+  migration and idempotent API. Template defaults validate against the same
+  payment-critical split/address/amount constraints as invoices, and the
+  dashboard lets a merchant save a template or prefill a fresh immutable
+  invoice from it. A template itself can never create a payment attempt or
+  settlement.
 
 ## Open verification items
 

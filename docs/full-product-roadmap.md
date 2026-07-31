@@ -46,6 +46,10 @@ Implemented baseline capabilities:
   FXRP-only deployed Coston2 router;
 - mobile-oriented, evidence-driven checkout and settlement timeline.
 
+Increment 1 is in progress: the merchant dashboard, payment evidence views,
+and persisted invoice templates are implemented. Collection surfaces and the
+public developer platform have not yet been started.
+
 The baseline is the starting point, not the completion claim for every product
 surface in the DOCX.
 
@@ -195,6 +199,6 @@ Every increment that touches payments must satisfy all applicable conditions:
 2. Add safe dashboard summary, timeseries, funnel, and payments read models.
 3. Build the merchant dashboard and payment-detail pages against those read
    models.
-4. Add invoice templates, then payment-link lifecycle/analytics.
+4. Add payment-link lifecycle and analytics on top of canonical invoices.
 5. Continue with requests and POS only after collection-surface invariants are
    covered by tests.

@@ -9,13 +9,38 @@ interface RecipientDraft {
   bps: string;
 }
 
+export interface InvoiceFormTemplate {
+  id: string;
+  name: string;
+  defaults: {
+    title: string;
+    description?: string | undefined;
+    denomination: 'USD' | 'XRP';
+    amount?: string | undefined;
+    settlementAsset: 'FXRP' | 'USDT0';
+    expiresInHours: number;
+    recipients: Array<{ label: string; address: string; bps: number }>;
+  };
+}
+
 const initialRecipient: RecipientDraft = { label: 'Merchant', address: '', bps: '10000' };
 
-export function InvoiceForm({ merchantAddress }: { merchantAddress: string }) {
+export function InvoiceForm({
+  merchantAddress,
+  template,
+}: {
+  merchantAddress: string;
+  template?: InvoiceFormTemplate | undefined;
+}) {
   const router = useRouter();
-  const [recipients, setRecipients] = useState<RecipientDraft[]>([
-    { ...initialRecipient, address: merchantAddress },
-  ]);
+  const [recipients, setRecipients] = useState<RecipientDraft[]>(() =>
+    template
+      ? template.defaults.recipients.map((recipient) => ({
+          ...recipient,
+          bps: String(recipient.bps),
+        }))
+      : [{ ...initialRecipient, address: merchantAddress }],
+  );
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string>();
   const pendingRequest = useRef<{ body: string; idempotencyKey: string } | null>(null);
@@ -81,20 +106,42 @@ export function InvoiceForm({ merchantAddress }: { merchantAddress: string }) {
 
   return (
     <form action={(data) => void submit(data)} className="mt-10 space-y-8">
+      {template ? (
+        <div className="rounded-xl border border-[var(--accent)]/30 bg-[var(--accent)]/10 px-4 py-3 text-sm text-[var(--muted)]">
+          Starting from <span className="font-medium text-[var(--ink)]">{template.name}</span>.
+          Review the details before creating this immutable invoice.
+        </div>
+      ) : null}
       <fieldset className="grid gap-5 rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6">
         <legend className="px-2 font-semibold">Invoice details</legend>
         <Field label="Title">
-          <input className={inputClass} maxLength={80} name="title" required />
+          <input
+            className={inputClass}
+            defaultValue={template?.defaults.title}
+            maxLength={80}
+            name="title"
+            required
+          />
         </Field>
         <Field label="Description">
-          <textarea className={inputClass} maxLength={500} name="description" rows={3} />
+          <textarea
+            className={inputClass}
+            defaultValue={template?.defaults.description}
+            maxLength={500}
+            name="description"
+            rows={3}
+          />
         </Field>
         <Field label="External reference">
           <input className={inputClass} maxLength={80} name="externalRef" />
         </Field>
         <div className="grid gap-5 sm:grid-cols-2">
           <Field label="Denomination">
-            <select className={inputClass} defaultValue="USD" name="denomination">
+            <select
+              className={inputClass}
+              defaultValue={template?.defaults.denomination ?? 'USD'}
+              name="denomination"
+            >
               <option value="USD">USD</option>
               <option value="XRP">XRP</option>
             </select>
@@ -107,12 +154,17 @@ export function InvoiceForm({ merchantAddress }: { merchantAddress: string }) {
               pattern="^(0|[1-9]\d*)(\.\d+)?$"
               placeholder="1.00"
               required
+              defaultValue={template?.defaults.amount}
             />
           </Field>
         </div>
         <div className="grid gap-5 sm:grid-cols-2">
           <Field label="Settlement asset">
-            <select className={inputClass} defaultValue="FXRP" name="settlementAsset">
+            <select
+              className={inputClass}
+              defaultValue={template?.defaults.settlementAsset ?? 'FXRP'}
+              name="settlementAsset"
+            >
               <option value="FXRP">FXRP</option>
               <option value="USDT0">USDT0 (only when route is healthy)</option>
             </select>
@@ -120,7 +172,7 @@ export function InvoiceForm({ merchantAddress }: { merchantAddress: string }) {
           <Field label="Expires at">
             <input
               className={inputClass}
-              defaultValue={defaultExpiry()}
+              defaultValue={defaultExpiry(template?.defaults.expiresInHours ?? 24)}
               name="expiresAt"
               required
               type="datetime-local"
@@ -229,8 +281,8 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function defaultExpiry(): string {
-  const date = new Date(Date.now() + 24 * 60 * 60 * 1_000);
+function defaultExpiry(expiresInHours: number): string {
+  const date = new Date(Date.now() + expiresInHours * 60 * 60 * 1_000);
   const local = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
   return local.toISOString().slice(0, 16);
 }

@@ -137,6 +137,7 @@ model Merchant {
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
   invoices         Invoice[]
+  invoiceTemplates InvoiceTemplate[]
   sessions         Session[]
   auditLogs        AuditLog[]
 }
@@ -200,6 +201,19 @@ model InvoiceRecipient {
 
   @@unique([invoiceId, position])
   @@index([invoiceId])
+}
+
+model InvoiceTemplate {
+  id           String   @id @default(uuid())
+  merchantId   String
+  name         String
+  defaultsJson Json
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  merchant     Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  @@unique([merchantId, name])
+  @@index([merchantId, createdAt])
 }
 
 model PayerSession {

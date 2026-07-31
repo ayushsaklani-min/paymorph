@@ -302,6 +302,10 @@ job and cannot retry deterministic terminal or recovery states.
   are a neutral reconnecting notice, not a false red transaction failure;
   terminal states explain the next safe action and settlement completion still
   requires decoded `PaymentSettled` evidence.
+- The root README is now the detailed product and submission guide: it covers
+  the payer and merchant journeys, exact evidence boundaries, deployed FXRP
+  router, native WSL PostgreSQL workflow, Xaman callback setup, commands, and
+  the remaining live-testnet gates without claiming unverified settlement.
 
 ## Open verification items
 

@@ -41,9 +41,9 @@ export default async function CheckoutPage({ params }: { params: Promise<{ slug:
 
   return (
     <main className="pm-shell mx-auto min-h-screen w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-10">
-      <header className="pm-panel flex items-center justify-between gap-4 rounded-2xl px-4 py-3 sm:px-5">
+      <header className="pm-panel pm-editorial-nav flex items-center justify-between gap-4 rounded-3xl px-4 py-3 sm:px-5">
         <a className="flex items-center gap-2.5" href="/">
-          <span className="grid size-7 place-items-center rounded-lg border border-[var(--accent)]/35 bg-[var(--accent)]/10 text-xs font-black text-[var(--accent)]">
+          <span className="pm-logo-compact grid size-7 place-items-center rounded-lg border text-xs font-black">
             P
           </span>
           <span className="text-sm font-semibold tracking-[-0.025em]">PayMorph</span>

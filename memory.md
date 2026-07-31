@@ -94,13 +94,18 @@ verification items".
 - Credentialed Xaman/FDC/Coston2 submission remains a live acceptance gate, not
   an implementation fallback. No real XRPL payment, FDC proof, or settlement
   is claimed without its hashes and receipts.
-- UI refresh (2026-08-01): PayMorph now has its own aurora-lime/blue visual
-  system with layered card surfaces, data/display typography, fine grid and
-  grain, decorative pointer/orbit motion, scroll reveals, and reduced-motion
-  support. The landing, login, dashboard, checkout/status, explorer, network,
-  and receipt surfaces were refreshed using NullPay only as a local visual
-  reference; no code, assets, wording, or settlement behavior was copied or
-  changed. Web typecheck, lint, 94 web tests, and the production build passed.
+- Visual-system refinement (2026-08-01): PayMorph now uses its own warm
+  ember/orange editorial system with layered glass surfaces, display/data
+  typography, a native CSS earth motif, moving illustrative public-chain
+  concern cards, scroll motion, and reduced-motion support. The landing,
+  login, dashboard, checkout/status, explorer, network, and receipt surfaces
+  share this system. NullPay was used only as a local visual reference; no
+  code, raster asset, wording, or settlement behavior was copied or changed.
+  The concern cards are explicitly illustrative and PayMorph makes no privacy
+  claim. Web typecheck, lint, 119 web tests, both local Chrome landing journeys,
+  and direct HTTP shell checks passed. The isolated production build exceeded
+  the shell's 94-second command limit without reporting a source failure and
+  was stopped; do not treat that as a production-build pass.
 - Browser acceptance update (2026-08-01): the public disclosure and
   landing-to-merchant-wallet sign-in journeys pass in local Google Chrome via
   `PLAYWRIGHT_BROWSER_CHANNEL=chrome pnpm test:e2e`. The configured default

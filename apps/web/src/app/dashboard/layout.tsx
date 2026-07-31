@@ -9,12 +9,11 @@ export default async function DashboardLayout({ children }: Readonly<{ children:
 
   return (
     <div className="pm-shell pm-dashboard mx-auto min-h-screen max-w-7xl px-4 py-5 sm:px-6 sm:py-6">
-      <header className="pm-panel sticky top-3 z-10 rounded-2xl px-4 py-3 sm:top-5 sm:px-5">
+      <header className="pm-panel pm-editorial-nav sticky top-3 z-10 rounded-3xl px-4 py-3 sm:top-5 sm:px-5">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <a className="flex items-center gap-3" href="/dashboard">
-            <span className="relative grid size-9 place-items-center overflow-hidden rounded-xl border border-[var(--accent)]/35 bg-[linear-gradient(135deg,rgba(184,255,112,0.24),rgba(103,232,249,0.12))] shadow-[0_0_24px_rgba(184,255,112,0.16)]">
-              <span className="absolute size-4 rotate-45 rounded-[4px] border border-[var(--accent)]/75" />
-              <span className="relative text-xs font-black text-[var(--accent)]">P</span>
+          <a className="pm-brand" href="/dashboard">
+            <span aria-hidden="true" className="pm-logo-mark">
+              <span>P</span>
             </span>
             <span>
               <span className="block text-sm font-semibold tracking-[-0.025em]">PayMorph</span>
@@ -47,7 +46,7 @@ export default async function DashboardLayout({ children }: Readonly<{ children:
             ].map(([label, href]) => (
               <li key={href}>
                 <a
-                  className="inline-flex rounded-full border border-transparent px-3 py-2 text-[var(--muted)] transition duration-300 hover:border-white/[0.09] hover:bg-white/[0.055] hover:text-[var(--ink)]"
+                  className="inline-flex rounded-full border border-transparent px-3 py-2 text-[var(--muted)] transition duration-300 hover:border-[var(--line-strong)] hover:bg-[var(--accent)]/[0.07] hover:text-[var(--ink)]"
                   href={href}
                 >
                   {label}

@@ -11,7 +11,7 @@ export default async function NetworkPage() {
   const usdt0 = network?.capabilities.USDT0;
   return (
     <main className="pm-shell mx-auto min-h-screen max-w-4xl px-6 py-6 sm:py-10">
-      <header className="pm-panel flex items-center justify-between gap-4 rounded-2xl px-4 py-3 sm:px-5">
+      <header className="pm-panel pm-editorial-nav flex items-center justify-between gap-4 rounded-3xl px-4 py-3 sm:px-5">
         <a
           className="text-sm font-medium text-[var(--muted)] transition hover:text-[var(--ink)]"
           href="/"

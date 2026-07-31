@@ -13,12 +13,15 @@ export default async function PaymentStatusPage({
 }) {
   const { attemptId, slug } = await params;
   return (
-    <main className="mx-auto min-h-screen w-full max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
-      <header className="flex items-center justify-between gap-4">
-        <a className="text-lg font-semibold tracking-tight" href="/">
-          PayMorph
+    <main className="pm-shell mx-auto min-h-screen w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-10">
+      <header className="pm-panel flex items-center justify-between gap-4 rounded-2xl px-4 py-3 sm:px-5">
+        <a className="flex items-center gap-2.5" href="/">
+          <span className="grid size-7 place-items-center rounded-lg border border-[var(--accent)]/35 bg-[var(--accent)]/10 text-xs font-black text-[var(--accent)]">
+            P
+          </span>
+          <span className="text-sm font-semibold tracking-[-0.025em]">PayMorph</span>
         </a>
-        <span className="rounded-full border border-amber-300/40 bg-amber-300/10 px-3 py-1 text-xs font-semibold text-amber-100">
+        <span className="pm-data rounded-full border border-[var(--accent)]/25 bg-[var(--accent)]/8 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--accent)]">
           Testnet payment
         </span>
       </header>

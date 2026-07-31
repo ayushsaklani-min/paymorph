@@ -40,26 +40,27 @@ export default async function CheckoutPage({ params }: { params: Promise<{ slug:
   );
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-5xl px-4 py-8 sm:px-6 sm:py-12">
-      <header className="flex items-center justify-between gap-4">
-        <a className="text-lg font-semibold tracking-tight" href="/">
-          PayMorph
+    <main className="pm-shell mx-auto min-h-screen w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-10">
+      <header className="pm-panel flex items-center justify-between gap-4 rounded-2xl px-4 py-3 sm:px-5">
+        <a className="flex items-center gap-2.5" href="/">
+          <span className="grid size-7 place-items-center rounded-lg border border-[var(--accent)]/35 bg-[var(--accent)]/10 text-xs font-black text-[var(--accent)]">
+            P
+          </span>
+          <span className="text-sm font-semibold tracking-[-0.025em]">PayMorph</span>
         </a>
-        <span className="rounded-full border border-amber-300/40 bg-amber-300/10 px-3 py-1 text-xs font-semibold text-amber-200">
+        <span className="pm-data rounded-full border border-[var(--accent)]/25 bg-[var(--accent)]/8 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--accent)]">
           Testnet
         </span>
       </header>
 
-      <div className="mt-8 rounded-2xl border border-amber-300/40 bg-amber-300/10 px-4 py-3 text-sm leading-6 text-amber-100">
+      <div className="mt-6 rounded-2xl border border-[var(--accent)]/15 bg-[var(--accent)]/[0.045] px-4 py-3 text-sm leading-6 text-[var(--muted-strong)]">
         XRPL Testnet and Flare Coston2 only. These tokens have no real monetary value.
       </div>
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(19rem,0.7fr)]">
         <div>
-          <p className="text-sm text-[var(--muted)]">Paying {invoice.merchant.displayName}</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
-            {invoice.title}
-          </h1>
+          <p className="pm-kicker">Paying {invoice.merchant.displayName}</p>
+          <h1 className="pm-display mt-4 text-4xl sm:text-5xl">{invoice.title}</h1>
           {invoice.description === null ? null : (
             <p className="mt-3 max-w-2xl leading-7 text-[var(--muted)]">{invoice.description}</p>
           )}
@@ -69,9 +70,9 @@ export default async function CheckoutPage({ params }: { params: Promise<{ slug:
           </div>
         </div>
 
-        <aside className="h-fit rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 sm:p-6">
-          <p className="text-sm text-[var(--muted)]">Invoice amount</p>
-          <p className="mt-2 text-3xl font-semibold">
+        <aside className="pm-panel h-fit rounded-3xl p-5 sm:p-6">
+          <p className="pm-kicker">Invoice amount</p>
+          <p className="pm-display mt-4 text-4xl">
             {amount} <span className="text-lg">{invoice.denomination}</span>
           </p>
           <dl className="mt-6 space-y-4 border-t border-[var(--line)] pt-5 text-sm">
@@ -96,7 +97,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ slug:
             </div>
           </dl>
 
-          <h2 className="mt-7 text-sm font-semibold">Settlement split</h2>
+          <h2 className="pm-display mt-7 text-lg tracking-[-0.03em]">Settlement split</h2>
           <ul className="mt-3 space-y-3">
             {invoice.recipients.map((recipient) => (
               <li className="flex items-start justify-between gap-3 text-sm" key={recipient.id}>

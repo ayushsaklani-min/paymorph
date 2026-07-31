@@ -43,14 +43,14 @@ export default async function PaymentsPage() {
     <main className="py-10 sm:py-12">
       <div className="flex flex-wrap items-end justify-between gap-5">
         <div>
-          <p className="text-sm font-medium text-[var(--muted)]">Settlement operations</p>
-          <h1 className="mt-2 text-4xl font-semibold tracking-tight">Payments</h1>
+          <p className="pm-kicker">Settlement operations</p>
+          <h1 className="pm-display mt-4 text-4xl sm:text-5xl">Payments</h1>
           <p className="mt-3 max-w-2xl leading-7 text-[var(--muted)]">
             Follow every payment from Xaman approval to independently verified Coston2 settlement.
           </p>
         </div>
         <a
-          className="rounded-full bg-[var(--accent)] px-5 py-3 font-semibold text-[var(--accent-ink)] transition hover:brightness-105"
+          className="pm-button pm-button-primary px-5 py-3 font-semibold"
           href="/dashboard/invoices/new"
         >
           Create invoice
@@ -58,7 +58,7 @@ export default async function PaymentsPage() {
       </div>
 
       {attempts.length === 0 ? (
-        <div className="mt-10 rounded-3xl border border-dashed border-[var(--line)] bg-[var(--surface)] px-6 py-14 text-center">
+        <div className="pm-card mt-10 rounded-3xl border-dashed px-6 py-14 text-center">
           <p className="text-lg font-medium">No payment attempts yet.</p>
           <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[var(--muted)]">
             Attempts appear when an identified payer creates a protected quote from one of your
@@ -66,7 +66,7 @@ export default async function PaymentsPage() {
           </p>
         </div>
       ) : (
-        <div className="mt-10 overflow-x-auto rounded-3xl border border-[var(--line)] bg-[var(--surface)]">
+        <div className="pm-panel mt-10 overflow-x-auto rounded-3xl">
           <table className="w-full min-w-[58rem] border-collapse text-left text-sm">
             <thead className="bg-white/[0.025] text-xs uppercase tracking-wide text-[var(--muted)]">
               <tr>

@@ -94,6 +94,13 @@ verification items".
 - Credentialed Xaman/FDC/Coston2 submission remains a live acceptance gate, not
   an implementation fallback. No real XRPL payment, FDC proof, or settlement
   is claimed without its hashes and receipts.
+- UI refresh (2026-08-01): PayMorph now has its own aurora-lime/blue visual
+  system with layered card surfaces, data/display typography, fine grid and
+  grain, decorative pointer/orbit motion, scroll reveals, and reduced-motion
+  support. The landing, login, dashboard, checkout/status, explorer, network,
+  and receipt surfaces were refreshed using NullPay only as a local visual
+  reference; no code, assets, wording, or settlement behavior was copied or
+  changed. Web typecheck, lint, 94 web tests, and the production build passed.
 
 ## Decisions
 

@@ -14,18 +14,18 @@ export default async function InvoicesPage() {
     <main className="py-12">
       <div className="flex flex-wrap items-end justify-between gap-5">
         <div>
-          <p className="text-sm text-[var(--muted)]">Merchant workspace</p>
-          <h1 className="mt-2 text-4xl font-semibold tracking-tight">Invoices</h1>
+          <p className="pm-kicker">Merchant workspace</p>
+          <h1 className="pm-display mt-4 text-4xl sm:text-5xl">Invoices</h1>
         </div>
         <div className="flex flex-wrap gap-3">
           <a
-            className="rounded-full border border-[var(--line)] px-5 py-3 font-semibold"
+            className="pm-button pm-button-secondary px-5 py-3 font-semibold text-[var(--muted-strong)]"
             href="/dashboard/invoices/templates"
           >
             Templates
           </a>
           <a
-            className="rounded-full bg-[var(--accent)] px-5 py-3 font-semibold text-[var(--accent-ink)]"
+            className="pm-button pm-button-primary px-5 py-3 font-semibold"
             href="/dashboard/invoices/new"
           >
             New invoice
@@ -34,12 +34,12 @@ export default async function InvoicesPage() {
       </div>
 
       {invoices.length === 0 ? (
-        <div className="mt-10 rounded-2xl border border-dashed border-[var(--line)] p-10 text-center">
+        <div className="pm-card mt-10 rounded-3xl border-dashed p-10 text-center">
           <p className="text-lg font-medium">No invoices yet.</p>
           <p className="mt-2 text-[var(--muted)]">Create a testnet payment link to get started.</p>
         </div>
       ) : (
-        <div className="mt-10 overflow-hidden rounded-2xl border border-[var(--line)]">
+        <div className="pm-panel mt-10 overflow-hidden rounded-3xl">
           <table className="w-full border-collapse text-left">
             <thead className="bg-white/[0.035] text-sm text-[var(--muted)]">
               <tr>

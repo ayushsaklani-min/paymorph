@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import Script from 'next/script';
+import { AmbientPointer } from '@/components/ui/ambient-pointer';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -43,7 +44,8 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
             })();
           `}
         </Script>
-        {children}
+        <AmbientPointer />
+        <div className="pm-app-root">{children}</div>
       </body>
     </html>
   );

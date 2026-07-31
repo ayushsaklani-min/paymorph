@@ -10,23 +10,31 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
   if (!receipt) notFound();
 
   return (
-    <main className="mx-auto min-h-screen max-w-4xl px-6 py-12">
-      <a className="text-sm text-[var(--muted)]" href="/">
-        PayMorph
-      </a>
-      <div className="mt-8 rounded-3xl border border-[var(--line)] bg-[var(--surface)] p-7 sm:p-10">
+    <main className="pm-shell mx-auto min-h-screen max-w-4xl px-6 py-6 sm:py-10">
+      <header className="pm-panel flex items-center justify-between gap-4 rounded-2xl px-4 py-3 sm:px-5">
+        <a className="flex items-center gap-2.5" href="/">
+          <span className="grid size-7 place-items-center rounded-lg border border-[var(--accent)]/35 bg-[var(--accent)]/10 text-xs font-black text-[var(--accent)]">
+            P
+          </span>
+          <span className="text-sm font-semibold tracking-[-0.025em]">PayMorph</span>
+        </a>
+        <span className="pm-data rounded-full border border-[var(--accent)]/25 bg-[var(--accent)]/8 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--accent)]">
+          Verified receipt
+        </span>
+      </header>
+      <div className="pm-panel mt-8 rounded-[2rem] p-7 sm:p-10">
         <div className="flex flex-wrap items-start justify-between gap-6">
           <div>
-            <p className="text-sm text-[var(--accent)]">Payment settled</p>
-            <h1 className="mt-2 text-4xl font-semibold tracking-tight">{receipt.invoice.title}</h1>
+            <p className="pm-kicker">Payment settled</p>
+            <h1 className="pm-display mt-4 text-4xl sm:text-5xl">{receipt.invoice.title}</h1>
             <p className="mt-3 text-[var(--muted)]">{receipt.invoice.merchant.displayName}</p>
           </div>
-          <span className="rounded-full border border-[var(--accent)]/30 px-4 py-2 text-sm text-[var(--accent)]">
+          <span className="pm-data rounded-full border border-[var(--accent)]/30 bg-[var(--accent)]/8 px-4 py-2 text-xs font-bold text-[var(--accent)]">
             {receipt.settlement.asset}
           </span>
         </div>
 
-        <TestnetNotice className="mt-8 rounded-xl bg-white/5 p-4 text-sm text-[var(--muted)]" />
+        <TestnetNotice className="mt-8 rounded-2xl border border-[var(--accent)]/15 bg-[var(--accent)]/[0.045] p-4 text-sm text-[var(--muted)]" />
 
         <section className="mt-8 grid gap-4 sm:grid-cols-2">
           <Evidence label="XRPL payment">
@@ -56,7 +64,7 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
           <ul className="mt-4 space-y-3">
             {receipt.recipients.map((recipient) => (
               <li
-                className="flex flex-wrap justify-between gap-4 rounded-xl border border-[var(--line)] p-4"
+                className="pm-card flex flex-wrap justify-between gap-4 rounded-2xl p-4"
                 key={recipient.address}
               >
                 <div>
@@ -82,7 +90,7 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
 
 function Evidence({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <article className="rounded-2xl border border-[var(--line)] p-5">
+    <article className="pm-card rounded-3xl p-5">
       <h2 className="mb-3 text-sm text-[var(--muted)]">{label}</h2>
       {children}
     </article>

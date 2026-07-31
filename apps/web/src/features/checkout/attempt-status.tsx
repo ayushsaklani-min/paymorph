@@ -179,7 +179,7 @@ function JourneyTracker({ progress }: { progress: number }) {
         const active = progress === index && progress < JOURNEY.length;
         return (
           <li
-            className={`rounded-xl border p-3 ${
+            className={`relative overflow-hidden rounded-2xl border p-3.5 transition duration-300 hover:-translate-y-0.5 ${
               complete
                 ? 'border-emerald-400/40 bg-emerald-400/10'
                 : active
@@ -342,8 +342,8 @@ export function AttemptStatus({
         : 'border-[var(--accent)]/35 bg-[var(--accent)]/8';
 
   return (
-    <section className="overflow-hidden rounded-3xl border border-[var(--line)] bg-[var(--surface)] shadow-2xl shadow-black/20">
-      <div className="border-b border-[var(--line)] px-6 py-5 sm:px-8">
+    <section className="pm-panel overflow-hidden rounded-[2rem]">
+      <div className="border-b border-[var(--line)] bg-black/10 px-6 py-5 sm:px-8">
         <div className="flex items-center justify-between gap-4">
           <div>
             <p className="text-sm font-medium text-[var(--muted)]">Secure payment tracking</p>
@@ -359,7 +359,7 @@ export function AttemptStatus({
       </div>
 
       <div className="px-6 py-7 sm:px-8">
-        <div className={`rounded-2xl border p-5 sm:p-6 ${toneClass}`} aria-live="polite">
+        <div className={`pm-card rounded-3xl border p-5 sm:p-6 ${toneClass}`} aria-live="polite">
           <div className="flex items-start gap-4">
             <span
               aria-hidden="true"
@@ -381,7 +381,7 @@ export function AttemptStatus({
               <p className="text-sm font-medium text-[var(--muted)]">
                 {LABELS[attempt?.status ?? ''] ?? 'Live payment status'}
               </p>
-              <h1 className="mt-1 text-2xl font-semibold tracking-tight">{presentation.title}</h1>
+              <h1 className="pm-display mt-1 text-3xl">{presentation.title}</h1>
               <p className="mt-3 max-w-xl text-sm leading-6 text-[var(--muted)]">
                 {presentation.description}
               </p>
@@ -394,7 +394,7 @@ export function AttemptStatus({
 
         {attempt?.status === 'SETTLED' ? (
           <a
-            className="mt-7 inline-flex min-h-11 items-center rounded-xl bg-[var(--accent)] px-5 py-3 font-semibold text-[var(--accent-ink)] transition hover:brightness-105"
+            className="pm-button pm-button-primary mt-7 inline-flex min-h-11 items-center px-5 py-3 font-semibold"
             href={`/receipt/${attempt.id}`}
           >
             View verified receipt
@@ -406,17 +406,15 @@ export function AttemptStatus({
           attempt.status,
         ) ? (
           <a
-            className="mt-7 inline-flex min-h-11 items-center rounded-xl border border-[var(--accent)] px-5 py-3 font-semibold text-[var(--accent)] transition hover:bg-[var(--accent)]/10"
+            className="pm-button pm-button-secondary mt-7 inline-flex min-h-11 items-center px-5 py-3 font-semibold text-[var(--accent)]"
             href={`/pay/${encodeURIComponent(invoiceSlug)}`}
           >
             Return to checkout
           </a>
         ) : null}
         {attempt?.status === 'RECOVERY_REQUIRED' ? (
-          <div className="mt-6 rounded-2xl border border-amber-300/40 bg-amber-300/10 p-5">
-            <h2 className="text-lg font-semibold text-amber-100">
-              Recovery requires a new payment
-            </h2>
+          <div className="pm-card mt-6 rounded-3xl border border-amber-300/40 bg-amber-300/10 p-5">
+            <h2 className="pm-display text-xl text-amber-100">Recovery requires a new payment</h2>
             <p className="mt-3 text-sm leading-6 text-amber-50">
               The original XRP payment was confirmed, but merchant settlement did not finish.
               Recovery requires signing another XRPL Testnet transaction.
@@ -444,7 +442,7 @@ export function AttemptStatus({
                   </span>
                 </label>
                 <button
-                  className="mt-5 rounded-xl bg-[var(--accent)] px-5 py-3 font-semibold text-[var(--accent-ink)] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="pm-button pm-button-primary mt-5 px-5 py-3 font-semibold disabled:cursor-not-allowed disabled:opacity-50"
                   disabled={!recoveryConsent || recoveryBusy}
                   onClick={() => void createRecovery()}
                   type="button"
@@ -468,7 +466,7 @@ export function AttemptStatus({
                     Review the exact recovery transaction in Xaman before signing.
                   </p>
                   <a
-                    className="mt-4 inline-flex rounded-xl border border-[var(--accent)] px-4 py-2.5 font-semibold text-[var(--accent)]"
+                    className="pm-button pm-button-secondary mt-4 inline-flex px-4 py-2.5 font-semibold text-[var(--accent)]"
                     href={recoveryPayload.deeplinkUrl}
                     rel="noreferrer"
                     target="_blank"
@@ -491,15 +489,15 @@ export function AttemptStatus({
           </div>
         ) : null}
         {attempt?.failureMessage ? (
-          <div className="mt-6 rounded-2xl border border-amber-300/40 bg-amber-300/10 p-5">
+          <div className="pm-card mt-6 rounded-3xl border border-amber-300/40 bg-amber-300/10 p-5">
             <p className="text-sm font-semibold text-amber-100">Additional detail</p>
             <p className="mt-2 text-sm leading-6 text-amber-50/90">{attempt.failureMessage}</p>
           </div>
         ) : null}
 
         {attempt?.xrplTxHash || attempt?.recoveryTxHash || attempt?.flareTxHash ? (
-          <div className="mt-7 rounded-2xl border border-[var(--line)] bg-black/10 p-5">
-            <h2 className="text-sm font-semibold">Verified records</h2>
+          <div className="pm-card mt-7 rounded-3xl bg-black/10 p-5">
+            <h2 className="pm-display text-lg">Verified records</h2>
             <p className="mt-1 text-xs leading-5 text-[var(--muted)]">
               Links open the public Testnet explorers in a new tab.
             </p>

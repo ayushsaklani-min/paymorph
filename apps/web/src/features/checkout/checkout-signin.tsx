@@ -255,7 +255,7 @@ export function CheckoutSignIn({ invoiceSlug }: { invoiceSlug: string }) {
   const identified = resolution?.status === 'SIGNED' && resolution.xrplAccount !== null;
 
   return (
-    <section aria-labelledby="checkout-steps" className="space-y-4">
+    <section aria-labelledby="checkout-steps" className="pm-checkout-flow space-y-4">
       <h2 className="sr-only" id="checkout-steps">
         Checkout steps
       </h2>
@@ -277,7 +277,7 @@ export function CheckoutSignIn({ invoiceSlug }: { invoiceSlug: string }) {
 
             {payload === null ? (
               <button
-                className="mt-5 rounded-xl bg-[var(--accent)] px-5 py-3 font-semibold text-[var(--accent-ink)] disabled:cursor-wait disabled:opacity-60"
+                className="pm-button pm-button-primary mt-5 px-5 py-3 font-semibold disabled:cursor-wait disabled:opacity-60"
                 disabled={busy}
                 onClick={() => void beginSignIn()}
                 type="button"
@@ -312,7 +312,7 @@ export function CheckoutSignIn({ invoiceSlug }: { invoiceSlug: string }) {
                     Scan with Xaman on another device, or open the request on this device.
                   </p>
                   <a
-                    className="mt-4 inline-flex rounded-xl border border-[var(--accent)] px-4 py-2.5 font-semibold text-[var(--accent)]"
+                    className="pm-button pm-button-secondary mt-4 inline-flex px-4 py-2.5 font-semibold text-[var(--accent)]"
                     href={payload.deeplinkUrl}
                     rel="noreferrer"
                     target="_blank"
@@ -320,7 +320,7 @@ export function CheckoutSignIn({ invoiceSlug }: { invoiceSlug: string }) {
                     Open in Xaman
                   </a>
                   <button
-                    className="mt-3 block text-sm text-[var(--muted)] underline underline-offset-4"
+                    className="pm-text-action mt-3 block text-sm"
                     onClick={() => void resolveSignIn()}
                     type="button"
                   >
@@ -331,7 +331,7 @@ export function CheckoutSignIn({ invoiceSlug }: { invoiceSlug: string }) {
                   </p>
                   {resolution?.status === 'REJECTED' || resolution?.status === 'EXPIRED' ? (
                     <button
-                      className="mt-3 text-sm font-semibold text-[var(--accent)] underline underline-offset-4"
+                      className="pm-text-action mt-3 text-sm font-semibold text-[var(--accent)]"
                       onClick={() => {
                         setPayload(null);
                         setResolution(null);
@@ -376,7 +376,7 @@ export function CheckoutSignIn({ invoiceSlug }: { invoiceSlug: string }) {
             </p>
             {identified && quote === null ? (
               <button
-                className="mt-5 rounded-xl bg-[var(--accent)] px-5 py-3 font-semibold text-[var(--accent-ink)] disabled:cursor-wait disabled:opacity-60"
+                className="pm-button pm-button-primary mt-5 px-5 py-3 font-semibold disabled:cursor-wait disabled:opacity-60"
                 disabled={busy}
                 onClick={() => void createQuote()}
                 type="button"
@@ -385,7 +385,7 @@ export function CheckoutSignIn({ invoiceSlug }: { invoiceSlug: string }) {
               </button>
             ) : null}
             {quote !== null ? (
-              <div className="mt-5 rounded-xl border border-[var(--line)] p-4">
+              <div className="pm-card mt-5 rounded-2xl p-4">
                 <dl className="space-y-3 text-sm">
                   <div className="flex justify-between gap-4">
                     <dt className="text-[var(--muted)]">You pay</dt>
@@ -409,7 +409,7 @@ export function CheckoutSignIn({ invoiceSlug }: { invoiceSlug: string }) {
                 </p>
                 {payment === null ? (
                   <button
-                    className="mt-4 rounded-xl bg-[var(--accent)] px-5 py-3 font-semibold text-[var(--accent-ink)] disabled:cursor-wait disabled:opacity-60"
+                    className="pm-button pm-button-primary mt-4 px-5 py-3 font-semibold disabled:cursor-wait disabled:opacity-60"
                     disabled={busy}
                     onClick={() => void createPayment()}
                     type="button"
@@ -432,7 +432,7 @@ export function CheckoutSignIn({ invoiceSlug }: { invoiceSlug: string }) {
                         {paymentProgress}
                       </p>
                       <a
-                        className="inline-flex rounded-xl border border-[var(--accent)] px-4 py-2.5 font-semibold text-[var(--accent)]"
+                        className="pm-button pm-button-secondary inline-flex px-4 py-2.5 font-semibold text-[var(--accent)]"
                         href={payment.deeplinkUrl}
                         rel="noreferrer"
                         target="_blank"
@@ -440,7 +440,7 @@ export function CheckoutSignIn({ invoiceSlug }: { invoiceSlug: string }) {
                         Open payment in Xaman
                       </a>
                       <button
-                        className="mt-3 block text-sm text-[var(--muted)] underline underline-offset-4"
+                        className="pm-text-action mt-3 block text-sm"
                         onClick={() => void resolvePayment()}
                         type="button"
                       >

@@ -10,12 +10,21 @@ export default async function NetworkPage() {
   const network = await resolveConfiguredNetwork().catch(() => null);
   const usdt0 = network?.capabilities.USDT0;
   return (
-    <main className="mx-auto min-h-screen max-w-4xl px-6 py-12">
-      <a className="text-sm text-[var(--muted)]" href="/">
-        ← PayMorph
-      </a>
-      <h1 className="mt-10 text-4xl font-semibold tracking-tight">Network diagnostics</h1>
-      <p className="mt-4 text-[var(--muted)]">
+    <main className="pm-shell mx-auto min-h-screen max-w-4xl px-6 py-6 sm:py-10">
+      <header className="pm-panel flex items-center justify-between gap-4 rounded-2xl px-4 py-3 sm:px-5">
+        <a
+          className="text-sm font-medium text-[var(--muted)] transition hover:text-[var(--ink)]"
+          href="/"
+        >
+          ← PayMorph
+        </a>
+        <span className="pm-data text-[10px] uppercase tracking-[0.14em] text-[var(--accent)]">
+          Live reads
+        </span>
+      </header>
+      <p className="pm-kicker mt-14">Network diagnostics</p>
+      <h1 className="pm-display mt-4 text-4xl sm:text-5xl">Verify the route before you use it.</h1>
+      <p className="mt-4 max-w-2xl leading-7 text-[var(--muted-strong)]">
         Live registry, FXRP, FTSO, route, and executor readiness is exposed here after server
         configuration. No provider status is inferred from a database flag.
       </p>
@@ -45,9 +54,11 @@ export default async function NetworkPage() {
 
 function Diagnostic({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6">
+    <div className="pm-card rounded-3xl p-6">
       <dt className="text-sm text-[var(--muted)]">{label}</dt>
-      <dd className="mt-2 font-medium">{value}</dd>
+      <dd className="pm-data mt-3 break-all text-sm font-medium text-[var(--muted-strong)]">
+        {value}
+      </dd>
     </div>
   );
 }

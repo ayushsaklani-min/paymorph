@@ -35,21 +35,21 @@ export default async function DashboardPage() {
     <main className="py-10 sm:py-12">
       <div className="flex flex-wrap items-end justify-between gap-6">
         <div>
-          <p className="text-sm font-medium text-[var(--muted)]">Merchant workspace</p>
-          <h1 className="mt-2 text-4xl font-semibold tracking-tight">Settlement at a glance</h1>
+          <p className="pm-kicker">Merchant workspace</p>
+          <h1 className="pm-display mt-4 text-4xl sm:text-5xl">Settlement at a glance</h1>
           <p className="mt-3 max-w-2xl leading-7 text-[var(--muted)]">
             Track collections and evidence-backed settlement without interpreting chain logs.
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
           <a
-            className="rounded-full border border-[var(--line)] px-5 py-3 font-semibold text-[var(--muted)] transition hover:border-[var(--accent)] hover:text-[var(--accent)]"
+            className="pm-button pm-button-secondary px-5 py-3 font-semibold text-[var(--muted-strong)]"
             href="/dashboard/payments"
           >
             View payments
           </a>
           <a
-            className="rounded-full bg-[var(--accent)] px-5 py-3 font-semibold text-[var(--accent-ink)] transition hover:brightness-105"
+            className="pm-button pm-button-primary px-5 py-3 font-semibold text-[var(--accent-ink)]"
             href="/dashboard/invoices/new"
           >
             Create invoice
@@ -84,7 +84,7 @@ export default async function DashboardPage() {
       </section>
 
       <section className="mt-8 grid gap-5 lg:grid-cols-[minmax(0,1.3fr)_minmax(18rem,0.7fr)]">
-        <article className="rounded-3xl border border-[var(--line)] bg-[var(--surface)] p-6 sm:p-7">
+        <article className="pm-panel rounded-3xl p-6 sm:p-7">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="text-sm font-medium text-[var(--muted)]">Settlement funnel</p>
@@ -126,7 +126,7 @@ export default async function DashboardPage() {
           </p>
         </article>
 
-        <article className="rounded-3xl border border-[var(--line)] bg-[var(--surface)] p-6 sm:p-7">
+        <article className="pm-panel rounded-3xl p-6 sm:p-7">
           <p className="text-sm font-medium text-[var(--muted)]">Operations</p>
           <h2 className="mt-1 text-xl font-semibold">What needs attention</h2>
           <dl className="mt-7 space-y-5">
@@ -147,7 +147,7 @@ export default async function DashboardPage() {
             />
           </dl>
           <a
-            className="mt-8 inline-flex min-h-11 items-center rounded-xl border border-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-[var(--accent)] transition hover:bg-[var(--accent)]/10"
+            className="pm-button pm-button-secondary mt-8 inline-flex min-h-11 items-center px-4 py-2.5 text-sm font-semibold text-[var(--accent)]"
             href="/network"
           >
             Check network readiness
@@ -155,7 +155,7 @@ export default async function DashboardPage() {
         </article>
       </section>
 
-      <section className="mt-8 rounded-3xl border border-[var(--line)] bg-[var(--surface)]">
+      <section className="pm-panel mt-8 rounded-3xl">
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--line)] px-6 py-5 sm:px-7">
           <div>
             <p className="text-sm font-medium text-[var(--muted)]">Recent payments</p>
@@ -235,9 +235,9 @@ export default async function DashboardPage() {
 
 function MetricCard({ label, value, detail }: { label: string; value: string; detail: string }) {
   return (
-    <article className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 sm:p-6">
+    <article className="pm-card rounded-2xl p-5 sm:p-6">
       <p className="text-sm text-[var(--muted)]">{label}</p>
-      <p className="mt-3 text-2xl font-semibold tracking-tight">{value}</p>
+      <p className="pm-display mt-3 text-2xl tracking-[-0.045em]">{value}</p>
       <p className="mt-2 text-xs leading-5 text-[var(--muted)]">{detail}</p>
     </article>
   );

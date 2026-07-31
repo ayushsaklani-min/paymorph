@@ -81,9 +81,9 @@ export function MerchantSignIn() {
   }
 
   return (
-    <div>
+    <div className="p-1">
       <button
-        className="min-h-11 w-full rounded-full bg-[var(--accent)] px-6 py-3 font-semibold text-[var(--accent-ink)] disabled:opacity-60"
+        className="pm-button pm-button-primary min-h-11 w-full px-6 py-3 font-semibold disabled:cursor-not-allowed disabled:opacity-60"
         disabled={state !== 'idle' && state !== 'error'}
         onClick={() => void signIn()}
         type="button"

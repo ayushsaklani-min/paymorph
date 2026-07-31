@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: PayMorph API
-  version: 0.3.0
+  version: 0.4.0
   description: |
     Normative HTTP contract for the PayMorph XRPL Testnet to Flare Coston2
     checkout. Every JSON response uses `{ data, error, requestId }`.
@@ -28,6 +28,7 @@ tags:
   - name: Merchant
   - name: Invoices
   - name: Payment Links
+  - name: Payments
   - name: Payer
   - name: Attempts
   - name: Receipts
@@ -37,6 +38,37 @@ tags:
   - name: Dashboard
 
 paths:
+  /api/v1/payments:
+    get:
+      tags: [Payments]
+      operationId: v1ListPayments
+      summary: List merchant-owned payment attempts and canonical evidence checkpoints
+      description: The list never returns Xaman payload data, FDC proof blobs, or decrypted user-operation bytes.
+      x-implementation-status: implemented
+      security: [{ BearerApiKey: [] }]
+      parameters:
+        - name: cursor
+          in: query
+          schema: { type: string, minLength: 1, maxLength: 512 }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100, default: 25 }
+        - name: status
+          in: query
+          schema: { $ref: '#/components/schemas/AttemptStatus' }
+        - name: invoiceId
+          in: query
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Merchant-scoped payments and evidence checkpoints
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentListEnvelope'
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
   /api/v1/payment-links:
     get:
       tags: [Payment Links]
@@ -3202,6 +3234,114 @@ components:
           type: 'null'
         requestId:
           $ref: '#/components/schemas/RequestId'
+    PaymentListEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, error, requestId]
+      properties:
+        data:
+          $ref: '#/components/schemas/PaymentList'
+        error:
+          type: 'null'
+        requestId:
+          $ref: '#/components/schemas/RequestId'
+    PaymentList:
+      type: object
+      additionalProperties: false
+      required: [items, nextCursor]
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/MerchantPayment'
+        nextCursor:
+          type: [string, 'null']
+          maxLength: 512
+    MerchantPayment:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - paymentId
+        - status
+        - createdAt
+        - updatedAt
+        - invoice
+        - sourcePayment
+        - settlement
+        - failure
+      properties:
+        id:
+          type: string
+          format: uuid
+        paymentId:
+          $ref: '#/components/schemas/Hash32'
+        status:
+          $ref: '#/components/schemas/AttemptStatus'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        invoice:
+          type: object
+          additionalProperties: false
+          required: [id, title, externalRef, settlementAsset]
+          properties:
+            id:
+              type: string
+              format: uuid
+            title:
+              type: string
+              minLength: 1
+              maxLength: 120
+            externalRef:
+              type: [string, 'null']
+              maxLength: 120
+            settlementAsset:
+              $ref: '#/components/schemas/SettlementAsset'
+        sourcePayment:
+          type: object
+          additionalProperties: false
+          required: [xrpDrops, txHash, ledgerIndex]
+          properties:
+            xrpDrops:
+              $ref: '#/components/schemas/BaseUnitString'
+            txHash:
+              $ref: '#/components/schemas/NullableTransactionHash'
+            ledgerIndex:
+              anyOf:
+                - $ref: '#/components/schemas/BaseUnitString'
+                - type: 'null'
+        settlement:
+          type: object
+          additionalProperties: false
+          required: [asset, invoiceBaseUnits, serviceFeeBaseUnits, txHash, settledAt]
+          properties:
+            asset:
+              $ref: '#/components/schemas/SettlementAsset'
+            invoiceBaseUnits:
+              $ref: '#/components/schemas/BaseUnitString'
+            serviceFeeBaseUnits:
+              $ref: '#/components/schemas/BaseUnitString'
+            txHash:
+              $ref: '#/components/schemas/NullableTransactionHash'
+            settledAt:
+              type: [string, 'null']
+              format: date-time
+        failure:
+          type: [object, 'null']
+          additionalProperties: false
+          required: [code, message]
+          properties:
+            code:
+              type: [string, 'null']
+              maxLength: 100
+            message:
+              type: [string, 'null']
+              maxLength: 500
     PaymentLinkListEnvelope:
       type: object
       additionalProperties: false

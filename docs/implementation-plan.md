@@ -114,6 +114,10 @@ artifacts are required; fixtures do not satisfy it.
   as the merchant-cookie API. Server integrations remain valid without an
   `Origin` header, while browser cross-site mutations are rejected before key
   authentication; a focused regression test covers the fail-closed path.
+- The developer API now lists merchant-owned payment attempts through a
+  cursor-paginated `payments:read` resource. It exposes canonical base-unit
+  amounts and evidence checkpoints only; it never returns raw Xaman payloads,
+  FDC proof data, or decrypted user operations.
 - A testnet-only WooCommerce gateway MVP creates and publishes a canonical
   invoice server-side, persists its external order mapping before retry, and
   changes a WooCommerce order to paid only after exact-body HMAC verification
@@ -121,13 +125,13 @@ artifacts are required; fixtures do not satisfy it.
   acceptance environment.
 - Local migration `20260731140000_webhook_delivery_schedule` is applied to the
   native PostgreSQL database, bringing the local schema to 15 migrations.
-- Latest focused verification passed: `pnpm test` (196 total automated tests,
+- Latest focused verification passed: `pnpm test` (207 total automated tests,
   including 29 Foundry unit/fuzz/invariant tests), all workspace lint/typecheck,
   format check, and the explicit contract gate. A single `pnpm verify` wrapper
   invocation exceeded the local shell's 95-second timeout during its repeated
   production-build stage; no source, lint, type, or test failure was reported.
-  The web production build passed before a final test-only assertion adjustment.
-  PHP/WordPress is not
+  The latest isolated web production build passed with all versioned developer
+  API routes included. PHP/WordPress is not
   installed locally, so plugin syntax and external-order acceptance remain
   unexecuted.
 

@@ -115,11 +115,13 @@ browser, and need a UUID `Idempotency-Key` on every mutation.
 | `POST /api/v1/payment-links`              | `payment-links:write` | Create a hosted collection link       |
 | `POST /api/v1/payment-links/:id/checkout` | `payment-links:write` | Launch the canonical hosted checkout  |
 | `POST /api/v1/payment-links/:id/archive`  | `payment-links:write` | Archive a collection link             |
+| `GET /api/v1/payments`                    | `payments:read`       | List canonical payment/evidence state |
 | `GET /api/v1/payments/:id/receipt`        | `payments:read`       | Fetch final verified evidence         |
 
 The workspace `@paymorph/node` SDK exposes invoice, payment-link, checkout,
-receipt, and exact-body webhook-verification helpers. The hosted button has no
-private key and retains a normal anchor as its no-JavaScript fallback.
+payment-list, receipt, and exact-body webhook-verification helpers. The hosted
+button has no private key and retains a normal anchor as its no-JavaScript
+fallback.
 
 Server-to-server integrations may omit `Origin`. A browser-based API mutation
 must originate from `APP_URL` or an explicitly configured
@@ -388,7 +390,7 @@ Never manually turn a failed live run into success.
 
 Latest local verification (2026-08-01):
 
-- `pnpm test` passed: 196 automated tests, including 29 Foundry
+- `pnpm test` passed: 207 automated tests, including 29 Foundry
   unit/fuzz/invariant tests.
 - Repository linting, typechecking, and formatting checks passed. The explicit
   full contract suite passed after the payment-link API checkpoint.
@@ -399,8 +401,8 @@ Latest local verification (2026-08-01):
   `PLAYWRIGHT_BROWSER_CHANNEL=chrome pnpm test:e2e`.
 - The all-in-one `pnpm verify` command exceeded the local shell's 95-second
   timeout during its repeated production-build stage; focused checks passed
-  independently, including a web production build before a final test-only
-  assertion adjustment.
+  independently. The latest isolated web production build passed with all
+  versioned developer API routes included.
 - Playwright's managed Chromium and PHP/WordPress are not installed on this
   machine, so the default Chromium path and WooCommerce runtime acceptance
   remain external gates.

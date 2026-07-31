@@ -51,7 +51,7 @@ verification items".
 - Blueprint moved to `docs/reference/`.
 - The clean pnpm monorepo, strict TypeScript configuration, CI, containers,
   Prisma migrations, seed tooling, API contract, and runbooks are implemented.
-- The local verification gate passes: format, lint, typecheck, 196 automated
+- The local verification gate passes: format, lint, typecheck, 207 automated
   tests, all production builds, 29 Foundry unit/fuzz/invariant tests, Prisma
   generation/validation, and the OpenAPI structural check.
 - Phase 2 read-only Flare provider, direct-mint amount solver, capability gate,
@@ -151,6 +151,14 @@ verification items".
   `dist/` output and the test runner excludes generated artifacts, preventing a
   stale compiled test from being executed as a second source test after a local
   build. The authoritative workspace source-suite count is 196.
+- Payment-list API expansion (2026-08-01): `GET /api/v1/payments` is now a
+  merchant-scoped cursor-paginated `payments:read` projection. It returns
+  canonical base-unit amounts, status, and available XRPL/Coston2 evidence
+  checkpoints only; it excludes Xaman payload material, FDC proof blobs, and
+  decrypted user-operation bytes. This is read-only and does not create or
+  advance an attempt. Local acceptance used a temporary read-only key and then
+  revoked it; the 207-test workspace suite, workspace lint/typecheck, format,
+  contract gate, and current isolated web production build all passed.
 
 ## Decisions
 

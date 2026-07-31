@@ -24,6 +24,7 @@ describe('PayMorphClient payment-link helpers', () => {
     );
     await client.createPaymentLinkCheckout('link-id', '00000000-0000-4000-8000-000000000002');
     await client.archivePaymentLink('link-id', '00000000-0000-4000-8000-000000000003');
+    await client.listPayments();
     await client.getPaymentReceipt('attempt-id');
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, 'https://merchant.example/api/v1/payment-links', {
@@ -59,8 +60,14 @@ describe('PayMorphClient payment-link helpers', () => {
         },
       },
     );
+    expect(fetchMock).toHaveBeenNthCalledWith(4, 'https://merchant.example/api/v1/payments', {
+      headers: {
+        authorization: 'Bearer pm_test_example',
+        'content-type': 'application/json',
+      },
+    });
     expect(fetchMock).toHaveBeenNthCalledWith(
-      4,
+      5,
       'https://merchant.example/api/v1/payments/attempt-id/receipt',
       {
         headers: {

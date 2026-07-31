@@ -46,6 +46,9 @@ export class PayMorphClient {
       headers: { 'idempotency-key': idempotencyKey },
     });
   }
+  async listPayments(): Promise<unknown> {
+    return this.request('/api/v1/payments');
+  }
   async getPaymentReceipt(id: string): Promise<unknown> {
     return this.request(`/api/v1/payments/${encodeURIComponent(id)}/receipt`);
   }

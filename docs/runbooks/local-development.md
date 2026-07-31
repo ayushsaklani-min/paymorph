@@ -43,6 +43,20 @@ pnpm dev
 The web process runs at `http://localhost:3000`. The executor is an always-on
 separate process and must have C2FLR only when live processing is enabled.
 
+## Merchant webhook delivery
+
+Configure an HTTPS endpoint and secret in merchant settings. PayMorph encrypts
+the secret at rest and sends `paymorph-timestamp`, `paymorph-signature`, and
+`paymorph-event`; the signature is HMAC-SHA256 of `timestamp + '.' + rawBody`.
+Run the durable delivery worker on a schedule in addition to the executor:
+
+```bash
+pnpm webhooks:deliver
+```
+
+Only a persisted decoded `PaymentSettled` transition creates a
+`payment.settled` delivery record. Delivery success is never settlement proof.
+
 ## Xaman callbacks
 
 Use an HTTPS tunnel with a stable callback for local Xaman testing. Configure

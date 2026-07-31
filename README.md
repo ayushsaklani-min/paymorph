@@ -192,6 +192,10 @@ fall back to mock liquidity. See
 
 Docker Desktop is **not required** for the supported local setup.
 
+Merchant webhook delivery is durable and separate from the settlement worker.
+Configure the endpoint/secret in Settings, then schedule `pnpm webhooks:deliver`.
+The `payment.settled` event is enqueued only after decoded on-chain settlement evidence.
+
 ## Local development
 
 ### 1. Start PostgreSQL without Docker

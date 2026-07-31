@@ -336,6 +336,13 @@ job and cannot retry deterministic terminal or recovery states.
   URL. Request cancellation atomically cancels the underlying invoice. Email
   and delivery/open tracking are deliberately not claimed: this testnet build
   stores optional recipient context for merchant reference only.
+- The merchant POS screen creates and publishes a fresh 30-minute canonical
+  FXRP invoice per sale, then displays that existing hosted checkout URL as a
+  QR/link. It explicitly says checkout readiness is not settlement and requires
+  acknowledgement before the next sale. QR rendering currently uses a public
+  URL encoder because a local QR package is unavailable in this environment;
+  the checkout URL is intentionally public, but this provider dependency must
+  be replaced with a bundled encoder before production.
 
 ## Open verification items
 

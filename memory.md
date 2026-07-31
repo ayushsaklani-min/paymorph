@@ -297,6 +297,11 @@ job and cannot retry deterministic terminal or recovery states.
   to the status timeline only after the payer-bound server route fetches and
   verifies a signed authoritative Xaman payload. Socket notifications now
   trigger that verification rather than causing an unverified redirect.
+- The live payment timeline now presents the actual verified state machine as
+  a guided Xaman → XRPL → FDC → Coston2 journey. Temporary polling failures
+  are a neutral reconnecting notice, not a false red transaction failure;
+  terminal states explain the next safe action and settlement completion still
+  requires decoded `PaymentSettled` evidence.
 
 ## Open verification items
 

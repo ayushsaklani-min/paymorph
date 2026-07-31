@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { requireApiKey } from '@/lib/server/api-keys/auth';
+import { requireApiKeyMutation } from '@/lib/server/api-keys/auth';
 import { getServerConfig } from '@/lib/server/config';
 import { jsonError, jsonSuccess } from '@/lib/server/http';
 import { executeIdempotentMutation } from '@/lib/server/idempotency';
@@ -12,7 +12,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ): Promise<Response> {
   try {
-    const key = await requireApiKey(request, 'payment-links:write');
+    const key = await requireApiKeyMutation(request, 'payment-links:write');
     const id = idSchema.parse((await params).id);
     const result = await executeIdempotentMutation({
       request,

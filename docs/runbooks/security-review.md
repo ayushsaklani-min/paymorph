@@ -9,6 +9,12 @@
 - Confirm monetary code contains no floating-point operations.
 - Confirm all API mutations validate input, authorization, origin/CSRF, and
   idempotency.
+
+Versioned bearer-key mutations must use the shared API-key mutation guard. It
+allows a missing `Origin` for server-to-server integrations, but rejects a
+cross-site browser request before inspecting the bearer key. Do not bypass this
+guard in a new `/api/v1` mutation route.
+
 - Confirm every job can safely resume after process termination.
 - Confirm `SETTLED` is reachable only from decoded `PaymentSettled`.
 - Confirm contract replay, recipient, fee, pause, deadline, reentrancy, and

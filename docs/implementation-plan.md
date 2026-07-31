@@ -110,6 +110,10 @@ artifacts are required; fixtures do not satisfy it.
   single-use serialization, and returns the hosted URL without creating a
   payment attempt. Local acceptance covered create, list, launch, archive, and
   temporary-key revocation.
+- All versioned bearer-key mutations now pass through the same origin boundary
+  as the merchant-cookie API. Server integrations remain valid without an
+  `Origin` header, while browser cross-site mutations are rejected before key
+  authentication; a focused regression test covers the fail-closed path.
 - A testnet-only WooCommerce gateway MVP creates and publishes a canonical
   invoice server-side, persists its external order mapping before retry, and
   changes a WooCommerce order to paid only after exact-body HMAC verification
@@ -117,7 +121,7 @@ artifacts are required; fixtures do not satisfy it.
   acceptance environment.
 - Local migration `20260731140000_webhook_delivery_schedule` is applied to the
   native PostgreSQL database, bringing the local schema to 15 migrations.
-- Latest focused verification passed: `pnpm test` (195 total automated tests,
+- Latest focused verification passed: `pnpm test` (196 total automated tests,
   including 29 Foundry unit/fuzz/invariant tests), all workspace lint/typecheck,
   format check, and the explicit contract gate. A single `pnpm verify` wrapper
   invocation exceeded the local shell's 95-second timeout during its repeated

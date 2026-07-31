@@ -1,4 +1,4 @@
-import { requireApiKey } from '@/lib/server/api-keys/auth';
+import { requireApiKey, requireApiKeyMutation } from '@/lib/server/api-keys/auth';
 import { jsonError, jsonSuccess, readJson } from '@/lib/server/http';
 import { executeIdempotentMutation } from '@/lib/server/idempotency';
 import {
@@ -18,7 +18,7 @@ export async function GET(request: Request): Promise<Response> {
 
 export async function POST(request: Request): Promise<Response> {
   try {
-    const key = await requireApiKey(request, 'payment-links:write');
+    const key = await requireApiKeyMutation(request, 'payment-links:write');
     const input = createPaymentLinkSchema.parse(await readJson(request));
     const result = await executeIdempotentMutation({
       request,

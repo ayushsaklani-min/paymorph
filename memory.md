@@ -51,7 +51,7 @@ verification items".
 - Blueprint moved to `docs/reference/`.
 - The clean pnpm monorepo, strict TypeScript configuration, CI, containers,
   Prisma migrations, seed tooling, API contract, and runbooks are implemented.
-- The local verification gate passes: format, lint, typecheck, 195 automated
+- The local verification gate passes: format, lint, typecheck, 196 automated
   tests, all production builds, 29 Foundry unit/fuzz/invariant tests, Prisma
   generation/validation, and the OpenAPI structural check.
 - Phase 2 read-only Flare provider, direct-mint amount solver, capability gate,
@@ -142,6 +142,15 @@ verification items".
   29-test Foundry gate. The all-in-one production build command exceeded this
   shell's 95-second limit without reporting a source failure; the individual
   web production build passed before the final test-only assertion refinement.
+- Versioned API mutation hardening (2026-08-01): every current bearer-key
+  mutation now uses a shared fail-closed origin guard. This retains legitimate
+  server-to-server calls with no `Origin` header, but rejects a cross-site
+  browser request before bearer-key authentication. The route boundary and
+  regression test add no payment, provider, or chain behavior.
+- SDK build hygiene (2026-08-01): SDK source tests are excluded from production
+  `dist/` output and the test runner excludes generated artifacts, preventing a
+  stale compiled test from being executed as a second source test after a local
+  build. The authoritative workspace source-suite count is 196.
 
 ## Decisions
 

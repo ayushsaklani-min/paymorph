@@ -121,6 +121,11 @@ The workspace `@paymorph/node` SDK exposes invoice, payment-link, checkout,
 receipt, and exact-body webhook-verification helpers. The hosted button has no
 private key and retains a normal anchor as its no-JavaScript fallback.
 
+Server-to-server integrations may omit `Origin`. A browser-based API mutation
+must originate from `APP_URL` or an explicitly configured
+`MUTATION_ALLOWED_ORIGINS` origin; cross-site requests are rejected before the
+bearing API key is inspected.
+
 Configure an HTTPS merchant webhook endpoint and secret in Settings, then run
 the delivery worker on a schedule at least once per minute:
 
@@ -383,7 +388,7 @@ Never manually turn a failed live run into success.
 
 Latest local verification (2026-08-01):
 
-- `pnpm test` passed: 195 automated tests, including 29 Foundry
+- `pnpm test` passed: 196 automated tests, including 29 Foundry
   unit/fuzz/invariant tests.
 - Repository linting, typechecking, and formatting checks passed. The explicit
   full contract suite passed after the payment-link API checkpoint.

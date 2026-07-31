@@ -40,6 +40,11 @@ enum PaymentRequestStatus {
   CANCELLED
 }
 
+enum ApiKeyStatus {
+  ACTIVE
+  REVOKED
+}
+
 enum PayloadKind {
   SIGN_IN
   PAYMENT
@@ -155,6 +160,7 @@ model Merchant {
   invoiceTemplates InvoiceTemplate[]
   paymentLinks     PaymentLink[]
   paymentRequests  PaymentRequest[]
+  apiKeys          ApiKey[]
   sessions         Session[]
   auditLogs        AuditLog[]
 }
@@ -273,6 +279,24 @@ model PaymentRequest {
 
   @@index([merchantId, createdAt])
   @@index([status, createdAt])
+}
+
+model ApiKey {
+  id          String       @id @default(uuid())
+  merchantId  String
+  name        String
+  prefix      String       @unique
+  secretHash  String       @unique
+  scopesJson  Json
+  status      ApiKeyStatus @default(ACTIVE)
+  lastUsedAt  DateTime?
+  expiresAt   DateTime?
+  revokedAt   DateTime?
+  createdAt   DateTime     @default(now())
+  merchant    Merchant     @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  @@index([merchantId, createdAt])
+  @@index([status, expiresAt])
 }
 
 model PayerSession {

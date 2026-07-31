@@ -29,6 +29,7 @@ export async function transitionAttempt(input: {
     async (transaction) => {
       const current = await transaction.paymentAttempt.findUnique({
         where: { id: input.attemptId },
+        include: { invoice: { select: { merchantId: true } } },
       });
       if (!current) throw new Error('Payment attempt not found');
       if (current.status !== input.expectedStatus) {
@@ -71,6 +72,24 @@ export async function transitionAttempt(input: {
             : {}),
         },
       });
+
+      if (input.nextStatus === 'SETTLED') {
+        await transaction.merchantWebhookDelivery.create({
+          data: {
+            merchantId: current.invoice.merchantId,
+            eventType: 'payment.settled',
+            payloadJson: {
+              id: current.paymentId,
+              type: 'payment.settled',
+              data: {
+                attemptId: current.id,
+                receiptPath: `/receipts/${current.id}`,
+                flareTxHash: input.settlementEvidence!.txHash,
+              },
+            },
+          },
+        });
+      }
     },
     { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
   );

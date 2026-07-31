@@ -124,6 +124,12 @@ verification items".
   independent live verifier also reject any recovery marker/original user
   operation or PayMorph settlement. An official recovery artifact is still an
   external live gate.
+- Root operational-script verification (2026-08-01): the root package is now
+  explicitly ESM so the documented `tsx` scripts may safely use top-level
+  `await`. `pnpm db:seed` upserted the deterministic demo merchant/invoice and
+  `pnpm db:cleanup` removed only expired operational data. The local Chrome
+  browser smoke also passed after the native WSL PostgreSQL keepalive was
+  restored. Neither action creates a payment attempt or chain transaction.
 
 ## Decisions
 

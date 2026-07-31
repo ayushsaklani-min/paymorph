@@ -82,6 +82,17 @@ artifacts are required; fixtures do not satisfy it.
   PayMorph settlement before writing an ignored `live-smoke/` artifact. This
   completes the code phase, not the official credentialed testnet gate.
 
+## Local operational-script update — 2026-08-01
+
+- Root TypeScript operational scripts now run under explicit ESM semantics, so
+  their documented top-level `await` behavior works consistently through
+  `dotenv-cli` and `tsx`.
+- `pnpm db:seed` successfully upserted the deterministic demo merchant/invoice;
+  `pnpm db:cleanup` removed only expired rate-limit, idempotency, and
+  authentication records. The Google Chrome browser smoke passed 2/2 against
+  the local server. These checks do not create a payment attempt or any chain
+  transaction.
+
 ## Product-platform update — 2026-07-31
 
 - Merchant operating shell, templates, payment links, requests, POS, public

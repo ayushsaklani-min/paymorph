@@ -377,17 +377,23 @@ Never manually turn a failed live run into success.
 | `pnpm test:live`                | Run the opt-in real testnet receipt verifier.                     |
 | `pnpm test:live:recovery`       | Verify and archive an evidence-backed official recovery.          |
 
-Latest local verification (2026-07-31):
+Latest local verification (2026-08-01):
 
-- `pnpm test` passed: 191 automated tests, including 29 Foundry
+- `pnpm test` passed: 194 automated tests, including 29 Foundry
   unit/fuzz/invariant tests.
-- Web lint, typecheck, and production build, SDK build/typecheck, Prisma
-  generation/migration deploy, and formatting checks passed.
+- Repository typechecking and formatting checks passed. Executor lint/build and
+  the full contract suite passed after the recovery hardening checkpoint.
+- `pnpm db:seed` and `pnpm db:cleanup` passed against native WSL PostgreSQL;
+  the seed upserts only the deterministic demo merchant/invoice and cleanup
+  removes expired operational records only.
+- The two browser smoke journeys passed in locally installed Google Chrome via
+  `PLAYWRIGHT_BROWSER_CHANNEL=chrome pnpm test:e2e`.
 - The all-in-one `pnpm verify` command was interrupted by the shell's
   124-second timeout during a repeated production build; focused checks passed
   independently.
-- Playwright Chromium and PHP/WordPress are not installed on this machine, so
-  browser and WooCommerce runtime acceptance remain external gates.
+- Playwright's managed Chromium and PHP/WordPress are not installed on this
+  machine, so the default Chromium path and WooCommerce runtime acceptance
+  remain external gates.
 
 ## API and operations
 

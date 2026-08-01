@@ -83,6 +83,9 @@ and payload-creation transitions.
 - HttpOnly, Secure, SameSite=Lax sessions; signed challenge expiry and one-time
   use; CSRF/origin checks on cookie-authenticated mutations.
 - Encrypted Xaman tokens, webhook secrets, and committed user-operation bytes.
+- Xaman SignIn remains a separate account-binding signature. When Xaman issues a
+  user token, the subsequent exact Payment payload is push-delivered to that
+  same app; checkout exposes QR/deeplink only as a payer-controlled fallback.
 - Executor signing key never enters browser or web build output.
 - Registry discovery, bytecode checks, chain ID checks, feed freshness, route
   allowlisting, authenticated FDC verifier preflight, quote expiry, nonce

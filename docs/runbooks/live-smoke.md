@@ -18,8 +18,12 @@ valueless test tokens.
 
 ## Execute
 
-Complete one tiny FXRP checkout through the hosted `/pay/{slug}` page with
-Xaman on XRPL Testnet. Copy the attempt UUID from the status URL, then run:
+Complete one tiny FXRP or USDT0 checkout through the hosted `/pay/{slug}` page
+with Xaman on XRPL Testnet. The first Xaman QR binds the payer account. When
+Xaman accepts the resulting payment request as a push delivery, approve the
+second request from the same Xaman app without scanning another QR. If the
+notification is unavailable, select the payer-controlled QR fallback. Copy the
+attempt UUID from the status URL, then run:
 
 ```bash
 RUN_LIVE_TESTNET=1 LIVE_ATTEMPT_ID=<uuid> pnpm test:live

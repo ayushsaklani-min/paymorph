@@ -119,6 +119,10 @@ describe('created Xaman payload normalization', () => {
     });
   });
 
+  it('preserves a confirmed push delivery result for checkout UX', () => {
+    expect(normalizeCreatedXamanPayload({ ...createdPayload, pushed: true }).pushed).toBe(true);
+  });
+
   it('rejects unsafe browser URLs before exposing them to checkout', () => {
     expect(() =>
       normalizeCreatedXamanPayload({

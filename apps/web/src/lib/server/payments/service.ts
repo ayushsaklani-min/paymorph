@@ -69,6 +69,7 @@ function publicPayload(
     qrPngUrl: string | null;
     deeplinkUrl: string | null;
     websocketUrl: string | null;
+    pushedToXaman: boolean;
     expiresAt: Date;
   },
   attemptId: string,
@@ -82,6 +83,7 @@ function publicPayload(
     qrPngUrl: payload.qrPngUrl,
     deeplinkUrl: payload.deeplinkUrl,
     websocketUrl: payload.websocketUrl,
+    delivery: payload.pushedToXaman ? ('PUSH' as const) : ('MANUAL' as const),
     expiresAt: payload.expiresAt.toISOString(),
   };
 }
@@ -220,6 +222,7 @@ export async function createPaymentPayload(
             qrPngUrl: created.qrPngUrl,
             deeplinkUrl: created.nextUrl,
             websocketUrl: created.websocketUrl,
+            pushedToXaman: created.pushed,
             expiresAt: payloadExpiresAt,
           },
         });
@@ -241,6 +244,7 @@ export async function createPaymentPayload(
       qrPngUrl: created.qrPngUrl,
       deeplinkUrl: created.nextUrl,
       websocketUrl: created.websocketUrl,
+      pushedToXaman: created.pushed,
       expiresAt: payloadExpiresAt,
     },
     attempt.id,

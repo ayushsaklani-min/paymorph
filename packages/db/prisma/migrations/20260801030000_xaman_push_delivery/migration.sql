@@ -1,0 +1,1 @@
+ALTER TABLE "XamanPayload" ADD COLUMN "pushedToXaman" BOOLEAN NOT NULL DEFAULT false;

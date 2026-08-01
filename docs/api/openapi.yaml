@@ -2333,6 +2333,7 @@ components:
         - qrPngUrl
         - deeplinkUrl
         - websocketUrl
+        - delivery
         - statusUrl
         - expiresAt
       properties:
@@ -2353,6 +2354,10 @@ components:
         websocketUrl:
           type: string
           format: uri
+        delivery:
+          type: string
+          enum: [PUSH, MANUAL]
+          description: PUSH means Xaman accepted delivery to the payer's post-SignIn user token. QR and deeplink remain available only as a payer-controlled fallback.
         statusUrl:
           type: string
           pattern: '^/pay/[^/]+/status/[0-9a-fA-F-]{36}$'

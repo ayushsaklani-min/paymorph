@@ -653,3 +653,16 @@ attempt to retain independent end-to-end evidence. The highest-value remaining
 non-USDT acceptance checks are a real Xaman webhook-HMAC fixture and a
 deliberate executor-process interruption immediately after Coston2 broadcast;
 neither must alter the verified FXRP settlement evidence.
+
+## Latest completed work
+
+- The checkout now preserves Xaman's authoritative `pushed` response after a
+  signed SignIn. A successfully delivered exact Payment request is presented
+  as an in-app Xaman approval, eliminating the second QR scan. The original
+  provider QR and deeplink are retained only behind an explicit "Didn't receive
+  the Xaman prompt?" fallback. SignIn remains a distinct signature because the
+  payer XRPL account must be bound before constructing the immutable quote and
+  payment request.
+- `XamanPayload.pushedToXaman` is durable, default-false audit metadata added
+  by migration `20260801030000_xaman_push_delivery`; it records delivery state
+  but never serves as evidence of payment or settlement.

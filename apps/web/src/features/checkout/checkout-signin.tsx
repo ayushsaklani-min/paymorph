@@ -44,6 +44,7 @@ interface PaymentPayload {
   qrPngUrl: string;
   deeplinkUrl: string;
   websocketUrl: string;
+  delivery: 'PUSH' | 'MANUAL';
   expiresAt: string;
 }
 
@@ -63,6 +64,7 @@ export function CheckoutSignIn({ invoiceSlug }: { invoiceSlug: string }) {
   const [quote, setQuote] = useState<Quote | null>(null);
   const [payment, setPayment] = useState<PaymentPayload | null>(null);
   const [paymentProgress, setPaymentProgress] = useState<string | null>(null);
+  const [showPaymentFallback, setShowPaymentFallback] = useState(false);
   const [signInError, setSignInError] = useState<string | null>(null);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const resolvingRef = useRef(false);
@@ -276,8 +278,11 @@ export function CheckoutSignIn({ invoiceSlug }: { invoiceSlug: string }) {
         throw new Error(apiMessage(envelope, 'Unable to create the XRP payment request'));
       }
       setPayment(envelope.data);
+      setShowPaymentFallback(false);
       setPaymentProgress(
-        'Scan the QR code or open Xaman, then approve the exact XRP Testnet payment.',
+        envelope.data.delivery === 'PUSH'
+          ? 'Payment request sent to your connected Xaman app. Review and approve the exact XRP Testnet payment there.'
+          : 'Open Xaman or scan the QR code, then approve the exact XRP Testnet payment.',
       );
     } catch (caught) {
       setPaymentError(
@@ -453,16 +458,24 @@ export function CheckoutSignIn({ invoiceSlug }: { invoiceSlug: string }) {
                     {busy ? 'Creating Xaman request…' : `Pay ${quote.customerPays.display} XRP`}
                   </button>
                 ) : (
-                  <div className="mt-5 grid gap-4 sm:grid-cols-[9rem_1fr] sm:items-center">
-                    <div className="rounded-xl bg-white p-2">
-                      <img
-                        alt="QR code for the exact XRP Testnet payment"
-                        className="aspect-square h-auto w-full"
-                        height="144"
-                        src={payment.qrPngUrl}
-                        width="144"
-                      />
-                    </div>
+                  <div
+                    className={`mt-5 grid gap-4 sm:items-center ${
+                      payment.delivery === 'PUSH' && !showPaymentFallback
+                        ? ''
+                        : 'sm:grid-cols-[9rem_1fr]'
+                    }`}
+                  >
+                    {payment.delivery === 'MANUAL' || showPaymentFallback ? (
+                      <div className="rounded-xl bg-white p-2">
+                        <img
+                          alt="QR code for the exact XRP Testnet payment"
+                          className="aspect-square h-auto w-full"
+                          height="144"
+                          src={payment.qrPngUrl}
+                          width="144"
+                        />
+                      </div>
+                    ) : null}
                     <div>
                       <p aria-live="polite" className="text-sm leading-6 text-[var(--muted)]">
                         {paymentProgress}
@@ -475,6 +488,15 @@ export function CheckoutSignIn({ invoiceSlug }: { invoiceSlug: string }) {
                       >
                         Open payment in Xaman
                       </a>
+                      {payment.delivery === 'PUSH' && !showPaymentFallback ? (
+                        <button
+                          className="pm-text-action mt-3 block text-sm"
+                          onClick={() => setShowPaymentFallback(true)}
+                          type="button"
+                        >
+                          Didn’t receive the Xaman prompt? Show QR instead
+                        </button>
+                      ) : null}
                       <button
                         className="pm-text-action mt-3 block text-sm"
                         onClick={() => void resolvePayment()}

@@ -490,6 +490,7 @@ model XamanPayload {
   qrPngUrl       String?
   deeplinkUrl    String?
   websocketUrl   String?
+  pushedToXaman  Boolean         @default(false)
   txId           String?
   expiresAt      DateTime
   createdAt      DateTime        @default(now())

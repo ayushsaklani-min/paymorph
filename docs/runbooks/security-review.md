@@ -17,6 +17,9 @@
 - Confirm incoming `X-Request-Id` values are bounded/canonicalized and that
   unexpected API errors log only event metadata, never an arbitrary exception
   message or object.
+- Confirm the executor uses `createExecutorLogger` and that a regression test
+  proves credentials, encrypted user-operation data, signed blobs, raw bodies,
+  and provider error text do not enter structured logs.
 - Confirm monetary code contains no floating-point operations.
 - Confirm all API mutations validate input, authorization, origin/CSRF, and
   idempotency.

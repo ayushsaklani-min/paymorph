@@ -51,7 +51,7 @@ verification items".
 - Blueprint moved to `docs/reference/`.
 - The clean pnpm monorepo, strict TypeScript configuration, CI, containers,
   Prisma migrations, seed tooling, API contract, and runbooks are implemented.
-- The local verification gate passes: format, lint, typecheck, 222 automated
+- The local verification gate passes: format, lint, typecheck, 224 automated
   tests, all production builds, 29 Foundry unit/fuzz/invariant tests, Prisma
   generation/validation, and the OpenAPI structural check.
 - Phase 2 read-only Flare provider, direct-mint amount solver, capability gate,
@@ -201,9 +201,16 @@ verification items".
   deeplinks are HTTPS/Xaman/Xumm URLs without credentials. API correlation IDs
   are bounded before response/log use, and unexpected error logs preserve only
   safe event metadata. Focused web boundary tests, typecheck, and lint passed,
-  followed by the full `pnpm verify` gate (222 automated tests/all production
+  followed by the full `pnpm verify` gate (224 automated tests/all production
   builds) and `pnpm test:contracts` (29 Foundry tests). A direct local
   `/api/health` request confirmed the headers and canonical request-ID echo.
+- Executor logging hardening (2026-08-01): the application now creates its
+  Pino logger through a tested redaction boundary. Credential/opaque-evidence
+  field names are censored, while arbitrary provider error messages and stacks
+  are replaced by a safe error type and optional allowlisted code. Focused
+  logger testing plus the full `pnpm verify` gate (224 automated tests/all
+  production builds) and `pnpm test:contracts` (29 Foundry tests) passed. This
+  is local logging protection, not a live payment or settlement artifact.
 
 ## Decisions
 

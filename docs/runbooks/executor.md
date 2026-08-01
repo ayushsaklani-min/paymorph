@@ -35,6 +35,11 @@ Flare transaction without `PaymentSettled` is not payment completion.
 - Encryption key access for committed user-operation bytes.
 - Structured logging and error reporting with secret redaction.
 
+The executor logger redacts credential/opaque-evidence field names and replaces
+arbitrary thrown errors with only a safe `Error` type and an allowlisted error
+code when present. Do not bypass this logger or add a raw error/message field
+to a log record.
+
 Never load the executor private key into the web process or browser build. Never
 log the key, Xaman secrets, signed blobs, decrypted user-operation bytes, or
 provider tokens.

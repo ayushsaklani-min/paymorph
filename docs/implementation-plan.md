@@ -123,9 +123,21 @@ artifacts are required; fixtures do not satisfy it.
 - API request IDs are now bounded before returning or logging them. Generic
   unexpected failures log a structured event without serializing arbitrary
   error text or objects. Focused HTTP, header, and Xaman-boundary tests passed,
-  followed by `pnpm verify` (222 automated tests and all production builds)
+  followed by `pnpm verify` (224 automated tests and all production builds)
   and `pnpm test:contracts` (29 Foundry tests). A direct local health check
   confirmed all configured response headers and canonical request-ID handling.
+
+## Executor logging hardening update — 2026-08-01
+
+- The executor now creates its Pino logger through one tested boundary. It
+  redacts credential and opaque-evidence fields and serializes thrown errors
+  only as a safe type plus an allowlisted machine-readable code when available.
+  This protects logs from provider error messages, stacks, request headers, and
+  raw bodies while retaining correlated job/attempt metadata.
+- Focused logger tests passed, followed by `pnpm verify` (224 automated tests,
+  every production build) and `pnpm test:contracts` (29 Foundry tests). This
+  improves local operational safety; it does not establish any live payment or
+  settlement evidence.
 
 ## Product-platform update — 2026-07-31
 
@@ -166,7 +178,7 @@ artifacts are required; fixtures do not satisfy it.
 - Local migration `20260731140000_webhook_delivery_schedule` is applied to the
   native PostgreSQL database, bringing the local schema to 15 migrations.
 - Latest full verification passed: `pnpm verify` completed formatting, all
-  workspace lint/typechecks, 222 automated tests (including 29 Foundry
+  workspace lint/typechecks, 224 automated tests (including 29 Foundry
   unit/fuzz/invariant tests), and every production build. The explicit
   `pnpm test:contracts` gate also passed. PHP/WordPress is not installed
   locally, so plugin syntax and external-order acceptance remain unexecuted.

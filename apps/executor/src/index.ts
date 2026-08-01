@@ -1,15 +1,12 @@
-import pino from 'pino';
 import { db } from '@paymorph/db';
+import { createExecutorLogger } from './logging.js';
 import { buildExecutorBoundaries } from './worker/boundaries.js';
 import { loadExecutorConfig } from './worker/config.js';
 import { ExecutorHandlers } from './worker/handlers.js';
 import { runExecutorWorker } from './worker/runner.js';
 import { PrismaExecutorStore } from './worker/store.js';
 
-const logger = pino({
-  level: process.env.LOG_LEVEL ?? 'info',
-  base: { service: 'paymorph-executor', network: 'XRPL_TESTNET+COSTON2' },
-});
+const logger = createExecutorLogger();
 
 const controller = new AbortController();
 

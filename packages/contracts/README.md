@@ -60,8 +60,27 @@ pnpm --dir packages/contracts deploy:coston2
 ```
 
 The generic `exactOutputSingle` ABI must be verified against the configured
-Coston2 SparkDEX router before setting `ENABLE_USDT0=true`. The default
-FXRP-only deployment is intentional while ADR 0006's route gate is closed.
-Deployment output must be recorded against
+Coston2 route before setting `ENABLE_USDT0=true`. The default FXRP-only
+deployment remains intentional while ADR 0006's official SparkDEX gate is
+closed. Deployment output must be recorded against
 `deployments/manifest.schema.json`; use the zero address for the disabled
 adapter and swap router.
+
+## ADR 0007 testnet USDT0 route
+
+`DeployPayMorphTestnetUsdt0Route` deploys a separately labelled, real-token
+fixed-ratio exact-output route, funds the router with Coston2 test USDT0, and
+only then wires the existing PayMorph router's adapter. It is not SparkDEX and
+must never be used for mainnet or represented as an official DEX route.
+
+Required environment is the existing `PAYMORPH_ROUTER_ADDRESS` and
+`DEPLOYER_PRIVATE_KEY`; the deployer must be an adapter manager and must hold
+the configured `USDT0_ROUTE_INITIAL_LIQUIDITY_BASE_UNITS` (default 5,000,000).
+
+```bash
+pnpm --dir packages/contracts deploy:testnet-usdt0-route
+```
+
+The generated route addresses belong in the uncommitted `USDT0_ROUTE_*`
+environment values. Record the resulting receipts and read-back evidence in a
+separate deployment manifest before enabling checkout.

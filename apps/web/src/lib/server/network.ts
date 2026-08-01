@@ -35,14 +35,35 @@ function flareProviderConfig(): FlareProviderConfig {
   const config: FlareProviderConfig = {
     ...addressOption('registryAddress', process.env.FLARE_CONTRACT_REGISTRY),
     ...addressOption('usdt0Address', process.env.USDT0_ADDRESS),
-    ...addressOption('sparkDexRouterAddress', process.env.SPARKDEX_ROUTER_ADDRESS),
-    ...addressOption('sparkDexFactoryAddress', process.env.SPARKDEX_FACTORY_ADDRESS),
-    ...addressOption('sparkDexQuoterAddress', process.env.SPARKDEX_QUOTER_ADDRESS),
-    ...(process.env.SPARKDEX_POOL_FEE
-      ? { sparkDexPoolFee: parseInteger(process.env.SPARKDEX_POOL_FEE, 'SPARKDEX_POOL_FEE') }
+    ...addressOption(
+      'sparkDexRouterAddress',
+      process.env.USDT0_ROUTE_ROUTER_ADDRESS ?? process.env.SPARKDEX_ROUTER_ADDRESS,
+    ),
+    ...addressOption(
+      'sparkDexFactoryAddress',
+      process.env.USDT0_ROUTE_FACTORY_ADDRESS ?? process.env.SPARKDEX_FACTORY_ADDRESS,
+    ),
+    ...addressOption(
+      'sparkDexQuoterAddress',
+      process.env.USDT0_ROUTE_QUOTER_ADDRESS ?? process.env.SPARKDEX_QUOTER_ADDRESS,
+    ),
+    ...((process.env.USDT0_ROUTE_POOL_FEE ?? process.env.SPARKDEX_POOL_FEE)
+      ? {
+          sparkDexPoolFee: parseInteger(
+            process.env.USDT0_ROUTE_POOL_FEE ?? process.env.SPARKDEX_POOL_FEE!,
+            'USDT0_ROUTE_POOL_FEE',
+          ),
+        }
       : {}),
+    ...routeKindOption(process.env.USDT0_ROUTE_KIND),
   };
   return config;
+}
+
+function routeKindOption(value: string | undefined): Pick<FlareProviderConfig, 'usdt0RouteKind'> {
+  if (value === undefined || value === 'SPARKDEX_V3') return {};
+  if (value === 'PAYMORPH_TESTNET') return { usdt0RouteKind: value };
+  throw new TypeError('USDT0_ROUTE_KIND must be SPARKDEX_V3 or PAYMORPH_TESTNET');
 }
 
 export function serializeNetwork(value: ResolvedCoston2Network) {

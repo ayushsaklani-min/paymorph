@@ -33,6 +33,7 @@ import {
   type TokenMetadata,
   type Usdt0Capability,
   type Usdt0CapabilityReason,
+  type Usdt0RouteKind,
   type VerifiedUsdt0Capability,
 } from './types.js';
 
@@ -43,6 +44,7 @@ interface NormalizedFlareProviderConfig {
   readonly sparkDexFactoryAddress?: Address;
   readonly sparkDexQuoterAddress?: Address;
   readonly sparkDexPoolFee: number;
+  readonly usdt0RouteKind: Usdt0RouteKind;
 }
 
 const NO_CODE = '0x';
@@ -56,7 +58,7 @@ export class FlareNetworkProvider {
   ) {
     const poolFee = config.sparkDexPoolFee ?? 500;
     if (!Number.isSafeInteger(poolFee) || poolFee < 0 || poolFee > 0xff_ffff) {
-      throw new RangeError('SparkDEX pool fee must be a uint24 integer');
+      throw new RangeError('USDT0 route pool fee must be a uint24 integer');
     }
 
     this.config = {
@@ -72,6 +74,7 @@ export class FlareNetworkProvider {
         ? {}
         : { sparkDexQuoterAddress: getAddress(config.sparkDexQuoterAddress) }),
       sparkDexPoolFee: poolFee,
+      usdt0RouteKind: config.usdt0RouteKind ?? 'SPARKDEX_V3',
     };
   }
 
@@ -380,6 +383,7 @@ export class FlareNetworkProvider {
     const unavailable = (reason: Usdt0CapabilityReason): Usdt0Capability => ({
       available: false,
       reason,
+      routeKind: this.config.usdt0RouteKind,
       token,
       router,
     });
@@ -392,8 +396,9 @@ export class FlareNetworkProvider {
       return unavailable('USDT0_DECIMALS_MISMATCH');
     }
 
-    // Check the documented router before optional route configuration so a
-    // stale documented deployment is reported precisely.
+    // The configured route is fail-closed at its router before optional
+    // factory/quoter checks, so missing deployment evidence is reported
+    // precisely for either an official or labelled testnet route.
     if (!(await this.addressHasCode(router))) {
       return unavailable('SWAP_ROUTER_NO_CODE');
     }
@@ -447,6 +452,7 @@ export class FlareNetworkProvider {
 
     return {
       available: true,
+      routeKind: this.config.usdt0RouteKind,
       token,
       router,
       factory,

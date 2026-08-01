@@ -31,7 +31,9 @@ The following remain unavailable until separately designed and live-tested:
 - recurring XRP auto-debits (recurring requests are a later feature);
 - escrow;
 - mainnet and real-value custody;
-- USDT0 settlement while the Coston2 swap route fails runtime verification.
+- USDT0 settlement while no configured Coston2 route passes runtime
+  verification. ADR 0007's separately labelled `PAYMORPH_TESTNET` route is an
+  active testnet exception and still requires a payer-signed live receipt.
 
 ## Current baseline
 

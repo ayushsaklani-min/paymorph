@@ -30,7 +30,7 @@ export interface QuoteCalculation {
   protocolMintFeeUBA: bigint;
   executorFeeUBA: bigint;
   xrplPaymentDrops: bigint;
-  route: 'DIRECT_FXRP' | 'SPARKDEX_EXACT_OUT';
+  route: 'DIRECT_FXRP' | 'EXACT_OUTPUT_V3';
 }
 
 export type SettlementOutputInput = Pick<
@@ -53,7 +53,7 @@ export function calculateQuote(input: QuoteCalculationInput): QuoteCalculation {
       throw new RangeError('A real exact-output FXRP quote is required for USDT0 settlement');
     }
     maxFxrpInputUBA = applySlippageCeil(input.exactOutputFxrpQuoteUBA, input.slippageBps);
-    route = 'SPARKDEX_EXACT_OUT';
+    route = 'EXACT_OUTPUT_V3';
   }
 
   const directMint = solveDirectMintGrossAmount(maxFxrpInputUBA, input.directMintSettings);

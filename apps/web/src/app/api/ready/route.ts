@@ -24,7 +24,7 @@ export async function GET(request: Request) {
       fdc: 'ready',
       fxrp: 'ready',
       usdt0: network.capabilities.USDT0.available
-        ? { status: 'ready' }
+        ? { status: 'ready', routeKind: network.capabilities.USDT0.routeKind }
         : { status: 'degraded', reason: network.capabilities.USDT0.reason },
     });
   } catch (error) {

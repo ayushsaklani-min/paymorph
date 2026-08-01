@@ -11,8 +11,10 @@ valueless test tokens.
 - Merchant and recipient Coston2 addresses are controlled test wallets.
 - USDT0 smoke runs only when runtime route health is `READY`, the configured
   PayMorph adapter matches that route, and a fresh exact-output QuoterV2
-  simulation succeeds; otherwise record the exact disabled reason and run FXRP
-  only.
+  simulation succeeds. Record the returned route kind in the smoke artifact:
+  `SPARKDEX_V3` for a verified official route or `PAYMORPH_TESTNET` for ADR
+  0007's separately labelled Coston2 testnet route. Otherwise record the exact
+  disabled reason and run FXRP only.
 
 ## Execute
 

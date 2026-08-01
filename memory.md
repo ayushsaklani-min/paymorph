@@ -322,6 +322,22 @@ exist.` before Next development tooling can promote it to a runtime overlay.
   shared/web lint and typechecks, and web tests (129) pass. Exact quote/adaptor
   logic remains unit-tested until a real Coston2 deployment satisfies the live
   gate.
+- Coston2 USDT0 route deployment (2026-08-01): the official SparkDEX router
+  and factory remain absent, so ADR 0006 remains in force for official route
+  claims. Under the product owner's explicit request, ADR 0007 records a
+  separately labelled `PAYMORPH_TESTNET` real-token exact-output route. Its
+  factory `0xD8019c06Bf594d646c0a35F8F63a4E8Ceb872422`, swap router
+  `0x6115F90F2B8E9FaDd87Ac5B02F89FeEec92930f8`, pool
+  `0x75374f89b3277C8dadDA193f3B9dc83D5b52dA10`, quoter
+  `0x036B2D2BCB8A477f772D32f076640C3E26bC56ee`, and adapter
+  `0x70dCd03Cf5b79f7C4b0352842B54F87A2C890a36` were deployed and verified
+  at block 33,510,005. The deployed route holds 5,000,000 USDT0 base units of
+  actual Coston2 test-token liquidity, its exact-output quote for 1,005,000
+  USDT0 returns 1,005,000 FXRP base units, and the existing PayMorph router is
+  wired to the matching adapter. `/api/ready` now reports USDT0 ready with
+  `PAYMORPH_TESTNET`; no mocked price, liquidity, or settlement evidence was
+  introduced. A payer-controlled Xaman signature and full receipt are still
+  required to prove the end-to-end USDT0 checkout.
 
 ## Decisions
 
@@ -630,7 +646,10 @@ job and cannot retry deterministic terminal or recovery states.
 
 ## Next action
 
-Keep USDT0 disabled until ADR 0006's full route gate passes. The highest-value
-remaining acceptance checks are a real Xaman webhook-HMAC fixture and a
+Keep the official SparkDEX route disabled under ADR 0006. ADR 0007's
+`PAYMORPH_TESTNET` route is active and needs one payer-controlled Xaman
+signature for a tiny USDT0 invoice, followed by `pnpm test:live` against that
+attempt to retain independent end-to-end evidence. The highest-value remaining
+non-USDT acceptance checks are a real Xaman webhook-HMAC fixture and a
 deliberate executor-process interruption immediately after Coston2 broadcast;
 neither must alter the verified FXRP settlement evidence.

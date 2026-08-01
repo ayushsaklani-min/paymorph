@@ -385,6 +385,7 @@ export async function createQuote(input: {
         ...(usdt0Capability === undefined
           ? {}
           : {
+              usdt0RouteKind: usdt0Capability.routeKind,
               poolFee: usdt0Capability.poolFee,
               quotedFxrpInputUBA: exactOutputFxrpQuoteUBA!.toString(),
               swapRouterAddress: usdt0Capability.router,
@@ -650,7 +651,7 @@ async function quoteUsdt0ExactOutput(input: {
 
 function settlementAssetForRoute(route: string): 'FXRP' | 'USDT0' {
   if (route === 'DIRECT_FXRP') return 'FXRP';
-  if (route === 'SPARKDEX_EXACT_OUT') return 'USDT0';
+  if (route === 'EXACT_OUTPUT_V3' || route === 'SPARKDEX_EXACT_OUT') return 'USDT0';
   throw new DomainError('INTERNAL_ERROR', 'Stored quote contains an unsupported settlement route');
 }
 

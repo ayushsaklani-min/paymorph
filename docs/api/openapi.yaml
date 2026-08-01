@@ -847,12 +847,14 @@ paths:
       description: |
         Requires completed Xaman SignIn. The server reads current FTSO,
         registry-resolved FAssets settings, payer personal account and nonce.
-        USDT0 returns `QUOTE_ROUTE_UNAVAILABLE` while ADR 0006's route gate is
-        not satisfied. When enabled, it requires a verified router/factory/
-        quoter/pool/liquidity path, a matching PayMorph adapter, and a fresh
-        exact-output QuoterV2 simulation before the immutable operation is
-        built. Exact user-operation bytes are encrypted at rest and are not
-        returned.
+        USDT0 returns `QUOTE_ROUTE_UNAVAILABLE` while no configured route gate
+        is satisfied. An enabled route reports its explicit kind; ADR 0006
+        preserves the official SparkDEX gate, while ADR 0007 separately labels
+        the real-token Coston2 testnet route as `PAYMORPH_TESTNET`. Every
+        enabled route requires a verified router/factory/quoter/pool/liquidity
+        path, a matching PayMorph adapter, and a fresh exact-output QuoterV2
+        simulation before the immutable operation is built. Exact
+        user-operation bytes are encrypted at rest and are not returned.
       x-implementation-status: implemented
       security:
         - PayerCookie: []
@@ -2663,10 +2665,13 @@ components:
       oneOf:
         - type: object
           additionalProperties: false
-          required: [available, reason, token, router]
+          required: [available, routeKind, reason, token, router]
           properties:
             available:
               const: false
+            routeKind:
+              type: string
+              enum: [SPARKDEX_V3, PAYMORPH_TESTNET]
             reason:
               type: string
               enum:
@@ -2687,10 +2692,13 @@ components:
               $ref: '#/components/schemas/EvmAddress'
         - type: object
           additionalProperties: false
-          required: [available, token, router, factory, quoter, pool, poolFee, liquidity]
+          required: [available, routeKind, token, router, factory, quoter, pool, poolFee, liquidity]
           properties:
             available:
               const: true
+            routeKind:
+              type: string
+              enum: [SPARKDEX_V3, PAYMORPH_TESTNET]
             token:
               $ref: '#/components/schemas/EvmAddress'
             router:
@@ -2826,10 +2834,13 @@ components:
           oneOf:
             - type: object
               additionalProperties: false
-              required: [status]
+              required: [status, routeKind]
               properties:
                 status:
                   const: ready
+                routeKind:
+                  type: string
+                  enum: [SPARKDEX_V3, PAYMORPH_TESTNET]
             - type: object
               additionalProperties: false
               required: [status, reason]

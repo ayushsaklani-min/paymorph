@@ -8,6 +8,7 @@
     "fmt:check": "forge fmt --check",
     "test": "forge test -vvv",
     "coverage": "forge coverage",
-    "deploy:coston2": "forge script script/DeployPayMorph.s.sol:DeployPayMorph --rpc-url coston2 --broadcast"
+    "deploy:coston2": "forge script script/DeployPayMorph.s.sol:DeployPayMorph --rpc-url coston2 --broadcast",
+    "deploy:testnet-usdt0-route": "forge script script/DeployPayMorphTestnetUsdt0Route.s.sol:DeployPayMorphTestnetUsdt0Route --rpc-url coston2 --broadcast"
   }
 }

@@ -29,7 +29,7 @@ XRPL Testnet ── FDC XRPPayment proof ──> AssetManagerFXRP
                                              v
                                       PayMorphRouter
                                         ├─ FXRP recipients
-                                        └─ SparkDEX adapter
+                                        └─ Exact-output adapter
                                                └─ USDT0 recipients
 ```
 
@@ -97,12 +97,15 @@ endpoint returns a typed reason and checkout offers FXRP only. A USDT0 quote
 also requires a matching, bytecode-backed PayMorph settlement adapter and a
 fresh QuoterV2 `eth_call` for the exact USDT0 output (including the committed
 service fee); its ceil-bounded FXRP input and route snapshot are persisted with
-the immutable quote. Before a quote can ask a payer to sign XRP, PayMorph must
-receive an authenticated response from the FDC XRP indexer; an unavailable or
-unauthorized verifier blocks quote creation. If FDC or executor is delayed
-after a valid payment, the attempt stays pending and reconciliation continues.
-Deterministic mismatches stop automatically and surface operator diagnostics.
-Recovery follows the official `0xE0` flow only when eligibility is proven.
+the immutable quote. Capability metadata includes an explicit route kind:
+`SPARKDEX_V3` for an official route or `PAYMORPH_TESTNET` for ADR 0007's
+separately labelled, real-token Coston2 testnet route. Before a quote can ask
+a payer to sign XRP, PayMorph must receive an authenticated response from the
+FDC XRP indexer; an unavailable or unauthorized verifier blocks quote creation.
+If FDC or executor is delayed after a valid payment, the attempt stays pending
+and reconciliation continues. Deterministic mismatches stop automatically and
+surface operator diagnostics. Recovery follows the official `0xE0` flow only
+when eligibility is proven.
 
 After the FDC voting round is finalized, the DA layer may briefly return the
 observed structured `400 {"error":"attestation request not found"}` propagation response.

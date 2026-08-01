@@ -73,6 +73,6 @@ describe('quote calculation', () => {
     expect(quote.serviceFeeOutBaseUnits).toBe(5_000n);
     expect(quote.maxFxrpInputUBA).toBe(609_000n);
     expect(quote.xrplPaymentDrops).toBeGreaterThan(quote.maxFxrpInputUBA);
-    expect(quote.route).toBe('SPARKDEX_EXACT_OUT');
+    expect(quote.route).toBe('EXACT_OUTPUT_V3');
   });
 });

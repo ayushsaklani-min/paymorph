@@ -41,7 +41,11 @@ export default async function NetworkPage() {
         />
         <Diagnostic
           label="USDT0 settlement"
-          value={usdt0?.available ? 'Ready' : (usdt0?.reason ?? 'Readiness check failed')}
+          value={
+            usdt0?.available
+              ? `Ready · ${usdt0.routeKind}`
+              : (usdt0?.reason ?? 'Readiness check failed')
+          }
         />
         <Diagnostic
           label="AssetManagerFXRP"

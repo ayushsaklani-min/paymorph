@@ -14,7 +14,10 @@ export interface FlareProviderConfig {
   readonly sparkDexFactoryAddress?: Address;
   readonly sparkDexQuoterAddress?: Address;
   readonly sparkDexPoolFee?: number;
+  readonly usdt0RouteKind?: Usdt0RouteKind;
 }
+
+export type Usdt0RouteKind = 'SPARKDEX_V3' | 'PAYMORPH_TESTNET';
 
 export interface ResolvedFlareContracts {
   readonly registry: Address;
@@ -71,11 +74,13 @@ export type Usdt0Capability =
   | {
       readonly available: false;
       readonly reason: Usdt0CapabilityReason;
+      readonly routeKind: Usdt0RouteKind;
       readonly token: Address;
       readonly router: Address;
     }
   | {
       readonly available: true;
+      readonly routeKind: Usdt0RouteKind;
       readonly token: Address;
       readonly router: Address;
       readonly factory: Address;

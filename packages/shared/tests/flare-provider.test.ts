@@ -23,6 +23,7 @@ interface MockOptions {
   readonly routerHasCode?: boolean;
   readonly completeRoute?: boolean;
   readonly feedDecimals?: number;
+  readonly routeKind?: FlareProviderConfig['usdt0RouteKind'];
 }
 
 function createMockProvider(options: MockOptions = {}): {
@@ -116,6 +117,7 @@ function createMockProvider(options: MockOptions = {}): {
           sparkDexPoolFee: 500,
         }
       : {}),
+    ...(options.routeKind === undefined ? {} : { usdt0RouteKind: options.routeKind }),
   };
   return {
     provider: new FlareNetworkProvider(client, config),
@@ -159,6 +161,7 @@ describe('FlareNetworkProvider', () => {
     expect(network.capabilities.USDT0).toEqual({
       available: false,
       reason: 'SWAP_ROUTER_NO_CODE',
+      routeKind: 'SPARKDEX_V3',
       token: USDT0,
       router: ROUTER,
     });
@@ -201,6 +204,7 @@ describe('FlareNetworkProvider', () => {
       },
       USDT0: {
         available: true,
+        routeKind: 'SPARKDEX_V3',
         token: USDT0,
         router: ROUTER,
         factory: FACTORY,
@@ -238,6 +242,17 @@ describe('FlareNetworkProvider', () => {
         ],
       }),
     );
+  });
+
+  it('labels a separately configured PayMorph testnet route without calling it SparkDEX', async () => {
+    const { provider } = createMockProvider({ completeRoute: true, routeKind: 'PAYMORPH_TESTNET' });
+
+    await expect(provider.readSettlementCapabilities()).resolves.toMatchObject({
+      USDT0: {
+        available: true,
+        routeKind: 'PAYMORPH_TESTNET',
+      },
+    });
   });
 
   it('rejects a provider connected to the wrong chain', async () => {

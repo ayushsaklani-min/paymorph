@@ -7,21 +7,21 @@ to fixture behavior.
 
 ## Phase ledger
 
-| Phase | Scope                                                                     | Exit gate                              | Status                                   |
-| ----- | ------------------------------------------------------------------------- | -------------------------------------- | ---------------------------------------- |
-| 0     | Workspace, strict TS, lint/format, Postgres, Prisma, shared envelopes, CI | `pnpm verify`, health route, migration | Local complete; native DB migrated       |
-| 1     | Router, SparkDEX adapter, deployment scripts, Foundry tests               | unit/fuzz/invariant tests              | Complete; FXRP router deployed           |
-| 2     | Registry, FAssets/FTSO helpers, amounts, capability checks                | verified network report + fixtures     | Complete                                 |
-| 3     | Merchant signed auth, sessions, invoices, dashboard                       | ownership and lifecycle tests          | Complete                                 |
-| 4     | Public checkout, payer session, Xaman SignIn, webhook                     | payload/dedupe/mobile tests            | Code complete; live gate                 |
-| 5     | Pricing, personal account/nonce, userOp, `0xFE` memo                      | golden vectors, expiry/nonce tests     | Complete                                 |
-| 6     | Xaman Payment, timeline, XRPL validator                                   | exact-field validation tests           | Code complete; live gate                 |
-| 7     | FDC executor, Coston2 submission, event decoding                          | real tiny FXRP smoke                   | Complete; live verified 2026-08-01       |
-| 8     | USDT0 route, exact-output settlement/refund                               | real smoke or explicit disabled reason | Complete; route disabled                 |
-| 9     | Receipts, event reconstruction, reconciliation, export                    | projection rebuild test                | Complete; local DB projection gate       |
-| 10    | `0xE0` recovery diagnostics and payer flow                                | reproducible official recovery test    | Code complete; official gate             |
-| 11    | Abuse controls, admin, logs/metrics, accessibility, UX                    | security checklist + all suites        | Partial; boundaries, logs, a11y, metrics |
-| 12    | Containers, hosted config, smoke artifact, submission docs                | README-driven judge flow               | Local complete; host gate                |
+| Phase | Scope                                                                     | Exit gate                              | Status                                                 |
+| ----- | ------------------------------------------------------------------------- | -------------------------------------- | ------------------------------------------------------ |
+| 0     | Workspace, strict TS, lint/format, Postgres, Prisma, shared envelopes, CI | `pnpm verify`, health route, migration | Local complete; native DB migrated                     |
+| 1     | Router, SparkDEX adapter, deployment scripts, Foundry tests               | unit/fuzz/invariant tests              | Complete; FXRP router deployed                         |
+| 2     | Registry, FAssets/FTSO helpers, amounts, capability checks                | verified network report + fixtures     | Complete                                               |
+| 3     | Merchant signed auth, sessions, invoices, dashboard                       | ownership and lifecycle tests          | Complete                                               |
+| 4     | Public checkout, payer session, Xaman SignIn, webhook                     | payload/dedupe/mobile tests            | Code complete; live gate                               |
+| 5     | Pricing, personal account/nonce, userOp, `0xFE` memo                      | golden vectors, expiry/nonce tests     | Complete                                               |
+| 6     | Xaman Payment, timeline, XRPL validator                                   | exact-field validation tests           | Code complete; live gate                               |
+| 7     | FDC executor, Coston2 submission, event decoding                          | real tiny FXRP smoke                   | Complete; live verified 2026-08-01                     |
+| 8     | USDT0 route, exact-output settlement/refund                               | real smoke or explicit disabled reason | On-chain `PAYMORPH_TESTNET` route; payer smoke pending |
+| 9     | Receipts, event reconstruction, reconciliation, export                    | projection rebuild test                | Complete; local DB projection gate                     |
+| 10    | `0xE0` recovery diagnostics and payer flow                                | reproducible official recovery test    | Code complete; official gate                           |
+| 11    | Abuse controls, admin, logs/metrics, accessibility, UX                    | security checklist + all suites        | Partial; boundaries, logs, a11y, metrics               |
+| 12    | Containers, hosted config, smoke artifact, submission docs                | README-driven judge flow               | Local complete; host gate                              |
 
 ## USDT0 quote-path hardening — 2026-08-01
 
@@ -33,10 +33,13 @@ to fixture behavior.
   USDT0 tokens and the configured adapter's router, DEX router, token pair, and
   pool-fee identity. The quote persists the quoted FXRP input and DEX route
   snapshot for audit alongside the encrypted immutable user operation.
-- This is code and local-migration complete only. ADR 0006 still keeps USDT0
-  unavailable on Coston2 because the official route has not passed its live
-  bytecode/liquidity gate; no mock DEX, price fallback, or settlement claim was
-  introduced.
+- ADR 0006 still keeps the official SparkDEX route unavailable on Coston2. ADR
+  0007 records the product-owner-authorized, separately labelled
+  `PAYMORPH_TESTNET` route instead: it has a real-token exact-output router,
+  factory, quoter, liquidity projection, 5-test-USDT0 liquidity transfer, and
+  matching adapter deployed on Coston2. This is not a SparkDEX claim or a
+  mainnet route. A payer-signed checkout and independent receipt remain the
+  required end-to-end evidence.
 
 `DB gate` means the implementation and unit coverage exist, but the acceptance
 test still requires a reachable PostgreSQL instance. `Live gate` means real

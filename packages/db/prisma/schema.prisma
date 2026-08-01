@@ -370,6 +370,7 @@ model Quote {
   xrplPaymentDrops       Decimal        @db.Decimal(78, 0)
   slippageBps            Int
   route                  String
+  usdt0RouteKind         String?
   poolFee                Int?
   quotedFxrpInputUBA     Decimal?       @db.Decimal(78, 0)
   swapRouterAddress      String?

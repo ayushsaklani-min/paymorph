@@ -1,0 +1,33 @@
+{
+  "network": "coston2",
+  "chainId": 114,
+  "routeKind": "PAYMORPH_TESTNET",
+  "adr": "0007",
+  "payMorphRouterAddress": "0x9C7d670BE201be8a527cCDf349FE45B037eC6008",
+  "factoryAddress": "0xD8019c06Bf594d646c0a35F8F63a4E8Ceb872422",
+  "swapRouterAddress": "0x6115F90F2B8E9FaDd87Ac5B02F89FeEec92930f8",
+  "poolAddress": "0x75374f89b3277C8dadDA193f3B9dc83D5b52dA10",
+  "quoterAddress": "0x036B2D2BCB8A477f772D32f076640C3E26bC56ee",
+  "adapterAddress": "0x70dCd03Cf5b79f7C4b0352842B54F87A2C890a36",
+  "fxrpAddress": "0x0b6A3645c240605887a5532109323A3E12273dc7",
+  "usdt0Address": "0xC1A5B41512496B80903D1f32d6dEa3a73212E71F",
+  "poolFee": 500,
+  "inputPerOutput": {
+    "numerator": "1",
+    "denominator": "1"
+  },
+  "initialUsdt0LiquidityBaseUnits": "5000000",
+  "deployer": "0x060613A360fFe3213818c022b404E5AA9D755611",
+  "transactions": [
+    "0x1a9e98b9c5f45e2eb73f1fd3d3581cbc1f0e63a5537f98f2012764295b6604f4",
+    "0x313cc821e79c4a3cdf148ed6d64341055dfcea3014afe8c282a367f1ae13b711",
+    "0x92dca2cd4d0aa5599c862b70066e5e416da83c1326d664ba21fd3c91be4c6166",
+    "0x20a47949b94b743457b77e76f8d4a7bb01990e08cec4cdd6fdc0ea0dbf607a07",
+    "0x3dc6ee9235225568c411b84242ec20a9fc8dcd0964e2228d179b2db75fac96a8",
+    "0x7a343cfa5a25436846169d7c03b349ba42aff20d4a2ea3312715a1278d79fa09",
+    "0x2206d1d2c04bc4e8f2504120718182f90863470750e637acd24369dd872b3c74",
+    "0x44c0e4e1993a8dbbe0cd8a5af365ccbea74cd536cdbbd0b8659d8ceea249cd41"
+  ],
+  "verifiedAtBlock": "33510005",
+  "createdAt": "2026-08-01T14:10:18.000Z"
+}

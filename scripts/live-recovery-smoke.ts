@@ -68,6 +68,15 @@ const validatedRecovery = validateXrplPayment(xrpl, {
 });
 
 const client = createCoston2PublicClient(process.env.COSTON2_RPC_URL);
+const configuredRouterAddress = process.env.PAYMORPH_ROUTER_ADDRESS;
+if (!configuredRouterAddress) {
+  throw new Error('PAYMORPH_ROUTER_ADDRESS is required for recovery settlement verification');
+}
+const payMorphRouterAddress = getAddress(configuredRouterAddress);
+const routerCode = await client.getBytecode({ address: payMorphRouterAddress });
+if (!routerCode || routerCode === '0x') {
+  throw new Error(`PayMorph router has no bytecode at ${payMorphRouterAddress}`);
+}
 const provider = new FlareNetworkProvider(client, {
   ...(process.env.FLARE_CONTRACT_REGISTRY
     ? { registryAddress: getAddress(process.env.FLARE_CONTRACT_REGISTRY) }
@@ -148,7 +157,7 @@ const recoverySettlementEvents = [markerReceipt, originalReceipt].flatMap((recei
     abi: payMorphRouterEventsAbi,
     eventName: 'PaymentSettled',
     logs: receipt.logs.filter(
-      (log) => log.address.toLowerCase() === contracts.payMorphRouter.toLowerCase(),
+      (log) => log.address.toLowerCase() === payMorphRouterAddress.toLowerCase(),
     ),
     strict: true,
   }),

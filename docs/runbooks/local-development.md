@@ -34,6 +34,19 @@ pnpm db:migrate
 pnpm db:seed
 ```
 
+Verify the local receipt-projection boundary with a short-lived development
+fixture. This is deliberately opt-in and refuses any non-development
+environment. It creates no provider payload and sends no XRPL or Coston2
+transaction; all temporary records are removed before the command exits:
+
+```bash
+RUN_DB_PROJECTION_ACCEPTANCE=1 pnpm test:db-projection
+```
+
+The command proves that a persisted `PaymentSettled` event gates its fixture
+attempt, the public receipt can be rebuilt from normalized events, and the
+`payment.settled` merchant webhook outbox entry is enqueued.
+
 Run a normal `pnpm install` again after changing a workspace package manifest.
 PayMorph uses injected workspace packages for deployable-process isolation, and
 the install recreates those local package links. Do not copy package folders

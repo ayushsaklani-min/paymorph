@@ -77,6 +77,15 @@ verification items".
 - Receipt projection writes bigint-safe raw Flare receipt checkpoints and
   separately normalized `PaymentSettled`/`RecipientPaid` event payloads.
   `SETTLED` remains reachable only through persisted `PaymentSettled` evidence.
+- Database projection acceptance (2026-08-01): the guarded
+  `RUN_DB_PROJECTION_ACCEPTANCE=1 pnpm test:db-projection` verifier passed
+  against native WSL PostgreSQL. Its temporary development-only fixture proves
+  the real `PaymentSettled` transition guard, public receipt reconstruction,
+  RecipientPaid projection, and the single settlement webhook-outbox enqueue;
+  it checks that every fixture row is removed before reporting success. It does
+  not contact Xaman, XRPL, FDC, or Coston2. The recovery live verifier now also
+  requires the configured router address and bytecode before inspecting its
+  receipt logs.
 - The production-only executor package has been smoke-loaded successfully:
   workspace dependencies and the package-owned generated Prisma client resolve,
   and startup stops at the expected strict missing-secret validation boundary.
@@ -469,8 +478,9 @@ job and cannot retry deterministic terminal or recovery states.
   manually rewound. The corrected key now produces a valid prepared FDC request
   for that hash; a fresh tiny checkout is still required for the canonical live
   settlement smoke.
-- Run database seed, queue lease tests, and projection rebuild against the
-  configured native or hosted database.
+- A concurrent queue-lease acceptance run against a quiescent PostgreSQL worker
+  environment remains useful. Seed/cleanup and the receipt-projection database
+  acceptance fixture now pass against native WSL PostgreSQL.
 - Extend browser coverage from the current public-shell smoke to the
   credentialed checkout and merchant collection flows once deterministic
   browser fixtures are available. The current local Chrome fallback passed;

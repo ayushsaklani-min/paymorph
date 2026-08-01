@@ -372,21 +372,22 @@ Never manually turn a failed live run into success.
 
 ## Commands
 
-| Command                         | Purpose                                                           |
-| ------------------------------- | ----------------------------------------------------------------- |
-| `pnpm dev`                      | Run web and executor using `.env.local`.                          |
-| `pnpm verify`                   | Format check, lint, typecheck, unit tests, and production builds. |
-| `pnpm test`                     | Run workspace tests.                                              |
-| `pnpm test:contracts`           | Run Foundry contract tests, fuzz tests, and invariants.           |
-| `pnpm test:e2e`                 | Run Playwright browser journeys when Chromium is installed.       |
-| `pnpm db:migrate`               | Apply Prisma migrations.                                          |
-| `pnpm db:seed`                  | Seed development data.                                            |
-| `pnpm webhooks:deliver`         | Deliver due merchant webhook events once.                         |
-| `pnpm network:resolve`          | Inspect runtime network and registry configuration.               |
-| `pnpm verify:deployment`        | Verify the configured deployment.                                 |
-| `pnpm contracts:deploy:coston2` | Deploy contracts to Coston2 with testnet-only keys.               |
-| `pnpm test:live`                | Run the opt-in real testnet receipt verifier.                     |
-| `pnpm test:live:recovery`       | Verify and archive an evidence-backed official recovery.          |
+| Command                                                  | Purpose                                                           |
+| -------------------------------------------------------- | ----------------------------------------------------------------- |
+| `pnpm dev`                                               | Run web and executor using `.env.local`.                          |
+| `pnpm verify`                                            | Format check, lint, typecheck, unit tests, and production builds. |
+| `pnpm test`                                              | Run workspace tests.                                              |
+| `pnpm test:contracts`                                    | Run Foundry contract tests, fuzz tests, and invariants.           |
+| `pnpm test:e2e`                                          | Run Playwright browser journeys when Chromium is installed.       |
+| `pnpm db:migrate`                                        | Apply Prisma migrations.                                          |
+| `pnpm db:seed`                                           | Seed development data.                                            |
+| `RUN_DB_PROJECTION_ACCEPTANCE=1 pnpm test:db-projection` | Exercise the development-only receipt-projection DB fixture.      |
+| `pnpm webhooks:deliver`                                  | Deliver due merchant webhook events once.                         |
+| `pnpm network:resolve`                                   | Inspect runtime network and registry configuration.               |
+| `pnpm verify:deployment`                                 | Verify the configured deployment.                                 |
+| `pnpm contracts:deploy:coston2`                          | Deploy contracts to Coston2 with testnet-only keys.               |
+| `pnpm test:live`                                         | Run the opt-in real testnet receipt verifier.                     |
+| `pnpm test:live:recovery`                                | Verify and archive an evidence-backed official recovery.          |
 
 Latest local verification (2026-08-01):
 
@@ -397,12 +398,14 @@ Latest local verification (2026-08-01):
 - `pnpm db:seed` and `pnpm db:cleanup` passed against native WSL PostgreSQL;
   the seed upserts only the deterministic demo merchant/invoice and cleanup
   removes expired operational records only.
+- `RUN_DB_PROJECTION_ACCEPTANCE=1 pnpm test:db-projection` passed against the
+  same local database. It creates and removes only a guarded development
+  fixture while proving the `PaymentSettled`-gated transition, receipt
+  reconstruction, recipient evidence, and settlement webhook-outbox enqueue.
 - The two browser smoke journeys passed in locally installed Google Chrome via
   `PLAYWRIGHT_BROWSER_CHANNEL=chrome pnpm test:e2e`.
-- The all-in-one `pnpm verify` command exceeded the local shell's 95-second
-  timeout during its repeated production-build stage; focused checks passed
-  independently. The latest isolated web production build passed with all
-  versioned developer API routes included.
+- The full `pnpm verify` gate passed: formatting, linting, workspace
+  typechecking, 207 automated tests, and all production builds.
 - Playwright's managed Chromium and PHP/WordPress are not installed on this
   machine, so the default Chromium path and WooCommerce runtime acceptance
   remain external gates.

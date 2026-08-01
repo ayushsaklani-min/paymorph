@@ -18,7 +18,7 @@ to fixture behavior.
 | 6     | Xaman Payment, timeline, XRPL validator                                   | exact-field validation tests           | Code complete; live gate           |
 | 7     | FDC executor, Coston2 submission, event decoding                          | real tiny FXRP smoke                   | Code complete; live gate           |
 | 8     | USDT0 route, exact-output settlement/refund                               | real smoke or explicit disabled reason | Complete; route disabled           |
-| 9     | Receipts, event reconstruction, reconciliation, export                    | projection rebuild test                | Code complete; DB gate             |
+| 9     | Receipts, event reconstruction, reconciliation, export                    | projection rebuild test                | Complete; local DB projection gate |
 | 10    | `0xE0` recovery diagnostics and payer flow                                | reproducible official recovery test    | Code complete; official gate       |
 | 11    | Abuse controls, admin, logs/metrics, accessibility, UX                    | security checklist + all suites        | Partial                            |
 | 12    | Containers, hosted config, smoke artifact, submission docs                | README-driven judge flow               | Local complete; host gate          |
@@ -92,6 +92,24 @@ artifacts are required; fixtures do not satisfy it.
   authentication records. The Google Chrome browser smoke passed 2/2 against
   the local server. These checks do not create a payment attempt or any chain
   transaction.
+
+## Database projection acceptance update — 2026-08-01
+
+- `RUN_DB_PROJECTION_ACCEPTANCE=1 pnpm test:db-projection` passed against the
+  native WSL PostgreSQL instance. Its guarded development-only fixture starts
+  at `FLARE_CONFIRMED`, advances only through the normal
+  `PaymentSettled`-evidence transition, rebuilds the public receipt from the
+  normalized `PaymentSettled`/`RecipientPaid` events, verifies the one
+  `payment.settled` outbox entry, and proves all fixture records are removed
+  before reporting success. It does not create an XRPL, FDC, or Coston2
+  transaction.
+- Root script typechecking also repaired the recovery verifier's stale router
+  field: it now requires `PAYMORPH_ROUTER_ADDRESS` and verifies bytecode at
+  that configured address before checking that recovery receipts contain no
+  router `PaymentSettled` event.
+- The complete local `pnpm verify` gate passed afterward: formatting, lint,
+  workspace typechecking, 207 automated tests (including all 29 Foundry
+  tests), and every production build.
 
 ## Product-platform update — 2026-07-31
 

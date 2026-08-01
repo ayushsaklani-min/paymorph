@@ -41,9 +41,12 @@ const communityNotes = [
 
 export default function HomePage() {
   return (
-    <main className="pm-shell overflow-hidden">
+    <main id="main-content" tabIndex={-1} className="pm-shell overflow-hidden">
       <div className="mx-auto flex min-h-screen max-w-7xl flex-col px-4 pb-20 pt-4 sm:px-6 sm:pt-6 lg:px-8">
-        <nav className="pm-panel pm-editorial-nav flex items-center justify-between rounded-full px-4 py-2.5 sm:px-5">
+        <nav
+          aria-label="Primary navigation"
+          className="pm-panel pm-editorial-nav flex items-center justify-between rounded-full px-4 py-2.5 sm:px-5"
+        >
           <a className="pm-brand" href="/">
             <MorphMark />
             <span>

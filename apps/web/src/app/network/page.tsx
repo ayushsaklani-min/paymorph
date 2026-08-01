@@ -10,7 +10,11 @@ export default async function NetworkPage() {
   const network = await resolveConfiguredNetwork().catch(() => null);
   const usdt0 = network?.capabilities.USDT0;
   return (
-    <main className="pm-shell mx-auto min-h-screen max-w-4xl px-6 py-6 sm:py-10">
+    <main
+      id="main-content"
+      tabIndex={-1}
+      className="pm-shell mx-auto min-h-screen max-w-4xl px-6 py-6 sm:py-10"
+    >
       <header className="pm-panel pm-editorial-nav flex items-center justify-between gap-4 rounded-3xl px-4 py-3 sm:px-5">
         <a
           className="text-sm font-medium text-[var(--muted)] transition hover:text-[var(--ink)]"

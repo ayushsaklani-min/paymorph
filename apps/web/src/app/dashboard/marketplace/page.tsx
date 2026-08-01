@@ -14,7 +14,7 @@ export default async function MarketplacePage() {
   });
   const splitInvoices = invoices.filter((invoice) => invoice.recipients.length > 1);
   return (
-    <main className="py-12">
+    <main id="main-content" tabIndex={-1} className="py-12">
       <p className="text-sm text-[var(--muted)]">Deterministic recipient settlement</p>
       <h1 className="mt-2 text-4xl font-semibold">Marketplace</h1>
       <p className="mt-3 max-w-2xl text-[var(--muted)]">

@@ -15,3 +15,18 @@ test('takes the merchant from the landing page to wallet sign-in', async ({ page
   await expect(page.getByRole('heading', { name: /Welcome to the console/i })).toBeVisible();
   await expect(page.getByText(/never asks for your private key/i)).toBeVisible();
 });
+
+test('offers a keyboard path that skips directly to the primary content landmark', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await expect(page.locator('main')).toHaveAttribute('id', 'main-content');
+
+  await page.keyboard.press('Tab');
+  const skipLink = page.getByRole('link', { name: 'Skip to main content' });
+  await expect(skipLink).toBeFocused();
+
+  await page.keyboard.press('Enter');
+  await expect(page.locator('main')).toBeFocused();
+  await expect(page.getByRole('navigation', { name: 'Primary navigation' })).toBeVisible();
+});

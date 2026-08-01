@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import Script from 'next/script';
 import { AmbientPointer } from '@/components/ui/ambient-pointer';
 import { EmberEarth } from '@/components/ui/ember-earth';
+import { SkipToContent } from '@/components/ui/skip-to-content';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -45,6 +46,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
             })();
           `}
         </Script>
+        <SkipToContent />
         <AmbientPointer />
         <EmberEarth />
         <div className="pm-app-root">{children}</div>

@@ -32,7 +32,7 @@ export default async function DashboardPage() {
   const funnelMax = Math.max(overview.funnel.created, 1);
 
   return (
-    <main className="py-10 sm:py-12">
+    <main id="main-content" tabIndex={-1} className="py-10 sm:py-12">
       <div className="flex flex-wrap items-end justify-between gap-6">
         <div>
           <p className="pm-kicker">Merchant workspace</p>

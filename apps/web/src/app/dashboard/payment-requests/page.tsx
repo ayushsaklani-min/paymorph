@@ -7,7 +7,7 @@ export default async function PaymentRequestsPage() {
   const merchant = await requireMerchant();
   const requests = await listPaymentRequests(merchant.id);
   return (
-    <main className="py-12">
+    <main id="main-content" tabIndex={-1} className="py-12">
       <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr]">
         <section>
           <p className="text-sm text-[var(--muted)]">Collection surface</p>

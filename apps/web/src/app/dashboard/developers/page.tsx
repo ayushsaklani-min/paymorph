@@ -8,7 +8,7 @@ export default async function DevelopersPage() {
     orderBy: { createdAt: 'desc' },
   });
   return (
-    <main className="py-12">
+    <main id="main-content" tabIndex={-1} className="py-12">
       <p className="text-sm text-[var(--muted)]">Developer platform</p>
       <h1 className="mt-2 text-4xl font-semibold">API keys</h1>
       <p className="mt-3 text-[var(--muted)]">

@@ -7,7 +7,7 @@ export default async function InvoiceTemplatesPage() {
   const templates = await listInvoiceTemplates(merchant.id);
 
   return (
-    <main className="py-12">
+    <main id="main-content" tabIndex={-1} className="py-12">
       <a className="text-sm text-[var(--muted)]" href="/dashboard/invoices">
         ← Invoices
       </a>

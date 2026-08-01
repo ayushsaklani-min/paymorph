@@ -115,11 +115,12 @@ verification items".
   and direct HTTP shell checks passed. The isolated production build exceeded
   the shell's 94-second command limit without reporting a source failure and
   was stopped; do not treat that as a production-build pass.
-- Browser acceptance update (2026-08-01): the public disclosure and
-  landing-to-merchant-wallet sign-in journeys pass in local Google Chrome via
-  `PLAYWRIGHT_BROWSER_CHANNEL=chrome pnpm test:e2e`. The configured default
-  remains Playwright Chromium for CI. This covers the rendered shell after the
-  UI refresh; it does not prove any credentialed settlement behavior.
+- Browser acceptance update (2026-08-01): the public disclosure,
+  landing-to-merchant-wallet sign-in, and keyboard skip-to-main journeys pass
+  in local Google Chrome via `PLAYWRIGHT_BROWSER_CHANNEL=chrome pnpm test:e2e`.
+  The configured default remains Playwright Chromium for CI. This covers the
+  rendered shell after the UI refresh; it does not prove credentialed
+  settlement behavior.
 - FDC admission hardening (2026-08-01): `/api/ready` and FXRP quote creation
   now require an authenticated, read-only XRP indexer response from the
   configured FDC verifier. This prevents a payer from being asked to sign when
@@ -211,6 +212,12 @@ verification items".
   logger testing plus the full `pnpm verify` gate (224 automated tests/all
   production builds) and `pnpm test:contracts` (29 Foundry tests) passed. This
   is local logging protection, not a live payment or settlement artifact.
+- Accessibility navigation update (2026-08-01): each of the 24 route-owned
+  semantic main landmarks now has the same focusable `#main-content` ID. The
+  root shell's first-tab skip link works before hydration, and the local Chrome
+  browser smoke passed all three journeys including that keyboard path. The
+  full `pnpm verify` and `pnpm test:contracts` gates passed afterward. This
+  changes only semantic navigation, not payment behavior.
 
 ## Decisions
 

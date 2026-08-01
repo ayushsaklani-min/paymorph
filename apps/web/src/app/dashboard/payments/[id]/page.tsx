@@ -74,7 +74,7 @@ export default async function MerchantPaymentDetailPage({
   if (!attempt) notFound();
 
   return (
-    <main className="py-10 sm:py-12">
+    <main id="main-content" tabIndex={-1} className="py-10 sm:py-12">
       <a
         className="text-sm font-medium text-[var(--muted)] underline-offset-4 hover:text-[var(--accent)] hover:underline"
         href="/dashboard/payments"

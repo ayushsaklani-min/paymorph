@@ -16,7 +16,11 @@ export default async function PaymentLinkPage({ params }: { params: Promise<{ sl
   }
 
   return (
-    <main className="mx-auto grid min-h-screen max-w-xl place-items-center px-4 py-10">
+    <main
+      id="main-content"
+      tabIndex={-1}
+      className="mx-auto grid min-h-screen max-w-xl place-items-center px-4 py-10"
+    >
       <section className="w-full rounded-3xl border border-[var(--line)] bg-[var(--surface)] p-7 shadow-2xl shadow-black/20">
         <p className="text-sm text-[var(--muted)]">PayMorph payment link</p>
         <h1 className="mt-3 text-3xl font-semibold tracking-tight">{link.name}</h1>

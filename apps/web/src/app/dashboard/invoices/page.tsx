@@ -11,7 +11,7 @@ export default async function InvoicesPage() {
   });
 
   return (
-    <main className="py-12">
+    <main id="main-content" tabIndex={-1} className="py-12">
       <div className="flex flex-wrap items-end justify-between gap-5">
         <div>
           <p className="pm-kicker">Merchant workspace</p>

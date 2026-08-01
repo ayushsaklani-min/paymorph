@@ -20,6 +20,10 @@
 - Confirm the executor uses `createExecutorLogger` and that a regression test
   proves credentials, encrypted user-operation data, signed blobs, raw bodies,
   and provider error text do not enter structured logs.
+- Confirm the keyboard's first focus target is the app-wide “Skip to main
+  content” link and that every route has exactly one focusable
+  `#main-content` landmark. Run the Chrome browser smoke after altering the
+  app shell or route landmarks.
 - Confirm monetary code contains no floating-point operations.
 - Confirm all API mutations validate input, authorization, origin/CSRF, and
   idempotency.

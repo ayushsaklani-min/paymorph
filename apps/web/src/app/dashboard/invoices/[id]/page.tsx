@@ -19,7 +19,7 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
   );
 
   return (
-    <main className="py-12">
+    <main id="main-content" tabIndex={-1} className="py-12">
       <a className="text-sm text-[var(--muted)]" href="/dashboard/invoices">
         ← Invoices
       </a>

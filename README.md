@@ -408,8 +408,9 @@ Latest local verification (2026-08-01):
   same local database. It creates and removes only a guarded development
   fixture while proving the `PaymentSettled`-gated transition, receipt
   reconstruction, recipient evidence, and settlement webhook-outbox enqueue.
-- The two browser smoke journeys passed in locally installed Google Chrome via
-  `PLAYWRIGHT_BROWSER_CHANNEL=chrome pnpm test:e2e`.
+- Three browser smoke journeys passed in locally installed Google Chrome via
+  `PLAYWRIGHT_BROWSER_CHANNEL=chrome pnpm test:e2e`, including a keyboard path
+  from the app-wide skip link to the primary content landmark.
 - The full `pnpm verify` gate passed: formatting, linting, workspace
   typechecking, 224 automated tests, and all production builds.
 - A direct local `/api/health` check confirmed the response security headers

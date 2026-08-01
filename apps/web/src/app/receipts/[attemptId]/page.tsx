@@ -5,7 +5,7 @@ export default async function ReceiptPage({ params }: { params: Promise<{ attemp
   try {
     const receipt = await buildPublicReceipt((await params).attemptId);
     return (
-      <main className="mx-auto max-w-3xl px-4 py-12">
+      <main id="main-content" tabIndex={-1} className="mx-auto max-w-3xl px-4 py-12">
         <a className="text-sm text-[var(--muted)]" href="/explorer">
           ← Evidence explorer
         </a>

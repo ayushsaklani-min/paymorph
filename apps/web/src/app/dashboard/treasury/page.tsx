@@ -20,7 +20,7 @@ export default async function TreasuryPage() {
     .filter((attempt) => attempt.invoice.settlementAsset === 'USDT0')
     .reduce((sum, attempt) => sum + BigInt(attempt.quote.invoiceOutBaseUnits.toFixed(0)), 0n);
   return (
-    <main className="py-12">
+    <main id="main-content" tabIndex={-1} className="py-12">
       <p className="text-sm text-[var(--muted)]">Read-only settlement projection</p>
       <h1 className="mt-2 text-4xl font-semibold">Treasury</h1>
       <p className="mt-3 max-w-2xl text-[var(--muted)]">

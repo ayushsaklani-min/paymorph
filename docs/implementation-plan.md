@@ -20,7 +20,7 @@ to fixture behavior.
 | 8     | USDT0 route, exact-output settlement/refund                               | real smoke or explicit disabled reason | Complete; route disabled           |
 | 9     | Receipts, event reconstruction, reconciliation, export                    | projection rebuild test                | Complete; local DB projection gate |
 | 10    | `0xE0` recovery diagnostics and payer flow                                | reproducible official recovery test    | Code complete; official gate       |
-| 11    | Abuse controls, admin, logs/metrics, accessibility, UX                    | security checklist + all suites        | Partial; web boundaries hardened   |
+| 11    | Abuse controls, admin, logs/metrics, accessibility, UX                    | security checklist + all suites        | Partial; boundaries, logs, a11y    |
 | 12    | Containers, hosted config, smoke artifact, submission docs                | README-driven judge flow               | Local complete; host gate          |
 
 `DB gate` means the implementation and unit coverage exist, but the acceptance
@@ -138,6 +138,18 @@ artifacts are required; fixtures do not satisfy it.
   every production build) and `pnpm test:contracts` (29 Foundry tests). This
   improves local operational safety; it does not establish any live payment or
   settlement evidence.
+
+## Accessibility navigation update — 2026-08-01
+
+- All 24 route-owned semantic `main` landmarks now expose the same focusable
+  `#main-content` target. The root shell provides a first-tab “Skip to main
+  content” link, so keyboard users can bypass repeated navigation without
+  nesting or duplicating main landmarks.
+- The local Chrome browser suite now passes three journeys: evidence/testnet
+  disclosure, landing-to-merchant sign-in, and keyboard skip navigation.
+  `pnpm verify` (224 automated tests/all production builds) and
+  `pnpm test:contracts` (29 Foundry tests) also passed. This only improves
+  semantic navigation and does not alter checkout or settlement behavior.
 
 ## Product-platform update — 2026-07-31
 

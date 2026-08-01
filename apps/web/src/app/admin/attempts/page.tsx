@@ -43,7 +43,11 @@ export default async function OperatorAttemptsPage({
   const limit = first(raw.limit) ?? '25';
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <main
+      id="main-content"
+      tabIndex={-1}
+      className="mx-auto min-h-screen w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8"
+    >
       <header className="flex flex-wrap items-start justify-between gap-5">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">

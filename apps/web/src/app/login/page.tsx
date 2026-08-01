@@ -6,7 +6,11 @@ export const metadata: Metadata = { title: 'Merchant sign in' };
 
 export default function LoginPage() {
   return (
-    <main className="pm-shell mx-auto grid min-h-screen max-w-5xl place-items-center px-6 py-12">
+    <main
+      id="main-content"
+      tabIndex={-1}
+      className="pm-shell mx-auto grid min-h-screen max-w-5xl place-items-center px-6 py-12"
+    >
       <section className="pm-panel pm-editorial-nav w-full max-w-md rounded-[2rem] p-5 sm:p-8">
         <div className="flex items-center justify-between gap-4">
           <a

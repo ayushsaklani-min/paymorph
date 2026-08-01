@@ -7,36 +7,71 @@ const proofPath = [
   ['04', 'Settle on-chain', 'Decode PaymentSettled before publishing the receipt.'],
 ];
 
-const protocolFacts = [
+type StoryItem = {
+  source: string;
+  sourceHref: string;
+  context: string;
+  body: string;
+  response?: string;
+};
+
+const protocolFacts: StoryItem[] = [
   {
     source: 'XRPL Ledger Structure',
     sourceHref: 'https://xrpl.org/docs/concepts/ledgers/ledger-structure',
     context: 'Protocol fact · XRP Ledger',
-    fact: 'Validated ledger versions form a public history of transactions and their results.',
+    body: 'Validated ledger versions form a public history of transactions and their results.',
   },
   {
     source: 'XRPL Accounts',
     sourceHref: 'https://xrpl.org/docs/concepts/accounts',
     context: 'Protocol fact · XRP Ledger',
-    fact: 'An XRP Ledger account includes a public address, XRP balance, and transaction history.',
+    body: 'An XRP Ledger account includes a public address, XRP balance, and transaction history.',
   },
   {
     source: 'XRPL Transactions',
     sourceHref: 'https://xrpl.org/docs/introduction/transactions-and-requests',
     context: 'Protocol fact · XRP Ledger',
-    fact: 'An XRP payment carries an amount and a public destination address, then awaits ledger confirmation.',
+    body: 'An XRP payment carries an amount and a public destination address, then awaits ledger confirmation.',
   },
   {
     source: 'Flare FDC attestations',
     sourceHref: 'https://dev.flare.network/fdc/attestation-types',
     context: 'Protocol fact · Flare FDC',
-    fact: 'FDC can attest XRP Ledger payment information, including memo data and destination tags.',
+    body: 'FDC can attest XRP Ledger payment information, including memo data and destination tags.',
   },
   {
     source: 'Flare direct minting',
     sourceHref: 'https://dev.flare.network/fassets/developer-guides/fassets-direct-minting',
     context: 'Protocol fact · FAssets',
-    fact: 'After the XRP payment confirms, an executor finalizes direct FXRP minting on Flare.',
+    body: 'After the XRP payment confirms, an executor finalizes direct FXRP minting on Flare.',
+  },
+];
+
+const communityReports: StoryItem[] = [
+  {
+    source: 'r/XRP · “XRP stuck on confirming”',
+    sourceHref: 'https://www.reddit.com/r/XRP/comments/1d1611p/',
+    context: 'Community report · status ambiguity',
+    body: 'A user reported an XRP transfer appearing to remain in “confirming” status, prompting advice to inspect the ledger transaction rather than trust a wallet screen alone.',
+    response:
+      'PayMorph response: XRPL validation and Flare settlement are shown as separate verified stages.',
+  },
+  {
+    source: 'r/XRP · confirmed but not credited',
+    sourceHref: 'https://www.reddit.com/r/XRP/comments/1dnhs78/',
+    context: 'Community report · recipient delay',
+    body: 'A user reported that an XRP transfer was confirmed on-chain while the receiving service had not yet credited it.',
+    response:
+      'PayMorph response: a validated XRP payment never by itself becomes a merchant settlement receipt.',
+  },
+  {
+    source: 'r/XRP · destination-tag error',
+    sourceHref: 'https://www.reddit.com/r/XRP/comments/egd8xm/',
+    context: 'Community report · payment instructions',
+    body: 'A user reported sending XRP to the right custodial address with the wrong destination tag, leaving the deposit uncredited.',
+    response:
+      'PayMorph response: it commits exact payment instructions and validates their critical fields after signing.',
   },
 ];
 
@@ -185,20 +220,23 @@ export default function HomePage() {
                 Open networks deserve an open payment story.
               </h2>
               <p className="mt-5 max-w-md leading-7 text-[var(--muted-strong)]">
-                These are linked protocol facts from the XRPL and Flare developer documentation.
-                They explain why PayMorph shows the next verified step, chain evidence, and clear
-                testnet status.
+                Public community reports show why status clarity matters. Protocol facts explain the
+                evidence underneath. Reports describe individual experiences—not verified claims
+                about XRPL, Xaman, Flare, or PayMorph.
               </p>
             </div>
             <div
               className="relative min-w-0 overflow-hidden py-2"
-              aria-label="Public-chain protocol facts"
+              aria-label="Public community payment reports"
             >
-              <StoryRail facts={protocolFacts} />
+              <StoryRail items={communityReports} />
             </div>
           </div>
-          <div className="relative mt-4 min-w-0 overflow-hidden py-2">
-            <StoryRail facts={[...protocolFacts].reverse()} reverse />
+          <div
+            className="relative mt-4 min-w-0 overflow-hidden py-2"
+            aria-label="Public-chain protocol facts"
+          >
+            <StoryRail items={[...protocolFacts].reverse()} reverse />
           </div>
         </div>
       </section>
@@ -307,25 +345,30 @@ function SignalCard({ detail, label, number }: { detail: string; label: string; 
   );
 }
 
-function StoryRail({ facts, reverse = false }: { facts: typeof protocolFacts; reverse?: boolean }) {
-  const railFacts = [...facts, ...facts];
+function StoryRail({ items, reverse = false }: { items: StoryItem[]; reverse?: boolean }) {
+  const railItems = [...items, ...items];
   return (
     <div className="pm-story-rail" data-direction={reverse ? 'reverse' : undefined}>
-      {railFacts.map((fact, index) => (
+      {railItems.map((item, index) => (
         <article
-          aria-hidden={index >= facts.length}
+          aria-hidden={index >= items.length}
           className="pm-story-card"
-          key={`${fact.source}-${index}`}
+          key={`${item.source}-${index}`}
         >
-          <p className="pm-eyebrow text-[10px]">{fact.context}</p>
-          <p className="mt-5 text-sm leading-6 text-[var(--muted-strong)]">{fact.fact}</p>
+          <p className="pm-eyebrow text-[10px]">{item.context}</p>
+          <p className="mt-5 text-sm leading-6 text-[var(--muted-strong)]">{item.body}</p>
+          {item.response ? (
+            <p className="mt-3 border-l border-[var(--accent)]/40 pl-3 text-xs leading-5 text-[var(--accent-blue)]">
+              {item.response}
+            </p>
+          ) : null}
           <a
             className="mt-6 inline-flex items-center gap-1 text-xs font-semibold text-[var(--accent-blue)] transition hover:text-[var(--accent)]"
-            href={fact.sourceHref}
+            href={item.sourceHref}
             rel="noreferrer"
             target="_blank"
           >
-            Source: {fact.source} <span aria-hidden="true">↗</span>
+            Source: {item.source} <span aria-hidden="true">↗</span>
           </a>
         </article>
       ))}

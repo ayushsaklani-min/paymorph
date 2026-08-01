@@ -5,7 +5,12 @@ test('shows the evidence-first testnet product promise', async ({ page }) => {
   await expect(page.getByRole('heading', { name: /Payment clarity/i })).toBeVisible();
   await expect(page.getByRole('heading', { name: /One payment. Four proofs./i })).toBeVisible();
   await expect(page.getByRole('note')).toContainText('no real monetary value');
-  await expect(page.getByLabel('Public-chain protocol facts')).toContainText('Protocol fact');
+  await expect(page.getByLabel('Public community payment reports')).toContainText(
+    'Community report',
+  );
+  await expect(page.getByLabel('Public community payment reports')).toContainText(
+    'PayMorph response',
+  );
   await expect(
     page
       .getByLabel('Public-chain protocol facts')

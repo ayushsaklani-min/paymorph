@@ -110,12 +110,16 @@ verification items".
   login, dashboard, checkout/status, explorer, network, and receipt surfaces
   share this system. NullPay was used only as a local visual reference; no
   code, raster asset, wording, or settlement behavior was copied or changed.
-  The landing rail links only to the official XRPL and Flare developer sources;
-  it is not a privacy claim or an attributed community testimonial. Web
-  typecheck, lint, 119 web tests, both local Chrome landing journeys, and
-  direct HTTP shell checks passed. The isolated production build exceeded the
-  shell's 94-second command limit without reporting a source failure and was
-  stopped; do not treat that as a production-build pass.
+  The landing rail separates linked XRPL/Flare protocol facts from linked,
+  clearly labelled public community reports. Community reports are paraphrases
+  of individual public r/XRP posts about status ambiguity, recipient credit
+  delays, and destination-tag errors; each describes the exact PayMorph
+  evidence behavior that addresses the uncertainty. They are not privacy
+  claims, protocol facts, or attributed Discord messages. Web typecheck, lint,
+  119 web tests, both local Chrome landing journeys, and direct HTTP shell
+  checks passed. The isolated production build exceeded the shell's 94-second
+  command limit without reporting a source failure and was stopped; do not
+  treat that as a production-build pass.
 - Browser acceptance update (2026-08-01): the public disclosure,
   landing-to-merchant-wallet sign-in, and keyboard skip-to-main journeys pass
   in local Google Chrome via `PLAYWRIGHT_BROWSER_CHANNEL=chrome pnpm test:e2e`.

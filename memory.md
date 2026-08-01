@@ -51,7 +51,7 @@ verification items".
 - Blueprint moved to `docs/reference/`.
 - The clean pnpm monorepo, strict TypeScript configuration, CI, containers,
   Prisma migrations, seed tooling, API contract, and runbooks are implemented.
-- The local verification gate passes: format, lint, typecheck, 207 automated
+- The local verification gate passes: format, lint, typecheck, 222 automated
   tests, all production builds, 29 Foundry unit/fuzz/invariant tests, Prisma
   generation/validation, and the OpenAPI structural check.
 - Phase 2 read-only Flare provider, direct-mint amount solver, capability gate,
@@ -194,6 +194,16 @@ verification items".
   PayMorph router all resolved and verified at current chain blocks. FXRP is
   available; USDT0 remains intentionally disabled because its configured swap
   router has no bytecode. These checks sent no XRPL or Coston2 transaction.
+- Web boundary hardening (2026-08-01): all Next responses now receive targeted
+  anti-framing, anti-MIME-sniffing, referrer, permission, and cross-domain
+  policy headers. Checkout rejects unsafe provider response URLs before
+  rendering them: QR images are HTTPS only, status sockets are WSS only, and
+  deeplinks are HTTPS/Xaman/Xumm URLs without credentials. API correlation IDs
+  are bounded before response/log use, and unexpected error logs preserve only
+  safe event metadata. Focused web boundary tests, typecheck, and lint passed,
+  followed by the full `pnpm verify` gate (222 automated tests/all production
+  builds) and `pnpm test:contracts` (29 Foundry tests). A direct local
+  `/api/health` request confirmed the headers and canonical request-ID echo.
 
 ## Decisions
 

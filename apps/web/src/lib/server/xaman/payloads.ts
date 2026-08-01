@@ -28,11 +28,11 @@ const recordSchema = z.record(z.string(), z.unknown());
 const createdPayloadSchema = z.object({
   uuid: z.string().uuid(),
   next: z.object({
-    always: z.url(),
+    always: z.string().min(1),
   }),
   refs: z.object({
-    qr_png: z.url(),
-    websocket_status: z.url(),
+    qr_png: z.string().min(1),
+    websocket_status: z.string().min(1),
   }),
   pushed: z.boolean(),
 });
@@ -124,6 +124,28 @@ function assertReturnUrl(value: string): void {
       'returnUrl must use HTTPS outside localhost',
     );
   }
+}
+
+function assertProviderUrl(
+  value: string,
+  allowedProtocols: ReadonlySet<string>,
+  field: 'deeplink' | 'QR image' | 'status WebSocket',
+): string {
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new XamanBoundaryError(
+      'INVALID_PROVIDER_RESPONSE',
+      `Xaman ${field} URL is not an absolute URL`,
+    );
+  }
+
+  if (!allowedProtocols.has(url.protocol) || url.username.length > 0 || url.password.length > 0) {
+    throw new XamanBoundaryError('INVALID_PROVIDER_RESPONSE', `Xaman ${field} URL is unsafe`);
+  }
+
+  return url.toString();
 }
 
 export function buildXamanSignInPayload(input: XamanSignInPayloadInput): XamanPayloadRequest {
@@ -249,15 +271,23 @@ export function normalizeCreatedXamanPayload(raw: unknown): XamanCreatedPayload 
   if (!parsed.success) {
     throw new XamanBoundaryError(
       'INVALID_PROVIDER_RESPONSE',
-      `Xaman create response is invalid: ${z.prettifyError(parsed.error)}`,
+      'Xaman create response does not match the expected schema',
     );
   }
 
   return {
     uuid: parsed.data.uuid,
-    nextUrl: parsed.data.next.always,
-    qrPngUrl: parsed.data.refs.qr_png,
-    websocketUrl: parsed.data.refs.websocket_status,
+    nextUrl: assertProviderUrl(
+      parsed.data.next.always,
+      new Set(['https:', 'xaman:', 'xumm:']),
+      'deeplink',
+    ),
+    qrPngUrl: assertProviderUrl(parsed.data.refs.qr_png, new Set(['https:']), 'QR image'),
+    websocketUrl: assertProviderUrl(
+      parsed.data.refs.websocket_status,
+      new Set(['wss:']),
+      'status WebSocket',
+    ),
     pushed: parsed.data.pushed,
   };
 }

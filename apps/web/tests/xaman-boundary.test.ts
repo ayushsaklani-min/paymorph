@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildXamanPaymentPayload,
   buildXamanSignInPayload,
+  normalizeCreatedXamanPayload,
   normalizeAuthoritativeXamanPayload,
   xamanCustomIdentifier,
 } from '../src/lib/server/xaman/payloads.js';
@@ -94,6 +95,51 @@ describe('Xaman payload construction', () => {
         memoHex: `FF${MEMO_HEX.slice(2)}`,
       }),
     ).toThrow(/42-byte 0xFE/);
+  });
+});
+
+describe('created Xaman payload normalization', () => {
+  const createdPayload = {
+    uuid: PAYLOAD_ID,
+    next: { always: `https://xumm.app/sign/${PAYLOAD_ID}` },
+    refs: {
+      qr_png: `https://xumm.app/sign/${PAYLOAD_ID}/qr.png`,
+      websocket_status: `wss://xumm.app/sign/${PAYLOAD_ID}`,
+    },
+    pushed: false,
+  };
+
+  it('accepts protocol-safe provider browser URLs', () => {
+    expect(normalizeCreatedXamanPayload(createdPayload)).toMatchObject({
+      uuid: PAYLOAD_ID,
+      nextUrl: createdPayload.next.always,
+      qrPngUrl: createdPayload.refs.qr_png,
+      websocketUrl: createdPayload.refs.websocket_status,
+      pushed: false,
+    });
+  });
+
+  it('rejects unsafe browser URLs before exposing them to checkout', () => {
+    expect(() =>
+      normalizeCreatedXamanPayload({
+        ...createdPayload,
+        refs: { ...createdPayload.refs, qr_png: 'http://xumm.app/qr.png' },
+      }),
+    ).toThrow(/QR image URL is unsafe/);
+
+    expect(() =>
+      normalizeCreatedXamanPayload({
+        ...createdPayload,
+        refs: { ...createdPayload.refs, websocket_status: 'https://xumm.app/status' },
+      }),
+    ).toThrow(/status WebSocket URL is unsafe/);
+
+    expect(() =>
+      normalizeCreatedXamanPayload({
+        ...createdPayload,
+        next: { always: 'ftp://xumm.app/sign' },
+      }),
+    ).toThrow(/deeplink URL is unsafe/);
   });
 });
 

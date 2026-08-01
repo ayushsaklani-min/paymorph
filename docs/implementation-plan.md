@@ -20,7 +20,7 @@ to fixture behavior.
 | 8     | USDT0 route, exact-output settlement/refund                               | real smoke or explicit disabled reason | Complete; route disabled           |
 | 9     | Receipts, event reconstruction, reconciliation, export                    | projection rebuild test                | Complete; local DB projection gate |
 | 10    | `0xE0` recovery diagnostics and payer flow                                | reproducible official recovery test    | Code complete; official gate       |
-| 11    | Abuse controls, admin, logs/metrics, accessibility, UX                    | security checklist + all suites        | Partial                            |
+| 11    | Abuse controls, admin, logs/metrics, accessibility, UX                    | security checklist + all suites        | Partial; web boundaries hardened   |
 | 12    | Containers, hosted config, smoke artifact, submission docs                | README-driven judge flow               | Local complete; host gate          |
 
 `DB gate` means the implementation and unit coverage exist, but the acceptance
@@ -111,6 +111,22 @@ artifacts are required; fixtures do not satisfy it.
   workspace typechecking, 207 automated tests (including all 29 Foundry
   tests), and every production build.
 
+## Web-boundary hardening update — 2026-08-01
+
+- All web responses now receive targeted anti-framing, anti-MIME-sniffing,
+  referrer, browser-permission, and cross-domain-policy headers. A restrictive
+  CSP or cross-origin isolation policy is intentionally deferred until the
+  third-party Xaman QR/deeplink/WebSocket flow has browser acceptance coverage.
+- Client-facing Xaman create responses now permit only HTTPS QR images, WSS
+  status sockets, and HTTPS/Xaman/Xumm deeplinks without URL credentials.
+  The response is rejected before checkout renders if it violates that boundary.
+- API request IDs are now bounded before returning or logging them. Generic
+  unexpected failures log a structured event without serializing arbitrary
+  error text or objects. Focused HTTP, header, and Xaman-boundary tests passed,
+  followed by `pnpm verify` (222 automated tests and all production builds)
+  and `pnpm test:contracts` (29 Foundry tests). A direct local health check
+  confirmed all configured response headers and canonical request-ID handling.
+
 ## Product-platform update — 2026-07-31
 
 - Merchant operating shell, templates, payment links, requests, POS, public
@@ -149,15 +165,11 @@ artifacts are required; fixtures do not satisfy it.
   acceptance environment.
 - Local migration `20260731140000_webhook_delivery_schedule` is applied to the
   native PostgreSQL database, bringing the local schema to 15 migrations.
-- Latest focused verification passed: `pnpm test` (207 total automated tests,
-  including 29 Foundry unit/fuzz/invariant tests), all workspace lint/typecheck,
-  format check, and the explicit contract gate. A single `pnpm verify` wrapper
-  invocation exceeded the local shell's 95-second timeout during its repeated
-  production-build stage; no source, lint, type, or test failure was reported.
-  The latest isolated web production build passed with all versioned developer
-  API routes included. PHP/WordPress is not
-  installed locally, so plugin syntax and external-order acceptance remain
-  unexecuted.
+- Latest full verification passed: `pnpm verify` completed formatting, all
+  workspace lint/typechecks, 222 automated tests (including 29 Foundry
+  unit/fuzz/invariant tests), and every production build. The explicit
+  `pnpm test:contracts` gate also passed. PHP/WordPress is not installed
+  locally, so plugin syntax and external-order acceptance remain unexecuted.
 
 ## Cross-phase workstreams
 

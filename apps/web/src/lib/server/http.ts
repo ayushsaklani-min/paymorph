@@ -2,12 +2,36 @@ import { DomainError, errorEnvelope, successEnvelope, type ApiEnvelope } from '@
 import { NextResponse } from 'next/server';
 import { ZodError } from 'zod';
 
+const REQUEST_ID = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/;
+
+/**
+ * Honor well-formed correlation IDs from trusted infrastructure while keeping
+ * response and log fields bounded. Arbitrary header values must not become
+ * identifiers that downstream log/index systems interpret unexpectedly.
+ */
+export function requestIdFor(request: Request): string {
+  const supplied = request.headers.get('x-request-id');
+  return supplied !== null && REQUEST_ID.test(supplied) ? supplied : crypto.randomUUID();
+}
+
+function logUnhandledApiError(request: Request, requestId: string, error: unknown): void {
+  console.error(
+    {
+      event: 'api.unhandled_error',
+      requestId,
+      method: request.method,
+      errorType: error instanceof Error ? error.constructor.name : typeof error,
+    },
+    'Unhandled API error',
+  );
+}
+
 export function jsonSuccess<T>(
   request: Request,
   data: T,
   status = 200,
 ): NextResponse<ApiEnvelope<T>> {
-  const requestId = request.headers.get('x-request-id') ?? crypto.randomUUID();
+  const requestId = requestIdFor(request);
   return NextResponse.json(successEnvelope(data, requestId), {
     status,
     headers: {
@@ -18,12 +42,12 @@ export function jsonSuccess<T>(
 }
 
 export function jsonError(request: Request, error: unknown): NextResponse<ApiEnvelope<never>> {
-  const requestId = request.headers.get('x-request-id') ?? crypto.randomUUID();
+  const requestId = requestIdFor(request);
 
   if (error instanceof ZodError) {
     return NextResponse.json(
       errorEnvelope('VALIDATION_ERROR', 'Request validation failed', error.issues, requestId),
-      { status: 400, headers: { 'x-request-id': requestId } },
+      { status: 400, headers: { 'cache-control': 'no-store', 'x-request-id': requestId } },
     );
   }
   if (error instanceof DomainError) {
@@ -58,7 +82,7 @@ export function jsonError(request: Request, error: unknown): NextResponse<ApiEnv
       },
     });
   }
-  console.error({ requestId, error }, 'Unhandled API error');
+  logUnhandledApiError(request, requestId, error);
   return NextResponse.json(
     errorEnvelope('INTERNAL_ERROR', 'An unexpected error occurred', undefined, requestId),
     { status: 500, headers: { 'cache-control': 'no-store', 'x-request-id': requestId } },

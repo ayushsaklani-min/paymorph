@@ -206,6 +206,10 @@ Key safeguards include:
 - The XRPL memo contains the immutable commitment to that exact operation.
 - Xaman webhooks are notifications only; PayMorph fetches the authoritative
   payload before changing signed transaction state.
+- Provider-supplied checkout URLs are protocol-allowlisted before the browser
+  receives them: HTTPS QR/deeplink URLs (plus Xaman/Xumm native deeplinks) and
+  WSS status sockets only. Global response headers prevent framing, MIME
+  sniffing, unnecessary browser permissions, and excessive referrer leakage.
 - Every mutation, webhook, job, and chain projection is idempotent.
 - On-chain `settled[paymentId]` replay protection is mandatory.
 - FXRP and `AssetManagerFXRP` are discovered at runtime through the Flare
@@ -391,7 +395,7 @@ Never manually turn a failed live run into success.
 
 Latest local verification (2026-08-01):
 
-- `pnpm test` passed: 207 automated tests, including 29 Foundry
+- `pnpm test` passed: 222 automated tests, including 29 Foundry
   unit/fuzz/invariant tests.
 - Repository linting, typechecking, and formatting checks passed. The explicit
   full contract suite passed after the payment-link API checkpoint.
@@ -405,7 +409,9 @@ Latest local verification (2026-08-01):
 - The two browser smoke journeys passed in locally installed Google Chrome via
   `PLAYWRIGHT_BROWSER_CHANNEL=chrome pnpm test:e2e`.
 - The full `pnpm verify` gate passed: formatting, linting, workspace
-  typechecking, 207 automated tests, and all production builds.
+  typechecking, 222 automated tests, and all production builds.
+- A direct local `/api/health` check confirmed the response security headers
+  and a canonical echoed `X-Request-Id` after the web-boundary update.
 - Playwright's managed Chromium and PHP/WordPress are not installed on this
   machine, so the default Chromium path and WooCommerce runtime acceptance
   remain external gates.

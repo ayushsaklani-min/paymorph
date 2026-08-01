@@ -1,7 +1,7 @@
 import { db } from '@paymorph/db';
 import { errorEnvelope } from '@paymorph/shared';
 import { NextResponse } from 'next/server';
-import { jsonError, jsonSuccess, readJson } from '@/lib/server/http';
+import { jsonError, jsonSuccess, readJson, requestIdFor } from '@/lib/server/http';
 import { getPayerRuntimeConfig, processXamanSignInNotification } from '@/lib/server/payer-session';
 import { processXamanPaymentNotification } from '@/lib/server/payments';
 import { processXamanRecoveryNotification } from '@/lib/server/recovery';
@@ -90,7 +90,7 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     if (error instanceof XamanBoundaryError && error.code === 'WEBHOOK_REJECTED') {
-      const requestId = request.headers.get('x-request-id') ?? crypto.randomUUID();
+      const requestId = requestIdFor(request);
       return NextResponse.json(
         errorEnvelope(
           'UNAUTHENTICATED',

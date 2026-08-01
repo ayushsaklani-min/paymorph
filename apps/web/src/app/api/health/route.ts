@@ -1,10 +1,11 @@
 import { successEnvelope } from '@paymorph/shared';
 import { NextResponse } from 'next/server';
+import { requestIdFor } from '@/lib/server/http';
 
 export const dynamic = 'force-dynamic';
 
 export function GET(request: Request) {
-  const requestId = request.headers.get('x-request-id') ?? crypto.randomUUID();
+  const requestId = requestIdFor(request);
   return NextResponse.json(
     successEnvelope(
       {

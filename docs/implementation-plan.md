@@ -16,7 +16,7 @@ to fixture behavior.
 | 4     | Public checkout, payer session, Xaman SignIn, webhook                     | payload/dedupe/mobile tests            | Code complete; live gate                 |
 | 5     | Pricing, personal account/nonce, userOp, `0xFE` memo                      | golden vectors, expiry/nonce tests     | Complete                                 |
 | 6     | Xaman Payment, timeline, XRPL validator                                   | exact-field validation tests           | Code complete; live gate                 |
-| 7     | FDC executor, Coston2 submission, event decoding                          | real tiny FXRP smoke                   | Code complete; live gate                 |
+| 7     | FDC executor, Coston2 submission, event decoding                          | real tiny FXRP smoke                   | Complete; live verified 2026-08-01       |
 | 8     | USDT0 route, exact-output settlement/refund                               | real smoke or explicit disabled reason | Complete; route disabled                 |
 | 9     | Receipts, event reconstruction, reconciliation, export                    | projection rebuild test                | Complete; local DB projection gate       |
 | 10    | `0xE0` recovery diagnostics and payer flow                                | reproducible official recovery test    | Code complete; official gate             |

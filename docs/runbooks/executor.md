@@ -3,8 +3,9 @@
 ## Status and scope
 
 This runbook defines the required executor behavior for PayMorph on XRPL
-Testnet and Flare Coston2. It is an implementation and operations contract, not
-evidence that the credentialed Phase 7 live gate has passed.
+Testnet and Flare Coston2. The credentialed Phase 7 smoke passed on 2026-08-01;
+this runbook remains an operations contract, not proof that a later deployment
+or configuration is healthy.
 
 The executor owns authoritative XRPL validation, FDC proof lifecycle, signed
 Coston2 finalization, event indexing, recovery diagnosis, and reconciliation.
@@ -145,8 +146,11 @@ After a round is finalized, the exact structured DA response
 not a rejected proof. Do not widen this exception to arbitrary HTTP 400
 responses: malformed or otherwise invalid DA responses remain fail-closed.
 
-No real FDC request/proof has been archived in this repository yet; that remains
-the Phase 7 live gate.
+The 2026-08-01 FXRP live smoke independently re-validated an XRPL Testnet
+payment, the resulting FDC proof path, the successful Coston2 receipt, and its
+matching `PaymentSettled` event. The retained local smoke artifact is ignored
+from source control; its public transaction hashes are recorded in `memory.md`
+and the README.
 
 ## Step 4: Coston2 simulation and submission
 

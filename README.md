@@ -63,7 +63,7 @@ return does not by itself advance the payment.
 | Developer platform                      | Implemented            | Scoped `pm_test_` keys, `/api/v1` invoice/receipt routes, SDK, hosted button, encrypted webhook settings, and delivery outbox. |
 | Explorer and projections                | Implemented            | Public settlement evidence explorer plus marketplace and read-only treasury projections.                                       |
 | WooCommerce gateway                     | MVP implemented        | Server-side invoice mapping and verified post-settlement paid-order transition; needs WordPress/WooCommerce acceptance.        |
-| FXRP settlement                         | Code complete          | Router deployed to Coston2; a retained end-to-end testnet receipt is still required.                                           |
+| FXRP settlement                         | Live verified          | A tiny XRPL Testnet → FDC → Coston2 settlement was independently verified on 2026-08-01.                                       |
 | USDT0 exact-output settlement           | Intentionally disabled | The configured Coston2 route does not pass required runtime bytecode and liquidity checks.                                     |
 | Recovery (`0xE0`)                       | Code complete          | Durable recovery checkpoints and an independent verifier exist; an official live recovery artifact remains a gate.             |
 | Refunds, subscriptions, escrow, mainnet | Deferred               | Explicitly outside the current testnet blueprint delivery scope.                                                               |
@@ -438,11 +438,13 @@ PayMorph contains real provider and chain adapters, but code completion is not
 the same as a passed live acceptance gate. The remaining gates are documented
 in [memory.md](memory.md) and the implementation plan. In particular:
 
-- A retained end-to-end tiny FXRP testnet receipt is required to mark the FDC
-  and Coston2 finalization path live-verified.
-- There is currently no local `SETTLED` attempt. Complete a fresh tiny FXRP
-  checkout, then run `RUN_LIVE_TESTNET=1 LIVE_ATTEMPT_ID=<attempt-uuid> pnpm
-test:live` to retain the independent receipt artifact.
+- The FDC and Coston2 finalization path is live-verified by a tiny FXRP smoke
+  completed on 2026-08-01: XRPL transaction
+  `D83B7183AC74626CA23A7D653EC7245426F320C1489A2CE740AFD05B6A95F39C`,
+  Coston2 transaction
+  `0xd90407028660141ea897a7387f67194d1826383e4f0afa2457f478eea98cb2e3`,
+  and a matching decoded `PaymentSettled` event in block `33504164`. The
+  independent verifier output is retained locally under `live-smoke/`.
 - USDT0 must remain disabled until an official Coston2 router, factory, pool,
   liquidity, exact-output quote, and simulation all pass runtime checks.
 - The official `0xE0` recovery sequence has a durable implementation and

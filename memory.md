@@ -100,9 +100,15 @@ verification items".
   `0x25613fe12d1d980cfc2fc532850cbab3b817dc590374284c7d68094509bc4c82`
   created router `0x9C7d670BE201be8a527cCDf349FE45B037eC6008` from source
   commit `a674e446f90c9dc4949babb85dbcbea0fac4f3f8`.
-- Credentialed Xaman/FDC/Coston2 submission remains a live acceptance gate, not
-  an implementation fallback. No real XRPL payment, FDC proof, or settlement
-  is claimed without its hashes and receipts.
+- Credentialed Xaman/FDC/Coston2 submission was independently live-verified on
+  2026-08-01 for a tiny FXRP checkout. The retained local verifier artifact
+  confirms XRPL `tesSUCCESS` transaction
+  `D83B7183AC74626CA23A7D653EC7245426F320C1489A2CE740AFD05B6A95F39C`,
+  Coston2 transaction
+  `0xd90407028660141ea897a7387f67194d1826383e4f0afa2457f478eea98cb2e3`,
+  and matching `PayMorphRouter.PaymentSettled` at Coston2 block `33504164`.
+  This proves that one configured testnet path settled; it is not a production
+  readiness claim or a substitute for separate recovery/USDT0 gates.
 - Visual-system refinement (2026-08-01): PayMorph now uses its own warm
   ember/orange editorial system with layered glass surfaces, display/data
   typography, a native CSS earth motif, moving public-chain protocol-fact
@@ -285,6 +291,16 @@ verification items".
 exist.` before Next development tooling can promote it to a runtime overlay.
   It does not suppress any other browser or PayMorph error. Web typecheck,
   targeted lint, formatting, and a local HTTP page check passed.
+- Live FXRP end-to-end acceptance (2026-08-01): a new `demo 6` invoice reached
+  `SETTLED` after Xaman SignIn/payment, exact XRPL Testnet validation, FDC
+  round `1412776`, Coston2 direct-mint/router execution, and event indexing.
+  The attempt has the XRPL and Coston2 hashes recorded above, a decoded
+  `RecipientPaid` event (log 12), and the authoritative decoded
+  `PaymentSettled` event (log 14) at Coston2 block `33504164`. The independent
+  read-only verifier passed and wrote ignored local artifact
+  `live-smoke/1fcb716b-ae6d-4b24-96f6-e074eb6fab84.json`. Its first call was
+  blocked by an expired temporary Cloudflare `APP_URL`; rerunning against the
+  active local app did not create or modify any chain transaction and passed.
 
 ## Decisions
 
@@ -558,13 +574,10 @@ job and cannot retry deterministic terminal or recovery states.
 
 ## Open verification items
 
-- Real FDC `XRPPayment` proof acquisition and Coston2 finalization remain a
-  credentialed Phase 7 live gate; the production adapter boundary and fixtures
-  are implemented.
 - The credentialed live gate must still exercise a process kill immediately
   after Coston2 broadcast. The durable nonce makes this replacement-safe and
   the submission callback persists the returned hash before receipt polling,
-  but no real transaction was sent during local verification.
+  but this crash point was not exercised during the verified live settlement.
 - Recovery code and its durable evidence checkpoints are locally covered; a
   real official `0xE0` recovery remains a credentialed live acceptance gate.
 - Recheck official SparkDEX deployment, factory, quoter, fee-500 pool,
@@ -587,19 +600,16 @@ job and cannot retry deterministic terminal or recovery states.
   credentialed checkout and merchant collection flows once deterministic
   browser fixtures are available. The current local Chrome fallback passed;
   Playwright's managed Chromium download exceeded the local shell limit.
-- On 2026-07-31, the local database contains no `SETTLED` payment attempt
-  (two `QUOTE_EXPIRED`, one `RECOVERY_REQUIRED`, and one
-  `AWAITING_SIGNATURE`). There is therefore no eligible attempt for
-  `pnpm test:live`; a fresh tiny FXRP Xaman checkout is required before the
-  retained live-smoke artifact can be generated.
+- The local database now contains the independently verified `SETTLED` FXRP
+  attempt recorded above. Historical `RECOVERY_REQUIRED` rows remain immutable
+  audit evidence and must not be manually rewound.
 - PHP/WordPress is not installed on this machine, so the WooCommerce plugin has
   been type-reviewed and documented but has not received a local `php -l` or
   WordPress/WooCommerce acceptance run.
 
 ## Next action
 
-With `/api/ready` returning FDC readiness, create a fresh tiny FXRP Testnet
-checkout, complete Xaman SignIn and the exact XRP payment, then run
-`RUN_LIVE_TESTNET=1 LIVE_ATTEMPT_ID=<attempt-id> pnpm test:live` to retain the
-authoritative XRPL/FDC/Coston2 receipt artifact. Keep USDT0 disabled until ADR
-0006's full route gate passes.
+Keep USDT0 disabled until ADR 0006's full route gate passes. The highest-value
+remaining acceptance checks are a real Xaman webhook-HMAC fixture and a
+deliberate executor-process interruption immediately after Coston2 broadcast;
+neither must alter the verified FXRP settlement evidence.

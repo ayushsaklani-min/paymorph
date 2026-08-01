@@ -63,8 +63,13 @@ held by the swap router. The deployment manifest is
   disabled and is never silently replaced.
 - A new runtime route kind and deployment manifest will make the distinction
   visible and auditable.
-- A tiny end-to-end USDT0 checkout plus independent receipt verification is
-  required before declaring on-chain USDT0 settlement live-verified.
+- A tiny end-to-end USDT0 checkout was independently verified on 2026-08-01:
+  attempt `6f7320bc-eb35-4842-855d-6e8a1039b0a7`, XRPL transaction
+  `C0523EFE1DCDD7B66288FAA4FE30C2AB20AC3D7F7550E634A534CAF450E8AAC0`
+  at ledger 19,547,722, and Coston2 transaction
+  `0xeab167c4ac8f04fcaf19306de9a61f1a9ae0aa5d7cca1dcdf402cff546451224`
+  at block 33,511,358. The independent smoke verifier matched the USDT0
+  `PaymentSettled` event and exact `RecipientPaid` event to the public receipt.
 - This is an exception for Coston2 test tokens only. It neither authorizes a
   mainnet deployment nor changes the production invariant against mocked or
   unverified settlement routes.

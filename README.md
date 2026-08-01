@@ -54,19 +54,19 @@ return does not by itself advance the payment.
 
 ## What is implemented
 
-| Area                                    | Status               | Notes                                                                                                                                                                                                    |
-| --------------------------------------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Merchant operating shell                | Implemented          | EIP-191 sign-in, dashboard projections, payment evidence views, invoices, templates, and settings.                                                                                                       |
-| Collection surfaces                     | Implemented          | Reusable/single-use links, requests, analytics, and POS create canonical invoices only.                                                                                                                  |
-| Public checkout                         | Implemented          | Payer-scoped Xaman SignIn, exact quotes, payment QR/deeplink, and an evidence-driven Xaman → XRPL → FDC → Coston2 timeline.                                                                              |
-| Executor pipeline                       | Implemented          | Leased durable XRPL validation, FDC, Coston2 submission, event indexing, restart checkpoints, and recovery diagnostics.                                                                                  |
-| Developer platform                      | Implemented          | Scoped `pm_test_` keys, `/api/v1` invoice/receipt routes, SDK, hosted button, encrypted webhook settings, and delivery outbox.                                                                           |
-| Explorer and projections                | Implemented          | Public settlement evidence explorer plus marketplace and read-only treasury projections.                                                                                                                 |
-| WooCommerce gateway                     | MVP implemented      | Server-side invoice mapping and verified post-settlement paid-order transition; needs WordPress/WooCommerce acceptance.                                                                                  |
-| FXRP settlement                         | Live verified        | A tiny XRPL Testnet → FDC → Coston2 settlement was independently verified on 2026-08-01.                                                                                                                 |
-| USDT0 exact-output settlement           | On-chain route ready | ADR 0007's separately labelled `PAYMORPH_TESTNET` route has real Coston2 test-USDT0 liquidity, exact-output simulation, and adapter wiring; a full payer checkout is the remaining live acceptance gate. |
-| Recovery (`0xE0`)                       | Code complete        | Durable recovery checkpoints and an independent verifier exist; an official live recovery artifact remains a gate.                                                                                       |
-| Refunds, subscriptions, escrow, mainnet | Deferred             | Explicitly outside the current testnet blueprint delivery scope.                                                                                                                                         |
+| Area                                    | Status          | Notes                                                                                                                                                   |
+| --------------------------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Merchant operating shell                | Implemented     | EIP-191 sign-in, dashboard projections, payment evidence views, invoices, templates, and settings.                                                      |
+| Collection surfaces                     | Implemented     | Reusable/single-use links, requests, analytics, and POS create canonical invoices only.                                                                 |
+| Public checkout                         | Implemented     | Payer-scoped Xaman SignIn, exact quotes, payment QR/deeplink, and an evidence-driven Xaman → XRPL → FDC → Coston2 timeline.                             |
+| Executor pipeline                       | Implemented     | Leased durable XRPL validation, FDC, Coston2 submission, event indexing, restart checkpoints, and recovery diagnostics.                                 |
+| Developer platform                      | Implemented     | Scoped `pm_test_` keys, `/api/v1` invoice/receipt routes, SDK, hosted button, encrypted webhook settings, and delivery outbox.                          |
+| Explorer and projections                | Implemented     | Public settlement evidence explorer plus marketplace and read-only treasury projections.                                                                |
+| WooCommerce gateway                     | MVP implemented | Server-side invoice mapping and verified post-settlement paid-order transition; needs WordPress/WooCommerce acceptance.                                 |
+| FXRP settlement                         | Live verified   | A tiny XRPL Testnet → FDC → Coston2 settlement was independently verified on 2026-08-01.                                                                |
+| USDT0 exact-output settlement           | Live verified   | ADR 0007's separately labelled `PAYMORPH_TESTNET` route completed an independently verified XRP Testnet → FDC → Coston2 USDT0 settlement on 2026-08-01. |
+| Recovery (`0xE0`)                       | Code complete   | Durable recovery checkpoints and an independent verifier exist; an official live recovery artifact remains a gate.                                      |
+| Refunds, subscriptions, escrow, mainnet | Deferred        | Explicitly outside the current testnet blueprint delivery scope.                                                                                        |
 
 The authoritative phase ledger is maintained in
 [docs/implementation-plan.md](docs/implementation-plan.md).

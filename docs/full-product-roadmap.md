@@ -33,7 +33,8 @@ The following remain unavailable until separately designed and live-tested:
 - mainnet and real-value custody;
 - USDT0 settlement while no configured Coston2 route passes runtime
   verification. ADR 0007's separately labelled `PAYMORPH_TESTNET` route is an
-  active testnet exception and still requires a payer-signed live receipt.
+  active, payer-signed and independently verified testnet exception; it does
+  not authorize an official SparkDEX or mainnet claim.
 
 ## Current baseline
 

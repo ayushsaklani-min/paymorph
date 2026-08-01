@@ -9,7 +9,7 @@ if (process.env.RUN_LIVE_TESTNET !== '1') {
 const attemptId = process.env.LIVE_ATTEMPT_ID;
 if (!attemptId) {
   throw new Error(
-    'Set LIVE_ATTEMPT_ID after completing a tiny FXRP checkout in Xaman on XRPL Testnet.',
+    'Set LIVE_ATTEMPT_ID after completing a tiny FXRP or USDT0 checkout in Xaman on XRPL Testnet.',
   );
 }
 const appUrl = (process.env.APP_URL ?? 'http://localhost:3000').replace(/\/+$/, '');
@@ -24,7 +24,8 @@ const envelope = (await receiptResponse.json()) as {
     paymentId: Hex;
     status: string;
     sourcePayment: { txHash: string };
-    settlement: { flareTxHash: Hex; routerAddress: string };
+    settlement: { asset: string; flareTxHash: Hex; routerAddress: string };
+    recipients: Array<{ address: string; amount: string; token: string }>;
   };
 };
 const receipt = envelope.data;
@@ -57,7 +58,7 @@ const flareReceipt = await coston2.getTransactionReceipt({ hash: receipt.settlem
 if (flareReceipt.status !== 'success') {
   throw new Error('Coston2 settlement transaction reverted');
 }
-const paymentSettledAbi = [
+const settlementAbi = [
   {
     type: 'event',
     name: 'PaymentSettled',
@@ -72,9 +73,20 @@ const paymentSettledAbi = [
       { indexed: false, name: 'refundFxrp', type: 'uint256' },
     ],
   },
+  {
+    type: 'event',
+    name: 'RecipientPaid',
+    inputs: [
+      { indexed: true, name: 'paymentId', type: 'bytes32' },
+      { indexed: true, name: 'recipient', type: 'address' },
+      { indexed: true, name: 'token', type: 'address' },
+      { indexed: false, name: 'amount', type: 'uint256' },
+      { indexed: false, name: 'bps', type: 'uint16' },
+    ],
+  },
 ] as const;
 const settlementEvents = parseEventLogs({
-  abi: paymentSettledAbi,
+  abi: settlementAbi,
   logs: flareReceipt.logs.filter(
     (log) =>
       log.address.toLowerCase() === getAddress(receipt.settlement.routerAddress).toLowerCase(),
@@ -82,23 +94,53 @@ const settlementEvents = parseEventLogs({
   eventName: 'PaymentSettled',
   strict: true,
 });
+if (receipt.settlement.asset !== 'FXRP' && receipt.settlement.asset !== 'USDT0') {
+  throw new Error('Receipt returned an unsupported settlement asset');
+}
+const expectedAssetCode = receipt.settlement.asset === 'FXRP' ? 0 : 1;
+const matchingSettlement = settlementEvents.find(
+  (event) =>
+    event.args.paymentId.toLowerCase() === receipt.paymentId.toLowerCase() &&
+    event.args.asset === expectedAssetCode,
+);
+if (!matchingSettlement) {
+  throw new Error('Matching PayMorphRouter.PaymentSettled asset event was not found');
+}
+
+const recipientEvents = parseEventLogs({
+  abi: settlementAbi,
+  logs: flareReceipt.logs.filter(
+    (log) =>
+      log.address.toLowerCase() === getAddress(receipt.settlement.routerAddress).toLowerCase(),
+  ),
+  eventName: 'RecipientPaid',
+  strict: true,
+}).filter((event) => event.args.paymentId.toLowerCase() === receipt.paymentId.toLowerCase());
 if (
-  !settlementEvents.some(
-    (event) => event.args.paymentId.toLowerCase() === receipt.paymentId.toLowerCase(),
+  recipientEvents.length !== receipt.recipients.length ||
+  !receipt.recipients.every((recipient) =>
+    recipientEvents.some(
+      (event) =>
+        event.args.recipient.toLowerCase() === getAddress(recipient.address).toLowerCase() &&
+        event.args.token.toLowerCase() === getAddress(recipient.token).toLowerCase() &&
+        event.args.amount === BigInt(recipient.amount),
+    ),
   )
 ) {
-  throw new Error('Matching PayMorphRouter.PaymentSettled event was not found');
+  throw new Error('Coston2 RecipientPaid events do not match the public receipt');
 }
 
 const artifact = {
   verifiedAt: new Date().toISOString(),
   attemptId,
   paymentId: receipt.paymentId,
+  settlementAsset: receipt.settlement.asset,
   xrplTransactionHash: receipt.sourcePayment.txHash,
   xrplLedgerIndex: xrpl.result.ledger_index,
   flareTransactionHash: receipt.settlement.flareTxHash,
   flareBlockNumber: flareReceipt.blockNumber.toString(),
   routerAddress: getAddress(receipt.settlement.routerAddress),
+  recipients: receipt.recipients,
   warning: 'XRPL Testnet and Coston2 tokens have no real monetary value.',
 };
 await mkdir('live-smoke', { recursive: true });

@@ -336,8 +336,13 @@ exist.` before Next development tooling can promote it to a runtime overlay.
   USDT0 returns 1,005,000 FXRP base units, and the existing PayMorph router is
   wired to the matching adapter. `/api/ready` now reports USDT0 ready with
   `PAYMORPH_TESTNET`; no mocked price, liquidity, or settlement evidence was
-  introduced. A payer-controlled Xaman signature and full receipt are still
-  required to prove the end-to-end USDT0 checkout.
+  introduced. A payer-controlled USDT0 checkout was independently live-verified
+  on 2026-08-01: attempt `6f7320bc-eb35-4842-855d-6e8a1039b0a7`, XRPL
+  transaction `C0523EFE1DCDD7B66288FAA4FE30C2AB20AC3D7F7550E634A534CAF450E8AAC0`
+  at ledger 19,547,722, and Coston2 transaction
+  `0xeab167c4ac8f04fcaf19306de9a61f1a9ae0aa5d7cca1dcdf402cff546451224`
+  at block 33,511,358. The strengthened `pnpm test:live` gate matched the USDT0
+  `PaymentSettled` event and exact merchant `RecipientPaid` event.
 
 ## Decisions
 
@@ -647,12 +652,11 @@ job and cannot retry deterministic terminal or recovery states.
 ## Next action
 
 Keep the official SparkDEX route disabled under ADR 0006. ADR 0007's
-`PAYMORPH_TESTNET` route is active and needs one payer-controlled Xaman
-signature for a tiny USDT0 invoice, followed by `pnpm test:live` against that
-attempt to retain independent end-to-end evidence. The highest-value remaining
-non-USDT acceptance checks are a real Xaman webhook-HMAC fixture and a
-deliberate executor-process interruption immediately after Coston2 broadcast;
-neither must alter the verified FXRP settlement evidence.
+`PAYMORPH_TESTNET` route is now independently live-verified. The highest-value
+remaining acceptance checks are a real Xaman webhook-HMAC fixture, a deliberate
+executor-process interruption immediately after Coston2 broadcast, and a real
+WordPress/WooCommerce testnet checkout; none may alter the verified FXRP or
+USDT0 settlement evidence.
 
 ## Latest completed work
 
@@ -666,3 +670,8 @@ neither must alter the verified FXRP settlement evidence.
 - `XamanPayload.pushedToXaman` is durable, default-false audit metadata added
   by migration `20260801030000_xaman_push_delivery`; it records delivery state
   but never serves as evidence of payment or settlement.
+- The first live USDT0 checkout settled invoice amount `1,064,525` base units
+  to merchant `0x060613A360fFe3213818c022b404E5AA9D755611`, paid `5,323`
+  base units as service fee, used `1,069,848` FXRP base units, and refunded
+  `16,048` FXRP base units to the payer personal account. The retained local
+  smoke artifact is `live-smoke/6f7320bc-eb35-4842-855d-6e8a1039b0a7.json`.

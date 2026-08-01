@@ -5,6 +5,12 @@ test('shows the evidence-first testnet product promise', async ({ page }) => {
   await expect(page.getByRole('heading', { name: /Payment clarity/i })).toBeVisible();
   await expect(page.getByRole('heading', { name: /One payment. Four proofs./i })).toBeVisible();
   await expect(page.getByRole('note')).toContainText('no real monetary value');
+  await expect(page.getByLabel('Public-chain protocol facts')).toContainText('Protocol fact');
+  await expect(
+    page
+      .getByLabel('Public-chain protocol facts')
+      .getByRole('link', { name: /Source: XRPL Ledger Structure/i }),
+  ).toHaveAttribute('href', 'https://xrpl.org/docs/concepts/ledgers/ledger-structure');
 });
 
 test('takes the merchant from the landing page to wallet sign-in', async ({ page }) => {

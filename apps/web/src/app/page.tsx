@@ -7,35 +7,36 @@ const proofPath = [
   ['04', 'Settle on-chain', 'Decode PaymentSettled before publishing the receipt.'],
 ];
 
-const communityNotes = [
+const protocolFacts = [
   {
-    author: 'Independent builder',
-    context: 'Public-chain concern · illustrative',
-    quote:
-      'When a wallet is shared for payment, its public chain history is easy for anyone to inspect.',
+    source: 'XRPL Ledger Structure',
+    sourceHref: 'https://xrpl.org/docs/concepts/ledgers/ledger-structure',
+    context: 'Protocol fact · XRP Ledger',
+    fact: 'Validated ledger versions form a public history of transactions and their results.',
   },
   {
-    author: 'Freelance merchant',
-    context: 'Public-chain concern · illustrative',
-    quote:
-      'Crypto payments move quickly, but explaining what happened after a payment can still be difficult.',
+    source: 'XRPL Accounts',
+    sourceHref: 'https://xrpl.org/docs/concepts/accounts',
+    context: 'Protocol fact · XRP Ledger',
+    fact: 'An XRP Ledger account includes a public address, XRP balance, and transaction history.',
   },
   {
-    author: 'Wallet user',
-    context: 'Public-chain concern · illustrative',
-    quote:
-      'I do not want a redirect or a green badge to be the only proof that a payment completed.',
+    source: 'XRPL Transactions',
+    sourceHref: 'https://xrpl.org/docs/introduction/transactions-and-requests',
+    context: 'Protocol fact · XRP Ledger',
+    fact: 'An XRP payment carries an amount and a public destination address, then awaits ledger confirmation.',
   },
   {
-    author: 'Payments operator',
-    context: 'Public-chain concern · illustrative',
-    quote: 'A payment screen should show the next verified step, not leave customers guessing.',
+    source: 'Flare FDC attestations',
+    sourceHref: 'https://dev.flare.network/fdc/attestation-types',
+    context: 'Protocol fact · Flare FDC',
+    fact: 'FDC can attest XRP Ledger payment information, including memo data and destination tags.',
   },
   {
-    author: 'Open ledger observer',
-    context: 'Public-chain concern · illustrative',
-    quote:
-      'Public ledgers make data inspectable. A good checkout should make settlement evidence legible too.',
+    source: 'Flare direct minting',
+    sourceHref: 'https://dev.flare.network/fassets/developer-guides/fassets-direct-minting',
+    context: 'Protocol fact · FAssets',
+    fact: 'After the XRP payment confirms, an executor finalizes direct FXRP minting on Flare.',
   },
 ];
 
@@ -184,19 +185,20 @@ export default function HomePage() {
                 Open networks deserve an open payment story.
               </h2>
               <p className="mt-5 max-w-md leading-7 text-[var(--muted-strong)]">
-                These illustrative community concerns are not claims about PayMorph. They are the
-                reason we show the next verified step, chain evidence, and clear testnet status.
+                These are linked protocol facts from the XRPL and Flare developer documentation.
+                They explain why PayMorph shows the next verified step, chain evidence, and clear
+                testnet status.
               </p>
             </div>
             <div
               className="relative min-w-0 overflow-hidden py-2"
-              aria-label="Illustrative public-chain concerns"
+              aria-label="Public-chain protocol facts"
             >
-              <StoryRail notes={communityNotes} />
+              <StoryRail facts={protocolFacts} />
             </div>
           </div>
           <div className="relative mt-4 min-w-0 overflow-hidden py-2">
-            <StoryRail notes={[...communityNotes].reverse()} reverse />
+            <StoryRail facts={[...protocolFacts].reverse()} reverse />
           </div>
         </div>
       </section>
@@ -305,25 +307,26 @@ function SignalCard({ detail, label, number }: { detail: string; label: string; 
   );
 }
 
-function StoryRail({
-  notes,
-  reverse = false,
-}: {
-  notes: typeof communityNotes;
-  reverse?: boolean;
-}) {
-  const railNotes = [...notes, ...notes];
+function StoryRail({ facts, reverse = false }: { facts: typeof protocolFacts; reverse?: boolean }) {
+  const railFacts = [...facts, ...facts];
   return (
     <div className="pm-story-rail" data-direction={reverse ? 'reverse' : undefined}>
-      {railNotes.map((note, index) => (
+      {railFacts.map((fact, index) => (
         <article
-          aria-hidden={index >= notes.length}
+          aria-hidden={index >= facts.length}
           className="pm-story-card"
-          key={`${note.author}-${index}`}
+          key={`${fact.source}-${index}`}
         >
-          <p className="pm-eyebrow text-[10px]">{note.context}</p>
-          <q className="mt-5 block text-sm leading-6 text-[var(--muted-strong)]">{note.quote}</q>
-          <p className="mt-6 text-xs font-semibold text-[var(--accent-blue)]">{note.author}</p>
+          <p className="pm-eyebrow text-[10px]">{fact.context}</p>
+          <p className="mt-5 text-sm leading-6 text-[var(--muted-strong)]">{fact.fact}</p>
+          <a
+            className="mt-6 inline-flex items-center gap-1 text-xs font-semibold text-[var(--accent-blue)] transition hover:text-[var(--accent)]"
+            href={fact.sourceHref}
+            rel="noreferrer"
+            target="_blank"
+          >
+            Source: {fact.source} <span aria-hidden="true">↗</span>
+          </a>
         </article>
       ))}
     </div>

@@ -233,6 +233,12 @@ verification items".
   `METRICS_TOKEN` is configured locally. This was read-only and created no
   provider payload, payment attempt, XRPL transaction, FDC proof, or Coston2
   transaction.
+- Local executor runtime recheck (2026-08-01): before starting the
+  environment-loaded executor, a read-only queue inspection found only two
+  succeeded `VALIDATE_XRPL` jobs and two succeeded `REQUEST_FDC` jobs; no
+  queued or leased job existed. The watched executor process is now active.
+  Starting it did not create a job, provider payload, XRPL transaction, FDC
+  proof, or Coston2 transaction.
 
 ## Decisions
 

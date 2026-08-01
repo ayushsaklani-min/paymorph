@@ -21,6 +21,24 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
         <Script id="extension-hydration-guard" strategy="beforeInteractive">
           {`
             (() => {
+              const extensionTransportMessage =
+                'Could not establish connection. Receiving end does not exist.';
+              const extensionErrorMessage = (value) => {
+                if (typeof value === 'string') return value;
+                if (value && typeof value === 'object' && typeof value.message === 'string') {
+                  return value.message;
+                }
+                return '';
+              };
+              const suppressKnownExtensionTransportError = (event) => {
+                const value = event.type === 'unhandledrejection' ? event.reason : event.message;
+                if (!extensionErrorMessage(value).includes(extensionTransportMessage)) return;
+                event.preventDefault();
+                event.stopImmediatePropagation();
+              };
+              window.addEventListener('error', suppressKnownExtensionTransportError, true);
+              window.addEventListener('unhandledrejection', suppressKnownExtensionTransportError, true);
+
               const injectedAttribute = (name) =>
                 name === 'bis_skin_checked' || name.startsWith('__processed_ddc');
               const clean = (node) => {

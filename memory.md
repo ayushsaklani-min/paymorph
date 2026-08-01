@@ -279,6 +279,12 @@ verification items".
   must not be manually rewound or reported as settled. The correction applies
   to future attempts; use only the existing evidence-guarded recovery path for
   this historical attempt.
+- Browser-extension overlay containment (2026-08-01): the root's
+  before-interactive guard now suppresses only the exact Chrome extension
+  transport message `Could not establish connection. Receiving end does not
+exist.` before Next development tooling can promote it to a runtime overlay.
+  It does not suppress any other browser or PayMorph error. Web typecheck,
+  targeted lint, formatting, and a local HTTP page check passed.
 
 ## Decisions
 

@@ -81,7 +81,7 @@ export default function HomePage() {
       <div className="mx-auto flex min-h-screen max-w-7xl flex-col px-4 pb-20 pt-4 sm:px-6 sm:pt-6 lg:px-8">
         <nav
           aria-label="Primary navigation"
-          className="pm-panel pm-editorial-nav flex items-center justify-between rounded-full px-4 py-2.5 sm:px-5"
+          className="pm-panel pm-editorial-nav flex items-center justify-between rounded-2xl px-4 py-2.5 sm:px-5"
         >
           <a className="pm-brand" href="/">
             <MorphMark />
@@ -281,7 +281,7 @@ export default function HomePage() {
             </a>
           </div>
           <div className="pm-panel rounded-[2rem] p-4 sm:p-5">
-            <div className="rounded-[1.45rem] border border-white/[0.08] bg-[linear-gradient(145deg,#31160d,#120806)] p-5 sm:p-7">
+            <div className="pm-product-surface rounded-[1.45rem] border p-5 sm:p-7">
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.08] pb-5">
                 <div>
                   <p className="pm-eyebrow">Settlement monitor</p>

@@ -488,20 +488,6 @@ textarea {
     inset 0 1px rgb(255 255 255 / 6%);
 }
 
-/* Payment surfaces use a crisp, square-cornered system. Keep pills, indicators,
-   and actionable controls rounded so their purpose remains immediately clear. */
-.pm-panel,
-.pm-card,
-.pm-story-card,
-.pm-hero-proof,
-.pm-checkout-flow > div,
-.pm-app-root
-  :is(div, article, aside, section, fieldset, dl, form)[class*='rounded-']:not(
-    [class*='rounded-full']
-  ) {
-  border-radius: 0 !important;
-}
-
 .pm-card {
   position: relative;
   overflow: hidden;
@@ -829,5 +815,476 @@ textarea {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* Coral-violet product skin -------------------------------------------------
+   This final cascade intentionally owns the visual language across public,
+   checkout, receipt, and merchant surfaces while leaving protocol behavior
+   and Tailwind layout utilities untouched. */
+:root {
+  color-scheme: light;
+  --ink: #241729;
+  --muted: #786b7c;
+  --muted-strong: #55485a;
+  --surface: #fffdfd;
+  --surface-raised: #ffffff;
+  --surface-deep: #f8e8ed;
+  --line: rgb(54 34 61 / 16%);
+  --line-strong: rgb(88 45 104 / 34%);
+  --accent: #6d35f5;
+  --accent-ink: #ffffff;
+  --accent-blue: #5124d6;
+  --accent-cyan: #d51c89;
+  --danger: #b83250;
+  --coral: #e97078;
+  --coral-deep: #d85f6e;
+  --blush: #f7c5cf;
+  --paper: #fffdfd;
+  --shadow: rgb(77 35 55 / 22%);
+}
+
+html {
+  background: #fbf5f7;
+  color: var(--ink);
+}
+
+body {
+  background:
+    radial-gradient(circle at 82% 4%, rgb(104 50 239 / 15%), transparent 24rem),
+    radial-gradient(circle at 10% 26%, rgb(255 255 255 / 38%), transparent 28rem),
+    linear-gradient(180deg, #e97078 0%, #ef888d 18%, #f5b7bf 37%, #fff8fa 70%, #f8f2f6 100%);
+  background-attachment: fixed;
+  color: var(--ink);
+  font-family: 'Aptos', 'Segoe UI Variable Text', 'Segoe UI', ui-sans-serif, system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+body::before {
+  background-image:
+    linear-gradient(rgb(73 37 79 / 4%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(73 37 79 / 4%) 1px, transparent 1px);
+  background-size: 80px 80px;
+  mask-image: linear-gradient(to bottom, black, transparent 68%);
+  -webkit-mask-image: linear-gradient(to bottom, black, transparent 68%);
+}
+
+body::after {
+  opacity: 0.018;
+}
+
+::selection {
+  background: rgb(109 53 245 / 22%);
+  color: #241729;
+}
+
+::-webkit-scrollbar-track {
+  background: #f4e9ed;
+}
+
+::-webkit-scrollbar-thumb {
+  border-color: #f4e9ed;
+  background: linear-gradient(#d51c89, #6d35f5);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(#c4147b, #5722d4);
+}
+
+.pm-pointer-aura {
+  background: radial-gradient(
+    30rem circle at var(--pointer-x) var(--pointer-y),
+    rgb(109 53 245 / 8%),
+    transparent 62%
+  );
+}
+
+.pm-shell::before {
+  height: 42rem;
+  background: radial-gradient(ellipse at center top, rgb(255 255 255 / 42%), transparent 67%);
+}
+
+.pm-earth-scene {
+  opacity: 0.32;
+  filter: saturate(1.08);
+}
+
+.pm-earth-halo {
+  border-color: rgb(108 53 245 / 18%);
+  box-shadow:
+    0 0 5rem 1.2rem rgb(109 53 245 / 10%),
+    0 0 12rem 2rem rgb(213 28 137 / 8%),
+    inset 0 0 4rem rgb(255 255 255 / 20%);
+}
+
+.pm-earth {
+  border-color: rgb(64 30 83 / 24%);
+  background:
+    radial-gradient(circle at 32% 25%, rgb(255 255 255 / 56%), transparent 12%),
+    radial-gradient(circle at 69% 69%, rgb(238 112 120 / 42%), transparent 30%),
+    radial-gradient(circle at 50% 50%, #caa9fa 0%, #8453ee 48%, #4c239c 79%);
+  box-shadow:
+    -1.5rem -0.7rem 3.8rem rgb(255 255 255 / 32%),
+    1.2rem 1.2rem 4rem rgb(126 39 124 / 22%),
+    inset -2.1rem -1.2rem 4.2rem rgb(48 17 86 / 42%),
+    inset 0.4rem 0.3rem 1.7rem rgb(255 255 255 / 30%);
+}
+
+.pm-earth::before,
+.pm-earth-grid,
+.pm-earth-atmosphere {
+  border-color: rgb(255 255 255 / 26%);
+}
+
+.pm-earth-land {
+  border-color: rgb(255 255 255 / 22%);
+  background: linear-gradient(145deg, rgb(248 183 198 / 74%), rgb(213 28 137 / 30%));
+}
+
+.pm-logo-mark,
+.pm-logo-compact {
+  border: 1px solid rgb(63 29 79 / 24%) !important;
+  background: linear-gradient(145deg, #32165f, #6d35f5 52%, #d51c89) !important;
+  box-shadow:
+    0 10px 22px -12px rgb(74 27 108 / 58%),
+    inset 0 1px rgb(255 255 255 / 42%) !important;
+  color: #ffffff !important;
+}
+
+.pm-logo-mark::before {
+  border-color: rgb(255 255 255 / 86%);
+}
+
+.pm-logo-mark > span {
+  color: #ffffff;
+}
+
+.pm-editorial-nav {
+  border-color: rgb(62 33 69 / 14%);
+  background: rgb(255 253 253 / 88%);
+  box-shadow:
+    0 18px 44px -28px rgb(75 32 50 / 48%),
+    inset 0 1px rgb(255 255 255 / 92%);
+  backdrop-filter: blur(22px) saturate(1.1);
+}
+
+.pm-editorial-nav::before {
+  opacity: 0.65;
+}
+
+.pm-kicker {
+  color: #5124d6;
+  font-family: 'Cascadia Mono', 'SFMono-Regular', Consolas, monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.17em;
+}
+
+.pm-display,
+.pm-dashboard :is(h1, h2, h3),
+.pm-checkout-flow h3 {
+  font-family: 'Aptos Display', 'Segoe UI Variable Display', 'Segoe UI', sans-serif;
+  font-weight: 720;
+  letter-spacing: -0.04em;
+}
+
+.pm-eyebrow {
+  color: #6d35f5;
+}
+
+.pm-hero-rule {
+  height: 2px;
+  background: linear-gradient(90deg, #6d35f5, #d51c89 60%, transparent);
+}
+
+.pm-panel,
+.pm-card,
+.pm-checkout-flow > div {
+  border-color: var(--line);
+  background: rgb(255 253 253 / 94%);
+  box-shadow:
+    0 24px 58px -36px var(--shadow),
+    0 8px 20px -16px rgb(66 28 50 / 24%),
+    inset 0 1px rgb(255 255 255 / 95%);
+  backdrop-filter: blur(18px) saturate(1.05);
+}
+
+.pm-panel {
+  border-radius: 1.2rem;
+}
+
+.pm-card,
+.pm-checkout-flow > div,
+.pm-story-card,
+.pm-product-surface {
+  border-radius: 0.95rem;
+}
+
+.pm-editorial-nav {
+  border-radius: 1rem;
+}
+
+.pm-panel::before,
+.pm-checkout-flow > div::before {
+  background: linear-gradient(90deg, transparent, rgb(109 53 245 / 50%), #d51c89, transparent);
+  opacity: 0.6;
+}
+
+.pm-panel:hover,
+.pm-card:hover {
+  border-color: rgb(109 53 245 / 30%);
+  box-shadow:
+    0 28px 64px -34px rgb(83 31 85 / 34%),
+    0 12px 24px -20px rgb(213 28 137 / 24%),
+    inset 0 1px #ffffff;
+}
+
+.pm-card {
+  background: rgb(255 255 255 / 90%);
+}
+
+.pm-card::after {
+  background: rgb(213 28 137 / 8%);
+}
+
+.pm-story-surface {
+  border-color: rgb(75 35 67 / 12%);
+  background:
+    radial-gradient(circle at 12% 10%, rgb(255 255 255 / 70%), transparent 24rem),
+    linear-gradient(115deg, #f7c5cf, #f9dce3 44%, #f2d8f6);
+  box-shadow:
+    inset 0 1px rgb(255 255 255 / 66%),
+    0 26px 64px -46px rgb(92 36 65 / 35%);
+}
+
+.pm-story-surface::before {
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0,
+    transparent 6rem,
+    rgb(73 35 78 / 4%) 6.05rem,
+    transparent 6.12rem
+  );
+}
+
+.pm-story-card {
+  border-color: rgb(66 34 70 / 14%);
+  background: rgb(255 253 253 / 90%);
+  box-shadow:
+    0 18px 34px -27px rgb(74 30 54 / 32%),
+    inset 0 1px #ffffff;
+}
+
+.pm-hero-proof {
+  border-radius: 1.45rem;
+  border-color: rgb(79 36 77 / 16%);
+  background:
+    radial-gradient(circle at 86% 8%, rgb(109 53 245 / 24%), transparent 28%),
+    linear-gradient(145deg, #f8c8d2, #ed858c 52%, #e36b78);
+  box-shadow:
+    0 34px 66px -36px rgb(78 30 48 / 45%),
+    inset 0 1px rgb(255 255 255 / 54%);
+}
+
+.pm-hero-proof::before {
+  background: linear-gradient(
+    120deg,
+    rgb(255 255 255 / 36%),
+    transparent 26%,
+    transparent 70%,
+    rgb(109 53 245 / 12%)
+  );
+}
+
+.pm-hero-proof > div,
+.pm-product-surface {
+  border-color: rgb(60 31 67 / 14%) !important;
+  background: rgb(255 253 253 / 94%) !important;
+  box-shadow:
+    0 18px 38px -28px rgb(75 29 52 / 32%),
+    inset 0 1px #ffffff;
+}
+
+.pm-trace-line {
+  background: linear-gradient(#6d35f5, rgb(213 28 137 / 18%));
+}
+
+.pm-button {
+  border-radius: 0.82rem;
+  font-weight: 680;
+}
+
+.pm-button-primary {
+  border-color: rgb(58 25 104 / 24%);
+  background: linear-gradient(110deg, #5423db, #7337f3 48%, #d51c89);
+  box-shadow:
+    0 14px 26px -14px rgb(95 41 209 / 56%),
+    0 6px 14px -10px rgb(213 28 137 / 48%),
+    inset 0 1px rgb(255 255 255 / 42%);
+  color: #ffffff;
+}
+
+.pm-button-primary:hover {
+  box-shadow:
+    0 18px 34px -14px rgb(95 41 209 / 62%),
+    0 8px 18px -10px rgb(213 28 137 / 54%),
+    inset 0 1px rgb(255 255 255 / 48%);
+}
+
+.pm-button:active {
+  box-shadow:
+    0 7px 14px -11px rgb(85 36 147 / 52%),
+    inset 0 2px 4px rgb(40 10 70 / 16%);
+  transform: translateY(1px);
+}
+
+.pm-button-secondary {
+  border-color: rgb(65 33 72 / 16%);
+  background: rgb(255 255 255 / 84%);
+  box-shadow:
+    0 10px 18px -16px rgb(67 29 49 / 34%),
+    inset 0 1px #ffffff;
+  color: #5124d6;
+}
+
+.pm-button-secondary:hover {
+  border-color: rgb(109 53 245 / 36%);
+  background: #faf6ff;
+  box-shadow:
+    0 14px 24px -18px rgb(90 42 177 / 38%),
+    inset 0 1px #ffffff;
+}
+
+.pm-text-action {
+  color: #5d35a8;
+  text-decoration-color: rgb(109 53 245 / 34%);
+}
+
+.pm-text-action:hover {
+  color: #3f1a8d;
+}
+
+.pm-dashboard .bg-\[var\(--surface\)\],
+.pm-app-root .bg-\[var\(--surface\)\] {
+  background: rgb(255 253 253 / 94%) !important;
+  box-shadow:
+    0 22px 46px -34px rgb(77 35 55 / 30%),
+    inset 0 1px #ffffff;
+}
+
+.pm-dashboard input,
+.pm-dashboard select,
+.pm-dashboard textarea,
+.pm-app-root :is(input:not([type='checkbox']), select, textarea) {
+  min-height: 2.85rem;
+  border-color: rgb(72 42 78 / 17%);
+  border-radius: 0.72rem;
+  background: #f2eef4;
+  box-shadow: inset 0 1px 2px rgb(51 26 58 / 7%);
+  color: var(--ink);
+}
+
+.pm-app-root label {
+  color: var(--muted-strong);
+  font-size: 0.9rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.pm-dashboard input:focus,
+.pm-dashboard select:focus,
+.pm-dashboard textarea:focus,
+.pm-app-root :is(input:not([type='checkbox']), select, textarea):focus {
+  border-color: rgb(109 53 245 / 54%);
+  background: #ffffff;
+  box-shadow:
+    0 0 0 4px rgb(109 53 245 / 11%),
+    inset 0 1px #ffffff;
+}
+
+.pm-app-root :is(input, textarea)::placeholder {
+  color: #998e9c;
+}
+
+.pm-app-root table {
+  background: rgb(255 255 255 / 46%);
+}
+
+.pm-app-root thead {
+  background: #f6eff4 !important;
+  color: #65576a !important;
+}
+
+.pm-app-root tbody tr {
+  transition:
+    background 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.pm-app-root tbody tr:hover {
+  background: rgb(109 53 245 / 4%);
+}
+
+.pm-app-root [class*='bg-black/'] {
+  background-color: rgb(73 35 78 / 5.5%) !important;
+}
+
+.pm-app-root [class*='bg-white/'] {
+  background-color: rgb(255 255 255 / 66%) !important;
+}
+
+.pm-app-root [class*='border-white/'] {
+  border-color: rgb(62 34 68 / 13%) !important;
+}
+
+.pm-app-root [class*='text-emerald-'] {
+  color: #0c7154 !important;
+}
+
+.pm-app-root [class*='text-sky-'] {
+  color: #185f94 !important;
+}
+
+.pm-app-root [class*='text-amber-'] {
+  color: #8a5410 !important;
+}
+
+.pm-app-root [class*='text-red-'] {
+  color: #a42c49 !important;
+}
+
+.pm-app-root [class*='bg-emerald-'][class*='/'] {
+  background-color: #e8f8f2 !important;
+}
+
+.pm-app-root [class*='bg-sky-'][class*='/'] {
+  background-color: #eaf4fb !important;
+}
+
+.pm-app-root [class*='bg-amber-'][class*='/'] {
+  background-color: #fff5df !important;
+}
+
+.pm-app-root [class*='bg-red-'][class*='/'] {
+  background-color: #fff0f3 !important;
+}
+
+.pm-app-root [role='note'] {
+  border-color: rgb(109 53 245 / 16%) !important;
+  background: rgb(245 238 255 / 78%) !important;
+  color: #66546f !important;
+}
+
+@media (max-width: 700px) {
+  .pm-earth-scene {
+    opacity: 0.17;
+  }
+
+  .pm-panel,
+  .pm-card,
+  .pm-checkout-flow > div {
+    box-shadow:
+      0 18px 38px -30px rgb(77 35 55 / 34%),
+      inset 0 1px #ffffff;
   }
 }

@@ -5,8 +5,8 @@ test('shows the evidence-first testnet product promise', async ({ page }) => {
   await expect(page.getByRole('heading', { name: /Payment clarity/i })).toBeVisible();
   await expect(page.getByRole('heading', { name: /One payment. Four proofs./i })).toBeVisible();
   await expect(page.getByRole('note')).toContainText('no real monetary value');
-  await expect(page.locator('.pm-story-card').first()).toHaveCSS('border-radius', '0px');
-  await expect(page.locator('.pm-card').first()).toHaveCSS('border-radius', '0px');
+  await expect(page.locator('.pm-story-card').first()).toHaveCSS('border-radius', '15.2px');
+  await expect(page.locator('.pm-card').first()).toHaveCSS('border-radius', '15.2px');
   await expect(page.getByLabel('PayMorph payment confidence')).toContainText('PayMorph clarity');
   await expect(page.getByLabel('PayMorph payment confidence')).toContainText('Built for trust');
   await expect(

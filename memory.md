@@ -675,3 +675,11 @@ USDT0 settlement evidence.
   base units as service fee, used `1,069,848` FXRP base units, and refunded
   `16,048` FXRP base units to the payer personal account. The retained local
   smoke artifact is `live-smoke/6f7320bc-eb35-4842-855d-6e8a1039b0a7.json`.
+- The web product now uses one shared light coral/blush visual system with
+  paper-white cards and violet-to-magenta actions across the marketing site,
+  authentication, checkout/status, public receipts, explorer, network, and
+  merchant dashboard. This is a presentation-only change: payment state,
+  provider adapters, evidence rules, and settlement behavior were not changed.
+- Responsive browser QA passed at 390 px and 1440 px for `/`, `/login`,
+  `/explorer`, `/network`, and the independently settled USDT0 receipt. Every
+  route returned HTTP 200 with no horizontal overflow or browser page errors.

@@ -9,7 +9,7 @@ export default async function DashboardLayout({ children }: Readonly<{ children:
 
   return (
     <div className="pm-shell pm-dashboard mx-auto min-h-screen max-w-7xl px-4 py-5 sm:px-6 sm:py-6">
-      <header className="pm-panel pm-editorial-nav sticky top-3 z-10 rounded-3xl px-4 py-3 sm:top-5 sm:px-5">
+      <header className="pm-panel pm-editorial-nav sticky top-3 z-10 rounded-2xl px-4 py-3 sm:top-5 sm:px-5">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <a className="pm-brand" href="/dashboard">
             <span aria-hidden="true" className="pm-logo-mark">
@@ -23,7 +23,7 @@ export default async function DashboardLayout({ children }: Readonly<{ children:
             </span>
           </a>
           <a
-            className="pm-button pm-button-secondary rounded-full px-3.5 py-2 text-sm font-medium text-[var(--muted-strong)]"
+            className="pm-button pm-button-secondary rounded-xl px-3.5 py-2 text-sm font-medium text-[var(--muted-strong)]"
             href="/dashboard/settings"
           >
             {merchant.displayName}
@@ -46,7 +46,7 @@ export default async function DashboardLayout({ children }: Readonly<{ children:
             ].map(([label, href]) => (
               <li key={href}>
                 <a
-                  className="inline-flex rounded-full border border-transparent px-3 py-2 text-[var(--muted)] transition duration-300 hover:border-[var(--line-strong)] hover:bg-[var(--accent)]/[0.07] hover:text-[var(--ink)]"
+                  className="inline-flex rounded-lg border border-transparent px-3 py-2 text-[var(--muted)] transition duration-300 hover:border-[var(--line-strong)] hover:bg-[var(--accent)]/[0.07] hover:text-[var(--ink)]"
                   href={href}
                 >
                   {label}

@@ -248,6 +248,12 @@ verification items".
   queued or leased job existed. The watched executor process is now active.
   Starting it did not create a job, provider payload, XRPL transaction, FDC
   proof, or Coston2 transaction.
+- Live FXRP checkout preflight (2026-08-01): `/api/ready` returned HTTP 200
+  with the configured public-HTTPS application URL, Xaman credentials and
+  webhook secret, executor key, and deployed router all present. An active,
+  unexpired `demo-fxrp-checkout` invoice has no attempts and is safe for a
+  fresh payer session. This was a read-only configuration/database check; no
+  Xaman payload, XRPL payment, FDC proof, or Coston2 transaction was created.
 
 ## Decisions
 

@@ -488,6 +488,20 @@ textarea {
     inset 0 1px rgb(255 255 255 / 6%);
 }
 
+/* Payment surfaces use a crisp, square-cornered system. Keep pills, indicators,
+   and actionable controls rounded so their purpose remains immediately clear. */
+.pm-panel,
+.pm-card,
+.pm-story-card,
+.pm-hero-proof,
+.pm-checkout-flow > div,
+.pm-app-root
+  :is(div, article, aside, section, fieldset, dl, form)[class*='rounded-']:not(
+    [class*='rounded-full']
+  ) {
+  border-radius: 0 !important;
+}
+
 .pm-card {
   position: relative;
   overflow: hidden;

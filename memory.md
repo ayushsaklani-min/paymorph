@@ -108,7 +108,10 @@ verification items".
   typography, a native CSS earth motif, moving public-chain protocol-fact
   cards, scroll motion, and reduced-motion support. The landing,
   login, dashboard, checkout/status, explorer, network, and receipt surfaces
-  share this system. NullPay was used only as a local visual reference; no
+  share this system. Card and panel surfaces now use a square-cornered box
+  treatment across the application; rounded controls, status pills, and
+  indicators remain intentionally distinct and actionable. NullPay was used
+  only as a local visual reference; no
   code, raster asset, wording, or settlement behavior was copied or changed.
   The landing rail pairs linked XRPL/Flare protocol facts with an affirmative
   PayMorph confidence story: clear live progress, exact committed payment

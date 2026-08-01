@@ -301,6 +301,15 @@ exist.` before Next development tooling can promote it to a runtime overlay.
   `live-smoke/1fcb716b-ae6d-4b24-96f6-e074eb6fab84.json`. Its first call was
   blocked by an expired temporary Cloudflare `APP_URL`; rerunning against the
   active local app did not create or modify any chain transaction and passed.
+- USDT0 route revalidation (2026-08-01): at Coston2 block `33507562`, the
+  configured testnet USDT0 token and FXRP token had bytecode, but the documented
+  SparkDEX V3 SwapRouter `0x8a1E35F5c98C4E85B36B7B253222eE17773b2781` and V3
+  factory `0x8A2578d23d4C532cC9A98FaD91C0523f5efDE652` had no Coston2 bytecode.
+  The official Flare USDT0/FXRP swap guide explicitly labels those addresses as
+  Flare Mainnet addresses; it is not evidence for a Coston2 route. USDT0 stays
+  fail-closed as `SWAP_ROUTER_NO_CODE`. Do not deploy a mock or silently switch
+  DEXs. A real custom testnet route would be a blueprint/ADR change that needs
+  explicit authorization, deployment authority, and real Coston2 test liquidity.
 
 ## Decisions
 

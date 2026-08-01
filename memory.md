@@ -225,6 +225,14 @@ verification items".
   PostgreSQL route smoke passed; the final full gate covered 226 automated
   tests, all production builds, and 29 Foundry tests. Metrics do not prove
   readiness, settlement, or any external alerting configuration.
+- Local web runtime recheck (2026-08-01): a stale web process that did not
+  inherit `.env.local` was replaced with the documented environment-loaded
+  PayMorph web process. `GET /api/health` and `GET /api/ready` both returned
+  HTTP 200 with `no-store` and canonical request IDs. An unauthenticated
+  `GET /api/metrics` returned the expected HTTP 403 because no
+  `METRICS_TOKEN` is configured locally. This was read-only and created no
+  provider payload, payment attempt, XRPL transaction, FDC proof, or Coston2
+  transaction.
 
 ## Decisions
 

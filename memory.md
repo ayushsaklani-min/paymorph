@@ -127,6 +127,14 @@ verification items".
   local documented public Coston2 testnet key was verified through the actual
   readiness endpoint and against the previously validated XRPL transaction;
   this is not a proof, mint, or settlement artifact.
+- Read-only local preflight (2026-08-01): after restarting the documented
+  native WSL PostgreSQL and local web/executor processes, `/api/health` and
+  `/api/ready` both returned HTTP 200. The readiness projection reported
+  database, FXRP, and authenticated FDC verifier `ready`; the current network
+  reported Coston2 chain 114 with FXRP available. USDT0 remains fail-closed as
+  `SWAP_ROUTER_NO_CODE`. These checks were read-only and did not create a
+  Xaman payload, payment attempt, XRPL transaction, FDC proof, or Coston2
+  transaction.
 - Local executor startup hardening (2026-08-01): the injected `@paymorph/db`
   package now includes its declared development source export. After a normal
   workspace install, the executor started successfully with the configured

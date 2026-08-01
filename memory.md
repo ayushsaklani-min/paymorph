@@ -683,3 +683,8 @@ USDT0 settlement evidence.
 - Responsive browser QA passed at 390 px and 1440 px for `/`, `/login`,
   `/explorer`, `/network`, and the independently settled USDT0 receipt. Every
   route returned HTTP 200 with no horizontal overflow or browser page errors.
+- The pre-hydration browser-extension guard now remains active until five
+  seconds after the complete page-load event instead of disconnecting after a
+  fixed 1.5 seconds. It removes only the observed `bis_skin_checked`,
+  `bis_register`, and `__processed_ddc*` attributes, covering cold development
+  hydration without hiding application-owned mismatches.

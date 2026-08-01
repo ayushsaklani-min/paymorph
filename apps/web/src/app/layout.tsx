@@ -40,7 +40,9 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
               window.addEventListener('unhandledrejection', suppressKnownExtensionTransportError, true);
 
               const injectedAttribute = (name) =>
-                name === 'bis_skin_checked' || name.startsWith('__processed_ddc');
+                name === 'bis_skin_checked' ||
+                name === 'bis_register' ||
+                name.startsWith('__processed_ddc');
               const clean = (node) => {
                 if (!(node instanceof Element)) return;
                 const elements = [node, ...node.querySelectorAll('*')];
@@ -60,7 +62,19 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
                 }
               });
               observer.observe(document.documentElement, { attributes: true, childList: true, subtree: true });
-              window.setTimeout(() => observer.disconnect(), 1500);
+
+              // A fixed delay can expire before a cold development page hydrates.
+              // Keep the guard through the complete load/hydration window, then
+              // disconnect so it has no steady-state cost for the application.
+              const finish = () => {
+                clean(document.documentElement);
+                window.setTimeout(() => observer.disconnect(), 5000);
+              };
+              document.addEventListener('DOMContentLoaded', () => clean(document.documentElement), {
+                once: true,
+              });
+              if (document.readyState === 'complete') finish();
+              else window.addEventListener('load', finish, { once: true });
             })();
           `}
         </Script>

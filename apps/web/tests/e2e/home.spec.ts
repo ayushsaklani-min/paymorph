@@ -39,3 +39,16 @@ test('offers a keyboard path that skips directly to the primary content landmark
   await expect(page.locator('main')).toBeFocused();
   await expect(page.getByRole('navigation', { name: 'Primary navigation' })).toBeVisible();
 });
+
+test('removes known extension attributes during the hydration window', async ({ page }) => {
+  await page.goto('/');
+  const main = page.locator('main');
+
+  await main.evaluate((element) => {
+    element.setAttribute('bis_skin_checked', '1');
+    element.setAttribute('bis_register', 'injected');
+  });
+
+  await expect(main).not.toHaveAttribute('bis_skin_checked');
+  await expect(main).not.toHaveAttribute('bis_register');
+});

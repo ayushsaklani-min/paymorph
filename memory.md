@@ -310,6 +310,18 @@ exist.` before Next development tooling can promote it to a runtime overlay.
   fail-closed as `SWAP_ROUTER_NO_CODE`. Do not deploy a mock or silently switch
   DEXs. A real custom testnet route would be a blueprint/ADR change that needs
   explicit authorization, deployment authority, and real Coston2 test liquidity.
+- USDT0 quote-path hardening (2026-08-01): the immutable quote service now
+  supports the real exact-output flow behind ADR 0006's gate. It fresh-resolves
+  the configured route, confirms the PayMorph router and adapter identities,
+  simulates SparkDEX-compatible QuoterV2 for the invoice plus service fee,
+  applies only bigint ceil slippage, creates `settleUsdt0ExactOut` bytes, and
+  persists the quoted FXRP input plus router/quoter/pool snapshot. Local
+  migration `20260801010000_usdt0_quote_audit` is applied. This does not enable
+  USDT0: Coston2 remains `SWAP_ROUTER_NO_CODE`, no mock or fallback route was
+  introduced, and no XRPL/FDC/Coston2 transaction was sent. Shared tests (34),
+  shared/web lint and typechecks, and web tests (129) pass. Exact quote/adaptor
+  logic remains unit-tested until a real Coston2 deployment satisfies the live
+  gate.
 
 ## Decisions
 

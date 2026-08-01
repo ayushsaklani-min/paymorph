@@ -19,8 +19,10 @@ export function getConfiguredFlareProvider(): FlareNetworkProvider {
   return new FlareNetworkProvider(createCoston2PublicClient(process.env.COSTON2_RPC_URL), config);
 }
 
-export async function resolveConfiguredNetwork(): Promise<ResolvedCoston2Network> {
-  if (cached && cached.expiresAt > Date.now()) return cached.value;
+export async function resolveConfiguredNetwork(
+  options: { forceRefresh?: boolean } = {},
+): Promise<ResolvedCoston2Network> {
+  if (!options.forceRefresh && cached && cached.expiresAt > Date.now()) return cached.value;
   const provider = getConfiguredFlareProvider();
   const value = await provider.resolveNetwork(
     parseInteger(process.env.MAX_FTSO_AGE_SECONDS ?? '120', 'MAX_FTSO_AGE_SECONDS'),

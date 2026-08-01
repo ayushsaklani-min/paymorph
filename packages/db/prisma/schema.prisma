@@ -371,6 +371,10 @@ model Quote {
   slippageBps            Int
   route                  String
   poolFee                Int?
+  quotedFxrpInputUBA     Decimal?       @db.Decimal(78, 0)
+  swapRouterAddress      String?
+  swapQuoterAddress      String?
+  swapPoolAddress        String?
   userOpHash             String
   userOpDataEnc          String
   memoHex                String

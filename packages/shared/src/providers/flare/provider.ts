@@ -7,7 +7,12 @@ import { iMasterAccountControllerAbi } from '@flarenetwork/flare-wagmi-periphery
 import { getAddress, isAddressEqual, zeroAddress, type Address, type Hex } from 'viem';
 import { solveDirectMintGrossAmount } from '../../amounts/direct-mint.js';
 import { COSTON2_CHAIN_ID, FXRP_DECIMALS, XRP_USD_FEED_ID } from '../../constants/network.js';
-import { uniswapV3FactoryAbi, uniswapV3PoolAbi, uniswapV3RouterIdentityAbi } from './abis.js';
+import {
+  uniswapV3FactoryAbi,
+  uniswapV3PoolAbi,
+  uniswapV3QuoterV2Abi,
+  uniswapV3RouterIdentityAbi,
+} from './abis.js';
 import {
   COSTON2_USDT0_ADDRESS,
   DOCUMENTED_COSTON2_SPARKDEX_ROUTER_ADDRESS,
@@ -28,6 +33,7 @@ import {
   type TokenMetadata,
   type Usdt0Capability,
   type Usdt0CapabilityReason,
+  type VerifiedUsdt0Capability,
 } from './types.js';
 
 interface NormalizedFlareProviderConfig {
@@ -264,6 +270,52 @@ export class FlareNetworkProvider {
       },
       USDT0,
     };
+  }
+
+  /**
+   * Simulates the configured QuoterV2 for one FXRP -> USDT0 exact-output hop.
+   * It deliberately returns no fallback price: callers may construct a
+   * settlement only from this current, route-specific answer.
+   */
+  async quoteUsdt0ExactOutput(input: {
+    fxrpAddress: Address;
+    capability: VerifiedUsdt0Capability;
+    amountOut: bigint;
+  }): Promise<bigint> {
+    if (input.amountOut <= 0n) {
+      throw new FlareNetworkError(
+        'INVALID_USDT0_EXACT_OUTPUT_QUOTE',
+        'USDT0 exact-output amount must be positive',
+      );
+    }
+
+    try {
+      const simulation = await this.client.simulateContract({
+        address: input.capability.quoter,
+        abi: uniswapV3QuoterV2Abi,
+        functionName: 'quoteExactOutputSingle',
+        args: [
+          {
+            tokenIn: input.fxrpAddress,
+            tokenOut: input.capability.token,
+            amount: input.amountOut,
+            fee: input.capability.poolFee,
+            sqrtPriceLimitX96: 0n,
+          },
+        ],
+      });
+      const result = simulation.result;
+      if (!Array.isArray(result) || typeof result[0] !== 'bigint' || result[0] <= 0n) {
+        throw new Error('Quoter returned an invalid exact-output input amount');
+      }
+      return result[0];
+    } catch (error) {
+      if (error instanceof FlareNetworkError) throw error;
+      throw new FlareNetworkError(
+        'INVALID_USDT0_EXACT_OUTPUT_QUOTE',
+        `USDT0 exact-output quote simulation failed: ${errorMessage(error)}`,
+      );
+    }
   }
 
   async resolveNetwork(maxFtsoAgeSeconds = 120): Promise<ResolvedCoston2Network> {

@@ -84,6 +84,13 @@ function createMockProvider(options: MockOptions = {}): {
     }
   });
 
+  const simulateContract = vi.fn((request: SimulateContractRequest): Promise<unknown> => {
+    if (request.functionName === 'quoteExactOutputSingle') {
+      return Promise.resolve({ result: [605_000n, 0n, 0, 100_000n] as const });
+    }
+    return Promise.resolve({ result: [1_100_000n, options.feedDecimals ?? 6, 970n] as const });
+  });
+
   const client = {
     getChainId: vi.fn(() => Promise.resolve(options.chainId ?? 114)),
     getBytecode: vi.fn(({ address }: { address: Address }) =>
@@ -96,11 +103,7 @@ function createMockProvider(options: MockOptions = {}): {
       }),
     ),
     readContract,
-    simulateContract: vi.fn(() =>
-      Promise.resolve({
-        result: [1_100_000n, options.feedDecimals ?? 6, 970n] as const,
-      }),
-    ),
+    simulateContract,
   } as unknown as FlareReadClient;
 
   const config: FlareProviderConfig = {
@@ -209,6 +212,34 @@ describe('FlareNetworkProvider', () => {
     });
   });
 
+  it('uses an eth_call QuoterV2 exact-output quote only for a verified USDT0 route', async () => {
+    const { provider, client } = createMockProvider({ completeRoute: true });
+    const capability = (await provider.readSettlementCapabilities()).USDT0;
+    if (!capability.available) throw new Error('Test fixture must provide a verified USDT0 route');
+
+    await expect(
+      provider.quoteUsdt0ExactOutput({
+        fxrpAddress: FXRP,
+        capability,
+        amountOut: 1_005_000n,
+      }),
+    ).resolves.toBe(605_000n);
+    expect(client.simulateContract).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        address: QUOTER,
+        functionName: 'quoteExactOutputSingle',
+        args: [
+          expect.objectContaining({
+            tokenIn: FXRP,
+            tokenOut: USDT0,
+            amount: 1_005_000n,
+            fee: 500,
+          }),
+        ],
+      }),
+    );
+  });
+
   it('rejects a provider connected to the wrong chain', async () => {
     const { provider } = createMockProvider({ chainId: 14 });
 
@@ -222,6 +253,10 @@ interface ReadContractRequest {
   readonly address: Address;
   readonly functionName: string;
   readonly args?: readonly unknown[];
+}
+
+interface SimulateContractRequest {
+  readonly functionName: string;
 }
 
 function isSameAddress(left: Address, right: Address): boolean {

@@ -2,14 +2,18 @@ import { randomUUID } from 'node:crypto';
 import { db, AttemptStatus, InvoiceStatus } from '@paymorph/db';
 import {
   buildFxrpSettlementCalls,
+  buildUsdt0SettlementCalls,
   calculateQuote,
+  calculateSettlementOutput,
+  ceilBps,
   createPaymentId,
   DomainError,
   encodeSmartAccountOperation,
   encryptSensitive,
   formatBaseUnits,
+  type VerifiedUsdt0Capability,
 } from '@paymorph/shared';
-import { getAddress, isAddress, type Address } from 'viem';
+import { getAddress, isAddress, isAddressEqual, zeroAddress, type Address } from 'viem';
 import { getPayerRuntimeConfig } from '../payer-session/config.js';
 import { hashPayerSessionToken } from '../payer-session/cookie.js';
 import { assertConfiguredFdcVerifierReady } from '../fdc/verifier-readiness.js';
@@ -29,6 +33,65 @@ const routerReadAbi = [
     stateMutability: 'view',
     inputs: [],
     outputs: [{ name: '', type: 'bool' }],
+  },
+  {
+    type: 'function',
+    name: 'FXRP',
+    stateMutability: 'view',
+    inputs: [],
+    outputs: [{ name: '', type: 'address' }],
+  },
+  {
+    type: 'function',
+    name: 'USDT0',
+    stateMutability: 'view',
+    inputs: [],
+    outputs: [{ name: '', type: 'address' }],
+  },
+  {
+    type: 'function',
+    name: 'adapter',
+    stateMutability: 'view',
+    inputs: [],
+    outputs: [{ name: '', type: 'address' }],
+  },
+] as const;
+
+const adapterReadAbi = [
+  {
+    type: 'function',
+    name: 'payMorphRouter',
+    stateMutability: 'view',
+    inputs: [],
+    outputs: [{ name: '', type: 'address' }],
+  },
+  {
+    type: 'function',
+    name: 'swapRouter',
+    stateMutability: 'view',
+    inputs: [],
+    outputs: [{ name: '', type: 'address' }],
+  },
+  {
+    type: 'function',
+    name: 'tokenIn',
+    stateMutability: 'view',
+    inputs: [],
+    outputs: [{ name: '', type: 'address' }],
+  },
+  {
+    type: 'function',
+    name: 'tokenOut',
+    stateMutability: 'view',
+    inputs: [],
+    outputs: [{ name: '', type: 'address' }],
+  },
+  {
+    type: 'function',
+    name: 'supportedPoolFee',
+    stateMutability: 'view',
+    inputs: [],
+    outputs: [{ name: '', type: 'uint24' }],
   },
 ] as const;
 
@@ -52,7 +115,7 @@ const RESUMABLE_ATTEMPT_STATUSES: AttemptStatus[] = [
   AttemptStatus.AWAITING_SIGNATURE,
 ];
 
-export async function createFxrpQuote(input: {
+export async function createQuote(input: {
   invoiceSlug: string;
   payerSessionToken: string;
   slippageBps: number;
@@ -86,19 +149,16 @@ export async function createFxrpQuote(input: {
     );
   });
 
-  const network = await resolveConfiguredNetwork();
+  // A quote commits immutable payment bytes, so it performs a fresh route
+  // preflight rather than accepting the short readiness-cache window.
+  const network = await resolveConfiguredNetwork({ forceRefresh: true });
   if (!network.xrpUsd.fresh) {
     throw new DomainError('QUOTE_ROUTE_UNAVAILABLE', 'XRP/USD price feed is stale');
   }
-  if (invoice.settlementAsset === 'USDT0') {
-    const capability = network.capabilities.USDT0;
-    throw new DomainError(
-      'QUOTE_ROUTE_UNAVAILABLE',
-      capability.available
-        ? 'USDT0 exact-output quoting is not enabled for this deployment'
-        : `USDT0 settlement is unavailable: ${capability.reason}`,
-    );
-  }
+  const usdt0Capability =
+    invoice.settlementAsset === 'USDT0'
+      ? requireUsdt0Capability(network.capabilities.USDT0)
+      : undefined;
 
   const routerAddress = configuredRouterAddress();
   const provider = getConfiguredFlareProvider();
@@ -106,20 +166,69 @@ export async function createFxrpQuote(input: {
   if (!routerCode || routerCode === '0x') {
     throw new DomainError('QUOTE_ROUTE_UNAVAILABLE', 'Configured PayMorphRouter has no bytecode');
   }
-  const [serviceFeeBps, paused, personalAccountState] = await Promise.all([
-    provider.client.readContract({
-      address: routerAddress,
-      abi: routerReadAbi,
-      functionName: 'serviceFeeBps',
-    }),
-    provider.client.readContract({
-      address: routerAddress,
-      abi: routerReadAbi,
-      functionName: 'paused',
-    }),
-    provider.readPersonalAccount(payerSession.xrplAccount, network.contracts),
-  ]);
+  const [serviceFeeBps, paused, routerFxrp, routerUsdt0, routerAdapter, personalAccountState] =
+    await Promise.all([
+      provider.client.readContract({
+        address: routerAddress,
+        abi: routerReadAbi,
+        functionName: 'serviceFeeBps',
+      }),
+      provider.client.readContract({
+        address: routerAddress,
+        abi: routerReadAbi,
+        functionName: 'paused',
+      }),
+      provider.client.readContract({
+        address: routerAddress,
+        abi: routerReadAbi,
+        functionName: 'FXRP',
+      }),
+      provider.client.readContract({
+        address: routerAddress,
+        abi: routerReadAbi,
+        functionName: 'USDT0',
+      }),
+      provider.client.readContract({
+        address: routerAddress,
+        abi: routerReadAbi,
+        functionName: 'adapter',
+      }),
+      provider.readPersonalAccount(payerSession.xrplAccount, network.contracts),
+    ]);
   if (paused) throw new DomainError('QUOTE_ROUTE_UNAVAILABLE', 'Settlement contract is paused');
+
+  if (!isAddressEqual(routerFxrp, network.fxrp.address)) {
+    throw new DomainError(
+      'QUOTE_ROUTE_UNAVAILABLE',
+      'Configured PayMorphRouter FXRP token does not match',
+    );
+  }
+
+  if (usdt0Capability) {
+    await assertUsdt0RouterRoute({
+      provider,
+      routerAddress,
+      routerFxrp,
+      routerUsdt0,
+      routerAdapter,
+      fxrpAddress: network.fxrp.address,
+      capability: usdt0Capability,
+    });
+  }
+
+  const exactOutputFxrpQuoteUBA =
+    usdt0Capability === undefined
+      ? undefined
+      : await quoteUsdt0ExactOutput({
+          provider,
+          capability: usdt0Capability,
+          fxrpAddress: network.fxrp.address,
+          denomination: invoice.denomination,
+          invoiceBaseUnits: BigInt(invoice.amountBaseUnits.toFixed(0)),
+          serviceFeeBps,
+          xrpUsdValue: network.xrpUsd.value,
+          xrpUsdDecimals: network.xrpUsd.decimals,
+        });
 
   const calculation = calculateQuote({
     denomination: invoice.denomination,
@@ -130,6 +239,7 @@ export async function createFxrpQuote(input: {
     xrpUsdValue: network.xrpUsd.value,
     xrpUsdDecimals: network.xrpUsd.decimals,
     directMintSettings: network.directMintSettings,
+    ...(exactOutputFxrpQuoteUBA === undefined ? {} : { exactOutputFxrpQuoteUBA }),
   });
 
   const maxTtlSeconds = parseInteger(
@@ -157,16 +267,30 @@ export async function createFxrpQuote(input: {
     account: getAddress(recipient.address),
     bps: recipient.bps,
   }));
-  const calls = buildFxrpSettlementCalls({
-    fxrpAddress: network.fxrp.address,
-    routerAddress,
-    paymentId,
-    invoiceFxrpAmount: calculation.invoiceOutBaseUnits,
-    recipients,
-    feeBps: serviceFeeBps,
-    deadline: BigInt(Math.floor(settlementDeadline.getTime() / 1_000)),
-    personalAccount: personalAccountState.personalAccount,
-  });
+  const calls =
+    usdt0Capability === undefined
+      ? buildFxrpSettlementCalls({
+          fxrpAddress: network.fxrp.address,
+          routerAddress,
+          paymentId,
+          invoiceFxrpAmount: calculation.invoiceOutBaseUnits,
+          recipients,
+          feeBps: serviceFeeBps,
+          deadline: BigInt(Math.floor(settlementDeadline.getTime() / 1_000)),
+          personalAccount: personalAccountState.personalAccount,
+        })
+      : buildUsdt0SettlementCalls({
+          fxrpAddress: network.fxrp.address,
+          routerAddress,
+          paymentId,
+          maxFxrpInput: calculation.maxFxrpInputUBA,
+          invoiceUsdt0Out: calculation.invoiceOutBaseUnits,
+          recipients,
+          feeBps: serviceFeeBps,
+          poolFee: usdt0Capability.poolFee,
+          deadline: BigInt(Math.floor(settlementDeadline.getTime() / 1_000)),
+          personalAccount: personalAccountState.personalAccount,
+        });
   const operation = encodeSmartAccountOperation({
     calls,
     sender: personalAccountState.personalAccount,
@@ -258,6 +382,15 @@ export async function createFxrpQuote(input: {
         xrplPaymentDrops: calculation.xrplPaymentDrops.toString(),
         slippageBps: input.slippageBps,
         route: calculation.route,
+        ...(usdt0Capability === undefined
+          ? {}
+          : {
+              poolFee: usdt0Capability.poolFee,
+              quotedFxrpInputUBA: exactOutputFxrpQuoteUBA!.toString(),
+              swapRouterAddress: usdt0Capability.router,
+              swapQuoterAddress: usdt0Capability.quoter,
+              swapPoolAddress: usdt0Capability.pool,
+            }),
         userOpHash: operation.userOpHash,
         userOpDataEnc,
         memoHex: operation.memoHex,
@@ -291,6 +424,7 @@ export async function createFxrpQuote(input: {
     quoteId,
     attemptId,
     calculation,
+    settlementAsset: invoice.settlementAsset,
     serviceFeeBps,
     personalAccount: personalAccountState.personalAccount,
     userOpHash: operation.userOpHash,
@@ -303,6 +437,7 @@ function publicCalculatedQuote(input: {
   quoteId: string;
   attemptId: string;
   calculation: ReturnType<typeof calculateQuote>;
+  settlementAsset: 'FXRP' | 'USDT0';
   serviceFeeBps: number;
   personalAccount: string;
   userOpHash: string;
@@ -313,12 +448,12 @@ function publicCalculatedQuote(input: {
     quoteId: input.quoteId,
     attemptId: input.attemptId,
     invoiceAmount: {
-      asset: 'FXRP',
+      asset: input.settlementAsset,
       baseUnits: input.calculation.invoiceOutBaseUnits.toString(),
       display: formatBaseUnits(input.calculation.invoiceOutBaseUnits, 6),
     },
     serviceFee: {
-      asset: 'FXRP',
+      asset: input.settlementAsset,
       baseUnits: input.calculation.serviceFeeOutBaseUnits.toString(),
       display: formatBaseUnits(input.calculation.serviceFeeOutBaseUnits, 6),
       bps: input.serviceFeeBps,
@@ -362,12 +497,12 @@ function publicStoredQuote(input: {
     quoteId: input.quote.id,
     attemptId: input.id,
     invoiceAmount: {
-      asset: 'FXRP',
+      asset: settlementAssetForRoute(input.quote.route),
       baseUnits: invoiceOutBaseUnits.toString(),
       display: formatBaseUnits(invoiceOutBaseUnits, 6),
     },
     serviceFee: {
-      asset: 'FXRP',
+      asset: settlementAssetForRoute(input.quote.route),
       baseUnits: serviceFeeOutBaseUnits.toString(),
       display: formatBaseUnits(serviceFeeOutBaseUnits, 6),
       bps: input.quote.serviceFeeBps,
@@ -393,6 +528,130 @@ function configuredRouterAddress(): Address {
     throw new DomainError('QUOTE_ROUTE_UNAVAILABLE', 'PAYMORPH_ROUTER_ADDRESS is not configured');
   }
   return getAddress(value);
+}
+
+function requireUsdt0Capability(
+  capability: { available: false; reason: string } | VerifiedUsdt0Capability,
+): VerifiedUsdt0Capability {
+  if (!capability.available) {
+    throw new DomainError(
+      'QUOTE_ROUTE_UNAVAILABLE',
+      `USDT0 settlement is unavailable: ${capability.reason}`,
+    );
+  }
+  return capability;
+}
+
+async function assertUsdt0RouterRoute(input: {
+  provider: ReturnType<typeof getConfiguredFlareProvider>;
+  routerAddress: Address;
+  routerFxrp: Address;
+  routerUsdt0: Address;
+  routerAdapter: Address;
+  fxrpAddress: Address;
+  capability: VerifiedUsdt0Capability;
+}): Promise<void> {
+  if (!isAddressEqual(input.routerFxrp, input.fxrpAddress)) {
+    throw new DomainError(
+      'QUOTE_ROUTE_UNAVAILABLE',
+      'Configured PayMorphRouter FXRP token does not match',
+    );
+  }
+  if (!isAddressEqual(input.routerUsdt0, input.capability.token)) {
+    throw new DomainError(
+      'QUOTE_ROUTE_UNAVAILABLE',
+      'Configured PayMorphRouter USDT0 token does not match',
+    );
+  }
+  if (isAddressEqual(input.routerAdapter, zeroAddress)) {
+    throw new DomainError('QUOTE_ROUTE_UNAVAILABLE', 'USDT0 settlement adapter is not configured');
+  }
+  const adapterCode = await input.provider.client.getBytecode({ address: input.routerAdapter });
+  if (!adapterCode || adapterCode === '0x') {
+    throw new DomainError(
+      'QUOTE_ROUTE_UNAVAILABLE',
+      'Configured USDT0 settlement adapter has no bytecode',
+    );
+  }
+
+  const [payMorphRouter, swapRouter, tokenIn, tokenOut, supportedPoolFee] = await Promise.all([
+    input.provider.client.readContract({
+      address: input.routerAdapter,
+      abi: adapterReadAbi,
+      functionName: 'payMorphRouter',
+    }),
+    input.provider.client.readContract({
+      address: input.routerAdapter,
+      abi: adapterReadAbi,
+      functionName: 'swapRouter',
+    }),
+    input.provider.client.readContract({
+      address: input.routerAdapter,
+      abi: adapterReadAbi,
+      functionName: 'tokenIn',
+    }),
+    input.provider.client.readContract({
+      address: input.routerAdapter,
+      abi: adapterReadAbi,
+      functionName: 'tokenOut',
+    }),
+    input.provider.client.readContract({
+      address: input.routerAdapter,
+      abi: adapterReadAbi,
+      functionName: 'supportedPoolFee',
+    }),
+  ]);
+
+  if (
+    !isAddressEqual(payMorphRouter, input.routerAddress) ||
+    !isAddressEqual(swapRouter, input.capability.router) ||
+    !isAddressEqual(tokenIn, input.fxrpAddress) ||
+    !isAddressEqual(tokenOut, input.capability.token) ||
+    supportedPoolFee !== input.capability.poolFee
+  ) {
+    throw new DomainError(
+      'QUOTE_ROUTE_UNAVAILABLE',
+      'Configured USDT0 settlement adapter does not match the verified route',
+    );
+  }
+}
+
+async function quoteUsdt0ExactOutput(input: {
+  provider: ReturnType<typeof getConfiguredFlareProvider>;
+  capability: VerifiedUsdt0Capability;
+  fxrpAddress: Address;
+  denomination: 'XRP' | 'USD';
+  invoiceBaseUnits: bigint;
+  serviceFeeBps: number;
+  xrpUsdValue: bigint;
+  xrpUsdDecimals: number;
+}): Promise<bigint> {
+  const invoiceUsdt0Out = calculateSettlementOutput({
+    denomination: input.denomination,
+    settlementAsset: 'USDT0',
+    invoiceBaseUnits: input.invoiceBaseUnits,
+    xrpUsdValue: input.xrpUsdValue,
+    xrpUsdDecimals: input.xrpUsdDecimals,
+  });
+  const totalUsdt0Out = invoiceUsdt0Out + ceilBps(invoiceUsdt0Out, input.serviceFeeBps);
+  try {
+    return await input.provider.quoteUsdt0ExactOutput({
+      fxrpAddress: input.fxrpAddress,
+      capability: input.capability,
+      amountOut: totalUsdt0Out,
+    });
+  } catch {
+    throw new DomainError(
+      'QUOTE_ROUTE_UNAVAILABLE',
+      'USDT0 exact-output route is not responding. Do not send an XRP payment yet.',
+    );
+  }
+}
+
+function settlementAssetForRoute(route: string): 'FXRP' | 'USDT0' {
+  if (route === 'DIRECT_FXRP') return 'FXRP';
+  if (route === 'SPARKDEX_EXACT_OUT') return 'USDT0';
+  throw new DomainError('INTERNAL_ERROR', 'Stored quote contains an unsupported settlement route');
 }
 
 function parseInteger(value: string, name: string): number {

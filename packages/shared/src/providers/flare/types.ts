@@ -85,6 +85,8 @@ export type Usdt0Capability =
       readonly liquidity: bigint;
     };
 
+export type VerifiedUsdt0Capability = Extract<Usdt0Capability, { readonly available: true }>;
+
 export interface SettlementCapabilities {
   readonly FXRP: {
     readonly available: true;
@@ -108,7 +110,8 @@ export class FlareNetworkError extends Error {
       | 'REGISTRY_ZERO_ADDRESS'
       | 'FXRP_DECIMALS_MISMATCH'
       | 'INVALID_DIRECT_MINT_SETTINGS'
-      | 'INVALID_FTSO_FEED',
+      | 'INVALID_FTSO_FEED'
+      | 'INVALID_USDT0_EXACT_OUTPUT_QUOTE',
     message: string,
   ) {
     super(message);

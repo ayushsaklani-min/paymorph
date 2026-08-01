@@ -33,9 +33,14 @@ export interface QuoteCalculation {
   route: 'DIRECT_FXRP' | 'SPARKDEX_EXACT_OUT';
 }
 
+export type SettlementOutputInput = Pick<
+  QuoteCalculationInput,
+  'denomination' | 'settlementAsset' | 'invoiceBaseUnits' | 'xrpUsdValue' | 'xrpUsdDecimals'
+>;
+
 export function calculateQuote(input: QuoteCalculationInput): QuoteCalculation {
   if (input.invoiceBaseUnits <= 0n) throw new RangeError('Invoice amount must be positive');
-  const invoiceOutBaseUnits = calculateInvoiceOutput(input);
+  const invoiceOutBaseUnits = calculateSettlementOutput(input);
   const serviceFeeOutBaseUnits = ceilBps(invoiceOutBaseUnits, input.serviceFeeBps);
 
   let maxFxrpInputUBA: bigint;
@@ -64,7 +69,13 @@ export function calculateQuote(input: QuoteCalculationInput): QuoteCalculation {
   };
 }
 
-function calculateInvoiceOutput(input: QuoteCalculationInput): bigint {
+/**
+ * Resolves the exact settlement-token amount before service fees. USDT0 USD
+ * amounts are integer-cent conversions; XRP denomination uses the same
+ * rational FTSO value captured by the eventual quote.
+ */
+export function calculateSettlementOutput(input: SettlementOutputInput): bigint {
+  if (input.invoiceBaseUnits <= 0n) throw new RangeError('Invoice amount must be positive');
   if (input.settlementAsset === 'FXRP') {
     return input.denomination === 'XRP'
       ? input.invoiceBaseUnits

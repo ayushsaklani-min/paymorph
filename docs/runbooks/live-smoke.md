@@ -9,8 +9,10 @@ valueless test tokens.
   FTSO, deployed PayMorph contracts, Xaman credentials, and executor gas.
 - Executor EOA has C2FLR and is not the deployer/admin/fee recipient.
 - Merchant and recipient Coston2 addresses are controlled test wallets.
-- USDT0 smoke runs only when runtime route health is `READY`; otherwise record
-  the exact disabled reason and run FXRP only.
+- USDT0 smoke runs only when runtime route health is `READY`, the configured
+  PayMorph adapter matches that route, and a fresh exact-output QuoterV2
+  simulation succeeds; otherwise record the exact disabled reason and run FXRP
+  only.
 
 ## Execute
 

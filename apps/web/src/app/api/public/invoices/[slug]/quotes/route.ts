@@ -3,7 +3,7 @@ import { DomainError } from '@paymorph/shared';
 import { assertMutationOrigin, jsonError, jsonSuccess, readJson } from '@/lib/server/http';
 import { executeIdempotentMutation } from '@/lib/server/idempotency';
 import { readPayerSessionToken, requireActivePayerSessionId } from '@/lib/server/payer-session';
-import { createFxrpQuote } from '@/lib/server/quotes/service';
+import { createQuote } from '@/lib/server/quotes/service';
 import { enforceRateLimit } from '@/lib/server/rate-limit';
 
 const requestSchema = z.strictObject({
@@ -32,7 +32,7 @@ export async function POST(request: Request, context: { params: Promise<{ slug: 
       successStatus: 201,
       releaseOnDomainError: true,
       execute: () =>
-        createFxrpQuote({
+        createQuote({
           invoiceSlug: slug,
           payerSessionToken: sessionToken,
           slippageBps: input.slippageBps,

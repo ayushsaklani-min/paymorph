@@ -848,8 +848,11 @@ paths:
         Requires completed Xaman SignIn. The server reads current FTSO,
         registry-resolved FAssets settings, payer personal account and nonce.
         USDT0 returns `QUOTE_ROUTE_UNAVAILABLE` while ADR 0006's route gate is
-        not satisfied. Exact user-operation bytes are encrypted at rest and are
-        not returned.
+        not satisfied. When enabled, it requires a verified router/factory/
+        quoter/pool/liquidity path, a matching PayMorph adapter, and a fresh
+        exact-output QuoterV2 simulation before the immutable operation is
+        built. Exact user-operation bytes are encrypted at rest and are not
+        returned.
       x-implementation-status: implemented
       security:
         - PayerCookie: []

@@ -54,19 +54,19 @@ return does not by itself advance the payment.
 
 ## What is implemented
 
-| Area                                    | Status                 | Notes                                                                                                                          |
-| --------------------------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| Merchant operating shell                | Implemented            | EIP-191 sign-in, dashboard projections, payment evidence views, invoices, templates, and settings.                             |
-| Collection surfaces                     | Implemented            | Reusable/single-use links, requests, analytics, and POS create canonical invoices only.                                        |
-| Public checkout                         | Implemented            | Payer-scoped Xaman SignIn, exact quotes, payment QR/deeplink, and an evidence-driven Xaman → XRPL → FDC → Coston2 timeline.    |
-| Executor pipeline                       | Implemented            | Leased durable XRPL validation, FDC, Coston2 submission, event indexing, restart checkpoints, and recovery diagnostics.        |
-| Developer platform                      | Implemented            | Scoped `pm_test_` keys, `/api/v1` invoice/receipt routes, SDK, hosted button, encrypted webhook settings, and delivery outbox. |
-| Explorer and projections                | Implemented            | Public settlement evidence explorer plus marketplace and read-only treasury projections.                                       |
-| WooCommerce gateway                     | MVP implemented        | Server-side invoice mapping and verified post-settlement paid-order transition; needs WordPress/WooCommerce acceptance.        |
-| FXRP settlement                         | Live verified          | A tiny XRPL Testnet → FDC → Coston2 settlement was independently verified on 2026-08-01.                                       |
-| USDT0 exact-output settlement           | Intentionally disabled | The configured Coston2 route does not pass required runtime bytecode and liquidity checks.                                     |
-| Recovery (`0xE0`)                       | Code complete          | Durable recovery checkpoints and an independent verifier exist; an official live recovery artifact remains a gate.             |
-| Refunds, subscriptions, escrow, mainnet | Deferred               | Explicitly outside the current testnet blueprint delivery scope.                                                               |
+| Area                                    | Status                 | Notes                                                                                                                                          |
+| --------------------------------------- | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Merchant operating shell                | Implemented            | EIP-191 sign-in, dashboard projections, payment evidence views, invoices, templates, and settings.                                             |
+| Collection surfaces                     | Implemented            | Reusable/single-use links, requests, analytics, and POS create canonical invoices only.                                                        |
+| Public checkout                         | Implemented            | Payer-scoped Xaman SignIn, exact quotes, payment QR/deeplink, and an evidence-driven Xaman → XRPL → FDC → Coston2 timeline.                    |
+| Executor pipeline                       | Implemented            | Leased durable XRPL validation, FDC, Coston2 submission, event indexing, restart checkpoints, and recovery diagnostics.                        |
+| Developer platform                      | Implemented            | Scoped `pm_test_` keys, `/api/v1` invoice/receipt routes, SDK, hosted button, encrypted webhook settings, and delivery outbox.                 |
+| Explorer and projections                | Implemented            | Public settlement evidence explorer plus marketplace and read-only treasury projections.                                                       |
+| WooCommerce gateway                     | MVP implemented        | Server-side invoice mapping and verified post-settlement paid-order transition; needs WordPress/WooCommerce acceptance.                        |
+| FXRP settlement                         | Live verified          | A tiny XRPL Testnet → FDC → Coston2 settlement was independently verified on 2026-08-01.                                                       |
+| USDT0 exact-output settlement           | Intentionally disabled | The code requires a real QuoterV2 quote, matching adapter, and route snapshot, but Coston2 has not passed its runtime bytecode/liquidity gate. |
+| Recovery (`0xE0`)                       | Code complete          | Durable recovery checkpoints and an independent verifier exist; an official live recovery artifact remains a gate.                             |
+| Refunds, subscriptions, escrow, mainnet | Deferred               | Explicitly outside the current testnet blueprint delivery scope.                                                                               |
 
 The authoritative phase ledger is maintained in
 [docs/implementation-plan.md](docs/implementation-plan.md).
@@ -236,9 +236,12 @@ The current FXRP-only router deployment is recorded in the immutable manifest:
   [`0x25613f…bc4c82`](https://coston2-explorer.flare.network/tx/0x25613fe12d1d980cfc2fc532850cbab3b817dc590374284c7d68094509bc4c82)
 - Manifest: [packages/contracts/deployments/coston2.json](packages/contracts/deployments/coston2.json)
 
-USDT0 is disabled on purpose. The currently documented Coston2 swap router did
-not pass the required bytecode gate, so PayMorph will not claim a swap route or
-fall back to mock liquidity. See
+USDT0 is disabled on purpose. When a real route exists, PayMorph will require a
+bytecode-validated router, factory, QuoterV2, pool/liquidity, matching
+PayMorph adapter, and a fresh exact-output simulation before it can create an
+immutable quote. The currently documented Coston2 swap router does not pass the
+first of those gates, so PayMorph will not claim a swap route or fall back to
+mock liquidity. See
 [ADR 0006](docs/adr/0006-disable-unverified-coston2-usdt0-route.md).
 
 ## Prerequisites
@@ -445,8 +448,9 @@ in [memory.md](memory.md) and the implementation plan. In particular:
   `0xd90407028660141ea897a7387f67194d1826383e4f0afa2457f478eea98cb2e3`,
   and a matching decoded `PaymentSettled` event in block `33504164`. The
   independent verifier output is retained locally under `live-smoke/`.
-- USDT0 must remain disabled until an official Coston2 router, factory, pool,
-  liquidity, exact-output quote, and simulation all pass runtime checks.
+- USDT0 must remain disabled until an official Coston2 router, factory, quoter,
+  pool, liquidity, matching PayMorph adapter, exact-output quote, and
+  simulation all pass runtime checks.
 - The official `0xE0` recovery sequence has a durable implementation and
   independent verifier, but still needs a real testnet acceptance artifact.
 - The WooCommerce gateway requires an installed WordPress/WooCommerce test

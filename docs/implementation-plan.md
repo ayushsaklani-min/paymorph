@@ -23,6 +23,21 @@ to fixture behavior.
 | 11    | Abuse controls, admin, logs/metrics, accessibility, UX                    | security checklist + all suites        | Partial; boundaries, logs, a11y, metrics |
 | 12    | Containers, hosted config, smoke artifact, submission docs                | README-driven judge flow               | Local complete; host gate                |
 
+## USDT0 quote-path hardening — 2026-08-01
+
+- The quote path is now asset-neutral: FXRP retains direct settlement, while a
+  USDT0 invoice can proceed only after runtime DEX health passes and a fresh
+  QuoterV2 exact-output `eth_call` returns the required FXRP input for the
+  invoice plus service fee. Slippage is applied as an integer ceil bound.
+- Before committing bytes, PayMorph verifies its settlement router's FXRP and
+  USDT0 tokens and the configured adapter's router, DEX router, token pair, and
+  pool-fee identity. The quote persists the quoted FXRP input and DEX route
+  snapshot for audit alongside the encrypted immutable user operation.
+- This is code and local-migration complete only. ADR 0006 still keeps USDT0
+  unavailable on Coston2 because the official route has not passed its live
+  bytecode/liquidity gate; no mock DEX, price fallback, or settlement claim was
+  introduced.
+
 `DB gate` means the implementation and unit coverage exist, but the acceptance
 test still requires a reachable PostgreSQL instance. `Live gate` means real
 testnet credentials, deployed contract addresses, and retained transaction

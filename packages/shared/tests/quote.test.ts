@@ -55,4 +55,24 @@ describe('quote calculation', () => {
       }),
     ).toThrow(/real exact-output/);
   });
+
+  it('uses a simulated exact-output FXRP input and ceil-bounds it for USDT0', () => {
+    const quote = calculateQuote({
+      denomination: 'USD',
+      settlementAsset: 'USDT0',
+      invoiceBaseUnits: 100n,
+      serviceFeeBps: 50,
+      slippageBps: 150,
+      xrpUsdValue: 2_500_000n,
+      xrpUsdDecimals: 6,
+      directMintSettings,
+      exactOutputFxrpQuoteUBA: 600_000n,
+    });
+
+    expect(quote.invoiceOutBaseUnits).toBe(1_000_000n);
+    expect(quote.serviceFeeOutBaseUnits).toBe(5_000n);
+    expect(quote.maxFxrpInputUBA).toBe(609_000n);
+    expect(quote.xrplPaymentDrops).toBeGreaterThan(quote.maxFxrpInputUBA);
+    expect(quote.route).toBe('SPARKDEX_EXACT_OUT');
+  });
 });

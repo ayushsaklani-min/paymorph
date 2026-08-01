@@ -24,6 +24,10 @@
   content” link and that every route has exactly one focusable
   `#main-content` landmark. Run the Chrome browser smoke after altering the
   app shell or route landmarks.
+- If `/api/metrics` is enabled, confirm `METRICS_TOKEN` is a dedicated
+  high-entropy bearer secret, the endpoint is reachable only to the scraper,
+  and its output contains aggregate counts only. It must not reuse an operator
+  session or merchant API key.
 - Confirm monetary code contains no floating-point operations.
 - Confirm all API mutations validate input, authorization, origin/CSRF, and
   idempotency.

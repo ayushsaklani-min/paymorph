@@ -333,6 +333,7 @@ Useful local routes:
 - http://localhost:3000/network — read-only network diagnostics
 - http://localhost:3000/api/health — web process health check
 - http://localhost:3000/api/ready — database, Coston2, FXRP, and authenticated FDC verifier readiness
+- http://localhost:3000/api/metrics — protected aggregate Prometheus metrics when `METRICS_TOKEN` is configured
 
 ### 4. Configure Xaman callback delivery
 
@@ -397,7 +398,7 @@ Never manually turn a failed live run into success.
 
 Latest local verification (2026-08-01):
 
-- `pnpm test` passed: 224 automated tests, including 29 Foundry
+- `pnpm test` passed: 226 automated tests, including 29 Foundry
   unit/fuzz/invariant tests.
 - Repository linting, typechecking, and formatting checks passed. The explicit
   full contract suite passed after the payment-link API checkpoint.
@@ -412,7 +413,9 @@ Latest local verification (2026-08-01):
   `PLAYWRIGHT_BROWSER_CHANNEL=chrome pnpm test:e2e`, including a keyboard path
   from the app-wide skip link to the primary content landmark.
 - The full `pnpm verify` gate passed: formatting, linting, workspace
-  typechecking, 224 automated tests, and all production builds.
+  typechecking, 226 automated tests, and all production builds.
+- The protected metrics route passed focused authorization/format tests and a
+  read-only local PostgreSQL route smoke; it exposes aggregate counts only.
 - A direct local `/api/health` check confirmed the response security headers
   and a canonical echoed `X-Request-Id` after the web-boundary update.
 - Playwright's managed Chromium and PHP/WordPress are not installed on this

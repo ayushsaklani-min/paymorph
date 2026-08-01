@@ -7,21 +7,21 @@ to fixture behavior.
 
 ## Phase ledger
 
-| Phase | Scope                                                                     | Exit gate                              | Status                             |
-| ----- | ------------------------------------------------------------------------- | -------------------------------------- | ---------------------------------- |
-| 0     | Workspace, strict TS, lint/format, Postgres, Prisma, shared envelopes, CI | `pnpm verify`, health route, migration | Local complete; native DB migrated |
-| 1     | Router, SparkDEX adapter, deployment scripts, Foundry tests               | unit/fuzz/invariant tests              | Complete; FXRP router deployed     |
-| 2     | Registry, FAssets/FTSO helpers, amounts, capability checks                | verified network report + fixtures     | Complete                           |
-| 3     | Merchant signed auth, sessions, invoices, dashboard                       | ownership and lifecycle tests          | Complete                           |
-| 4     | Public checkout, payer session, Xaman SignIn, webhook                     | payload/dedupe/mobile tests            | Code complete; live gate           |
-| 5     | Pricing, personal account/nonce, userOp, `0xFE` memo                      | golden vectors, expiry/nonce tests     | Complete                           |
-| 6     | Xaman Payment, timeline, XRPL validator                                   | exact-field validation tests           | Code complete; live gate           |
-| 7     | FDC executor, Coston2 submission, event decoding                          | real tiny FXRP smoke                   | Code complete; live gate           |
-| 8     | USDT0 route, exact-output settlement/refund                               | real smoke or explicit disabled reason | Complete; route disabled           |
-| 9     | Receipts, event reconstruction, reconciliation, export                    | projection rebuild test                | Complete; local DB projection gate |
-| 10    | `0xE0` recovery diagnostics and payer flow                                | reproducible official recovery test    | Code complete; official gate       |
-| 11    | Abuse controls, admin, logs/metrics, accessibility, UX                    | security checklist + all suites        | Partial; boundaries, logs, a11y    |
-| 12    | Containers, hosted config, smoke artifact, submission docs                | README-driven judge flow               | Local complete; host gate          |
+| Phase | Scope                                                                     | Exit gate                              | Status                                   |
+| ----- | ------------------------------------------------------------------------- | -------------------------------------- | ---------------------------------------- |
+| 0     | Workspace, strict TS, lint/format, Postgres, Prisma, shared envelopes, CI | `pnpm verify`, health route, migration | Local complete; native DB migrated       |
+| 1     | Router, SparkDEX adapter, deployment scripts, Foundry tests               | unit/fuzz/invariant tests              | Complete; FXRP router deployed           |
+| 2     | Registry, FAssets/FTSO helpers, amounts, capability checks                | verified network report + fixtures     | Complete                                 |
+| 3     | Merchant signed auth, sessions, invoices, dashboard                       | ownership and lifecycle tests          | Complete                                 |
+| 4     | Public checkout, payer session, Xaman SignIn, webhook                     | payload/dedupe/mobile tests            | Code complete; live gate                 |
+| 5     | Pricing, personal account/nonce, userOp, `0xFE` memo                      | golden vectors, expiry/nonce tests     | Complete                                 |
+| 6     | Xaman Payment, timeline, XRPL validator                                   | exact-field validation tests           | Code complete; live gate                 |
+| 7     | FDC executor, Coston2 submission, event decoding                          | real tiny FXRP smoke                   | Code complete; live gate                 |
+| 8     | USDT0 route, exact-output settlement/refund                               | real smoke or explicit disabled reason | Complete; route disabled                 |
+| 9     | Receipts, event reconstruction, reconciliation, export                    | projection rebuild test                | Complete; local DB projection gate       |
+| 10    | `0xE0` recovery diagnostics and payer flow                                | reproducible official recovery test    | Code complete; official gate             |
+| 11    | Abuse controls, admin, logs/metrics, accessibility, UX                    | security checklist + all suites        | Partial; boundaries, logs, a11y, metrics |
+| 12    | Containers, hosted config, smoke artifact, submission docs                | README-driven judge flow               | Local complete; host gate                |
 
 `DB gate` means the implementation and unit coverage exist, but the acceptance
 test still requires a reachable PostgreSQL instance. `Live gate` means real
@@ -123,7 +123,7 @@ artifacts are required; fixtures do not satisfy it.
 - API request IDs are now bounded before returning or logging them. Generic
   unexpected failures log a structured event without serializing arbitrary
   error text or objects. Focused HTTP, header, and Xaman-boundary tests passed,
-  followed by `pnpm verify` (224 automated tests and all production builds)
+  followed by `pnpm verify` (226 automated tests and all production builds)
   and `pnpm test:contracts` (29 Foundry tests). A direct local health check
   confirmed all configured response headers and canonical request-ID handling.
 
@@ -134,7 +134,7 @@ artifacts are required; fixtures do not satisfy it.
   only as a safe type plus an allowlisted machine-readable code when available.
   This protects logs from provider error messages, stacks, request headers, and
   raw bodies while retaining correlated job/attempt metadata.
-- Focused logger tests passed, followed by `pnpm verify` (224 automated tests,
+- Focused logger tests passed, followed by `pnpm verify` (226 automated tests,
   every production build) and `pnpm test:contracts` (29 Foundry tests). This
   improves local operational safety; it does not establish any live payment or
   settlement evidence.
@@ -147,9 +147,21 @@ artifacts are required; fixtures do not satisfy it.
   nesting or duplicating main landmarks.
 - The local Chrome browser suite now passes three journeys: evidence/testnet
   disclosure, landing-to-merchant sign-in, and keyboard skip navigation.
-  `pnpm verify` (224 automated tests/all production builds) and
+  `pnpm verify` (226 automated tests/all production builds) and
   `pnpm test:contracts` (29 Foundry tests) also passed. This only improves
   semantic navigation and does not alter checkout or settlement behavior.
+
+## Protected metrics update — 2026-08-01
+
+- `/api/metrics` is now a read-only Prometheus text endpoint authenticated by a
+  dedicated high-entropy `METRICS_TOKEN`. It exposes only aggregate payment
+  attempt, durable executor-job, merchant-webhook delivery counts, and the
+  number of due executor jobs. It never returns identities, amounts, hashes,
+  provider payloads, proofs, raw errors, or settlement claims.
+- Metrics authentication/label-boundary tests and a read-only local PostgreSQL
+  route smoke passed. `pnpm verify` (226 automated tests/all production builds)
+  and `pnpm test:contracts` (29 Foundry tests) passed afterward. Alerting,
+  hosted scraper reachability, and live settlement remain deployment/live gates.
 
 ## Product-platform update — 2026-07-31
 
@@ -190,7 +202,7 @@ artifacts are required; fixtures do not satisfy it.
 - Local migration `20260731140000_webhook_delivery_schedule` is applied to the
   native PostgreSQL database, bringing the local schema to 15 migrations.
 - Latest full verification passed: `pnpm verify` completed formatting, all
-  workspace lint/typechecks, 224 automated tests (including 29 Foundry
+  workspace lint/typechecks, 226 automated tests (including 29 Foundry
   unit/fuzz/invariant tests), and every production build. The explicit
   `pnpm test:contracts` gate also passed. PHP/WordPress is not installed
   locally, so plugin syntax and external-order acceptance remain unexecuted.

@@ -1140,6 +1140,31 @@ paths:
               schema:
                 $ref: '#/components/schemas/HealthEnvelope'
 
+  /api/metrics:
+    get:
+      tags: [Operations]
+      operationId: getOperationalMetrics
+      summary: Protected aggregate workflow metrics
+      description: >-
+        Prometheus text exposition for aggregate attempt, executor-job, and merchant-webhook
+        delivery counts. It never returns payer, merchant, provider payload, proof, or chain data.
+      x-implementation-status: implemented
+      security:
+        - MetricsBearer: []
+      responses:
+        '200':
+          description: Aggregate operational metrics; settlement authority is not implied
+          content:
+            text/plain:
+              schema:
+                type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
   /api/ready:
     get:
       tags: [Network]
@@ -1322,6 +1347,11 @@ components:
       in: cookie
       name: paymorph_operator
       description: Environment-provisioned high-entropy operator token; merchant sessions do not authorize admin routes.
+    MetricsBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: metrics token
+      description: Environment-provisioned read-only operational metrics token; never use an API key or operator session token.
     XamanWebhookSignature:
       type: apiKey
       in: header

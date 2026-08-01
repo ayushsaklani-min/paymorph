@@ -254,6 +254,24 @@ Alert on no heartbeat for two minutes, low C2FLR, stale FTSO, database migration
 mismatch, any `RECOVERY_REQUIRED`, or an XRPL-validated attempt without Flare
 submission for ten minutes.
 
+### Aggregate metrics scrape
+
+Set `METRICS_TOKEN` to a dedicated, unpadded base64url token of at least 32
+random bytes. It is read-only and must be distinct from API keys, wallet keys,
+and operator session tokens. The web process then exposes only aggregate
+Prometheus metrics at `/api/metrics`:
+
+```bash
+curl --fail --silent --show-error \
+  -H "Authorization: Bearer $METRICS_TOKEN" \
+  http://localhost:3000/api/metrics
+```
+
+The endpoint reports attempt, durable executor-job, and merchant-webhook
+delivery status counts plus jobs currently due for execution. It does not prove
+settlement, replace the executor heartbeat/chain checks above, or expose
+financial amounts, identifiers, provider payloads, proofs, or error bodies.
+
 ## Operator actions
 
 Operators may:

@@ -140,6 +140,11 @@ temporary verifier/DA failures retry with bounded exponential backoff and
 jitter. A proof must be checked against the immutable source, receiving address,
 amount, and XRPL transaction hash before the attempt becomes `FDC_READY`.
 
+After a round is finalized, the exact structured DA response
+`400 {"error":"attestation request not found"}` is a pending propagation state,
+not a rejected proof. Do not widen this exception to arbitrary HTTP 400
+responses: malformed or otherwise invalid DA responses remain fail-closed.
+
 No real FDC request/proof has been archived in this repository yet; that remains
 the Phase 7 live gate.
 

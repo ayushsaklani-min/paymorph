@@ -100,3 +100,9 @@ FDC or executor is delayed after a valid payment, the attempt stays pending and
 reconciliation continues. Deterministic mismatches stop automatically and
 surface operator diagnostics. Recovery follows the official `0xE0` flow only
 when eligibility is proven.
+
+After the FDC voting round is finalized, the DA layer may briefly return the
+observed structured `400 {"error":"attestation request not found"}` propagation response.
+PayMorph treats only that exact structured response as pending proof publication;
+other DA 4xx responses remain fail-closed. A transient retry or an exhausted
+executor job never by itself transitions an attempt to recovery.

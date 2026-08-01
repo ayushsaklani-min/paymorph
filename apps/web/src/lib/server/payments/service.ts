@@ -12,6 +12,7 @@ const PAYMENT_PAYLOAD_TTL_MS = 5 * 60 * 1_000;
 const XRPL_LEDGER_SECONDS = 4;
 const MINIMUM_LEDGER_WINDOW = 10;
 const MAXIMUM_LEDGER_WINDOW = 240;
+const PAYMENT_NOTIFICATION_TRANSACTION_RETRIES = 3;
 
 interface PaymentGateway {
   createPayload(request: ReturnType<typeof buildXamanPaymentPayload>): Promise<XamanCreatedPayload>;
@@ -24,6 +25,31 @@ interface ServiceOptions {
   gateway?: PaymentGateway;
   now?: Date;
   currentLedgerIndex?: number;
+}
+
+async function runPaymentNotificationTransaction<T>(
+  callback: (transaction: Prisma.TransactionClient) => Promise<T>,
+): Promise<T> {
+  for (let retry = 0; retry < PAYMENT_NOTIFICATION_TRANSACTION_RETRIES; retry += 1) {
+    try {
+      return await db.$transaction(callback, {
+        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+      });
+    } catch (error) {
+      if (retry + 1 < PAYMENT_NOTIFICATION_TRANSACTION_RETRIES && isTransactionConflict(error)) {
+        continue;
+      }
+      throw error;
+    }
+  }
+  throw new Error('Unable to reconcile Xaman payment notification');
+}
+
+function isTransactionConflict(error: unknown): boolean {
+  return (
+    error instanceof Prisma.PrismaClientKnownRequestError &&
+    (error.code === 'P2002' || error.code === 'P2034')
+  );
 }
 
 let cachedGateway: XamanGateway | undefined;
@@ -254,14 +280,14 @@ export async function processXamanPaymentNotification(
     authoritative.expired ||
     !authoritative.transactionHash
   ) {
-    await db.$transaction([
-      db.xamanPayload.update({
+    await runPaymentNotificationTransaction(async (transaction) => {
+      await transaction.xamanPayload.update({
         where: { payloadUuid },
         data: {
           status: authoritative.expired ? PayloadStatus.EXPIRED : PayloadStatus.REJECTED,
         },
-      }),
-      db.paymentAttempt.updateMany({
+      });
+      await transaction.paymentAttempt.updateMany({
         where: {
           id: attempt.id,
           status: { in: [AttemptStatus.XAMAN_CREATED, AttemptStatus.AWAITING_SIGNATURE] },
@@ -271,60 +297,57 @@ export async function processXamanPaymentNotification(
           failureCode: authoritative.expired ? 'QUOTE_EXPIRED' : 'XAMAN_REJECTED',
           version: { increment: 1 },
         },
-      }),
-    ]);
+      });
+    });
     return { known: true, attemptId: attempt.id, signed: false };
   }
   if (authoritative.account !== attempt.payerXrplAccount) {
     throw new DomainError('XAMAN_REJECTED', 'Payment was signed by a different XRP account');
   }
 
-  await db.$transaction(
-    async (transaction) => {
-      await transaction.xamanPayload.update({
-        where: { payloadUuid },
-        data: {
-          status: PayloadStatus.SIGNED,
-          txId: authoritative.transactionHash!.toUpperCase(),
-        },
-      });
-      const updated = await transaction.paymentAttempt.updateMany({
+  await runPaymentNotificationTransaction(async (transaction) => {
+    await transaction.xamanPayload.update({
+      where: { payloadUuid },
+      data: {
+        status: PayloadStatus.SIGNED,
+        txId: authoritative.transactionHash!.toUpperCase(),
+      },
+    });
+    const updated = await transaction.paymentAttempt.updateMany({
+      where: {
+        id: attempt.id,
+        status: { in: [AttemptStatus.XAMAN_CREATED, AttemptStatus.AWAITING_SIGNATURE] },
+      },
+      data: {
+        status: AttemptStatus.XRPL_SIGNED,
+        xrplTxHash: authoritative.transactionHash!.toUpperCase(),
+        failureCode: null,
+        failureMessage: null,
+        version: { increment: 1 },
+      },
+    });
+    if (updated.count === 1 || attempt.status === AttemptStatus.XRPL_SIGNED) {
+      await transaction.executorJob.upsert({
         where: {
-          id: attempt.id,
-          status: { in: [AttemptStatus.XAMAN_CREATED, AttemptStatus.AWAITING_SIGNATURE] },
-        },
-        data: {
-          status: AttemptStatus.XRPL_SIGNED,
-          xrplTxHash: authoritative.transactionHash!.toUpperCase(),
-          failureCode: null,
-          failureMessage: null,
-          version: { increment: 1 },
-        },
-      });
-      if (updated.count === 1 || attempt.status === AttemptStatus.XRPL_SIGNED) {
-        await transaction.executorJob.upsert({
-          where: {
-            attemptId_jobType_generation: {
-              attemptId: attempt.id,
-              jobType: JobType.VALIDATE_XRPL,
-              generation: 0,
-            },
-          },
-          update: {
-            status: 'READY',
-            nextRunAt: new Date(),
-            lockedBy: null,
-            lockedUntil: null,
-          },
-          create: {
+          attemptId_jobType_generation: {
             attemptId: attempt.id,
             jobType: JobType.VALIDATE_XRPL,
             generation: 0,
           },
-        });
-      }
-    },
-    { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
-  );
+        },
+        update: {
+          status: 'READY',
+          nextRunAt: new Date(),
+          lockedBy: null,
+          lockedUntil: null,
+        },
+        create: {
+          attemptId: attempt.id,
+          jobType: JobType.VALIDATE_XRPL,
+          generation: 0,
+        },
+      });
+    }
+  });
   return { known: true, attemptId: attempt.id, signed: true };
 }

@@ -566,7 +566,7 @@ model ExecutorJob {
   generation    Int            @default(0)
   status        JobStatus      @default(READY)
   attempts      Int            @default(0)
-  maxAttempts   Int            @default(12)
+  maxAttempts   Int            @default(60)
   nextRunAt     DateTime       @default(now())
   lockedBy      String?
   lockedUntil   DateTime?

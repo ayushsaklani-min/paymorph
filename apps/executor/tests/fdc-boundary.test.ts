@@ -161,6 +161,23 @@ describe('FdcXrpPaymentClient', () => {
     expect(postJson).not.toHaveBeenCalled();
   });
 
+  it('keeps polling when the finalized DA layer is still propagating the attestation', async () => {
+    const { publicClient, walletClient } = createChainClients({ finalized: true });
+    const { httpClient } = mockHttp({
+      status: 400,
+      body: { error: 'attestation request not found' },
+      rawBody: '{"error":"attestation request not found"}',
+    });
+    const client = createClient({ publicClient, walletClient, httpClient });
+
+    await expect(client.pollProof(submittedRequest())).resolves.toEqual({
+      status: 'PENDING',
+      reason: 'DA_PROOF_NOT_AVAILABLE',
+      retryAfterMs: 1234,
+      detail: 'FDC DA proof for round 10 is not available',
+    });
+  });
+
   it('decodes and validates the finalized XRPPayment proof from the DA layer', async () => {
     const { publicClient, walletClient } = createChainClients({ finalized: true });
     const responseHex = encodeXrpPaymentResponse();

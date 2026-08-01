@@ -254,6 +254,31 @@ verification items".
   unexpired `demo-fxrp-checkout` invoice has no attempts and is safe for a
   fresh payer session. This was a read-only configuration/database check; no
   Xaman payload, XRPL payment, FDC proof, or Coston2 transaction was created.
+- Checkout reconciliation and FDC propagation hardening (2026-08-01): the
+  browser now keeps non-terminal Xaman resolution failures in a clear
+  “Safely confirming the signed payment” state and polls every four seconds;
+  only known terminal signer/payment failures are shown as red errors. The
+  payment notification transaction retries serializable/unique conflicts so a
+  browser poll and webhook cannot surface a transient internal error. The FDC
+  client treats only the observed structured DA response
+  `400 {"error":"attestation request not found"}` as proof propagation pending;
+  arbitrary DA 400 responses remain terminal. New executor jobs have a
+  60-attempt default (ten minutes at the current ten-second FDC cadence), and
+  local PostgreSQL migration `20260801000000_executor_job_retry_window` is
+  applied. The full workspace test suite passed (129 web, 35 executor, 32
+  shared, 4 database, and 29 contract tests), as did format checking and full
+  workspace typechecking; focused executor/web lint passed. The aggregate
+  `pnpm verify`, full lint, and isolated web production-build commands each
+  exceeded this shell's two-minute limit without reporting a source failure, so
+  they are not recorded as passes. The watched executor restarted from source
+  changes and local web health returned HTTP 200.
+- Live checkout caution (2026-08-01): the newest signed FXRP attempt
+  `1cdbed5b-9c02-4c76-b43a-4187378223c5` validated on XRPL Testnet but reached
+  `RECOVERY_REQUIRED` under the pre-fix classification of the DA propagation
+  response. It has no Coston2 transaction or `PaymentSettled` evidence and
+  must not be manually rewound or reported as settled. The correction applies
+  to future attempts; use only the existing evidence-guarded recovery path for
+  this historical attempt.
 
 ## Decisions
 
@@ -546,6 +571,9 @@ job and cannot retry deterministic terminal or recovery states.
   manually rewound. The corrected key now produces a valid prepared FDC request
   for that hash; a fresh tiny checkout is still required for the canonical live
   settlement smoke.
+- A later signed attempt is also `RECOVERY_REQUIRED`, but for the now-corrected
+  DA propagation classification recorded above. It remains historical evidence
+  only: do not reset state or infer an FDC proof/Coston2 settlement.
 - A concurrent queue-lease acceptance run against a quiescent PostgreSQL worker
   environment remains useful. Seed/cleanup and the receipt-projection database
   acceptance fixture now pass against native WSL PostgreSQL.

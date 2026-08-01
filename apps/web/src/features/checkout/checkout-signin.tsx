@@ -1,6 +1,11 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  PAYMENT_RESOLUTION_RETRY_MS,
+  paymentResolutionGuidance,
+  type PaymentResolutionError,
+} from './payment-reconciliation.js';
 
 type SignInStatus = 'CREATED' | 'SIGNED' | 'REJECTED' | 'EXPIRED';
 
@@ -58,9 +63,11 @@ export function CheckoutSignIn({ invoiceSlug }: { invoiceSlug: string }) {
   const [quote, setQuote] = useState<Quote | null>(null);
   const [payment, setPayment] = useState<PaymentPayload | null>(null);
   const [paymentProgress, setPaymentProgress] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [signInError, setSignInError] = useState<string | null>(null);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
   const resolvingRef = useRef(false);
   const resolvingPaymentRef = useRef(false);
+  const paymentResolutionTerminalRef = useRef(false);
   const quoteIdempotencyKeyRef = useRef<string | null>(null);
   const paymentIdempotencyRef = useRef<{ quoteId: string; key: string } | null>(null);
 
@@ -69,7 +76,7 @@ export function CheckoutSignIn({ invoiceSlug }: { invoiceSlug: string }) {
       return;
     }
     resolvingRef.current = true;
-    setError(null);
+    setSignInError(null);
     try {
       const response = await fetch(`/api/payer/signin/${encodeURIComponent(payload.payloadUuid)}`, {
         credentials: 'same-origin',
@@ -81,17 +88,20 @@ export function CheckoutSignIn({ invoiceSlug }: { invoiceSlug: string }) {
       }
       setResolution(envelope.data);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Unable to verify the Xaman SignIn');
+      setSignInError(
+        caught instanceof Error ? caught.message : 'Unable to verify the Xaman SignIn',
+      );
     } finally {
       resolvingRef.current = false;
     }
   }, [payload]);
 
   const resolvePayment = useCallback(async () => {
-    if (payment === null || resolvingPaymentRef.current) return;
+    if (payment === null || resolvingPaymentRef.current || paymentResolutionTerminalRef.current) {
+      return;
+    }
     resolvingPaymentRef.current = true;
-    setError(null);
-    setPaymentProgress('Checking the signed payment with Xaman…');
+    setPaymentError(null);
     try {
       const response = await fetch(
         `/api/attempts/${encodeURIComponent(payment.attemptId)}/resolve-payment`,
@@ -104,7 +114,22 @@ export function CheckoutSignIn({ invoiceSlug }: { invoiceSlug: string }) {
       );
       const envelope = (await response.json()) as ApiEnvelope<PaymentResolution>;
       if (!response.ok || envelope.data === null) {
-        throw new Error(apiMessage(envelope, 'Unable to verify the Xaman payment'));
+        const guidance = paymentResolutionGuidance(
+          envelope.error === null
+            ? null
+            : ({
+                code: envelope.error.code,
+                message: envelope.error.message,
+              } satisfies PaymentResolutionError),
+        );
+        if (guidance.retryable) {
+          setPaymentProgress(guidance.message);
+          return;
+        }
+        paymentResolutionTerminalRef.current = true;
+        setPaymentProgress(null);
+        setPaymentError(guidance.message);
+        return;
       }
       if (!envelope.data.signed) {
         setPaymentProgress('Waiting for approval in Xaman. Keep this page open after signing.');
@@ -113,9 +138,10 @@ export function CheckoutSignIn({ invoiceSlug }: { invoiceSlug: string }) {
       window.location.assign(
         `/pay/${encodeURIComponent(invoiceSlug)}/status/${encodeURIComponent(payment.attemptId)}`,
       );
-    } catch (caught) {
-      setPaymentProgress(null);
-      setError(caught instanceof Error ? caught.message : 'Unable to verify the Xaman payment');
+    } catch {
+      const guidance = paymentResolutionGuidance(null);
+      setPaymentProgress(guidance.message);
+      setPaymentError(null);
     } finally {
       resolvingPaymentRef.current = false;
     }
@@ -123,16 +149,21 @@ export function CheckoutSignIn({ invoiceSlug }: { invoiceSlug: string }) {
 
   useEffect(() => {
     if (payment === null) return;
+    void resolvePayment();
+    const polling = window.setInterval(() => void resolvePayment(), PAYMENT_RESOLUTION_RETRY_MS);
     let socket: WebSocket;
     try {
       socket = new WebSocket(payment.websocketUrl);
     } catch {
-      return;
+      return () => window.clearInterval(polling);
     }
     socket.addEventListener('message', () => {
       void resolvePayment();
     });
-    return () => socket.close();
+    return () => {
+      window.clearInterval(polling);
+      socket.close();
+    };
   }, [payment, resolvePayment]);
 
   useEffect(() => {
@@ -162,7 +193,7 @@ export function CheckoutSignIn({ invoiceSlug }: { invoiceSlug: string }) {
 
   async function beginSignIn() {
     setBusy(true);
-    setError(null);
+    setSignInError(null);
     setResolution(null);
     try {
       const response = await fetch('/api/payer/signin', {
@@ -179,7 +210,7 @@ export function CheckoutSignIn({ invoiceSlug }: { invoiceSlug: string }) {
       }
       setPayload(envelope.data);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Unable to start Xaman SignIn');
+      setSignInError(caught instanceof Error ? caught.message : 'Unable to start Xaman SignIn');
     } finally {
       setBusy(false);
     }
@@ -187,7 +218,7 @@ export function CheckoutSignIn({ invoiceSlug }: { invoiceSlug: string }) {
 
   async function createQuote() {
     setBusy(true);
-    setError(null);
+    setPaymentError(null);
     try {
       quoteIdempotencyKeyRef.current ??= crypto.randomUUID();
       const response = await fetch(
@@ -208,7 +239,9 @@ export function CheckoutSignIn({ invoiceSlug }: { invoiceSlug: string }) {
       }
       setQuote(envelope.data);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Unable to create the exact quote');
+      setPaymentError(
+        caught instanceof Error ? caught.message : 'Unable to create the exact quote',
+      );
     } finally {
       setBusy(false);
     }
@@ -217,7 +250,8 @@ export function CheckoutSignIn({ invoiceSlug }: { invoiceSlug: string }) {
   async function createPayment() {
     if (!quote) return;
     setBusy(true);
-    setError(null);
+    setPaymentError(null);
+    paymentResolutionTerminalRef.current = false;
     try {
       if (paymentIdempotencyRef.current?.quoteId !== quote.quoteId) {
         paymentIdempotencyRef.current = {
@@ -246,7 +280,9 @@ export function CheckoutSignIn({ invoiceSlug }: { invoiceSlug: string }) {
         'Scan the QR code or open Xaman, then approve the exact XRP Testnet payment.',
       );
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Unable to create the payment request');
+      setPaymentError(
+        caught instanceof Error ? caught.message : 'Unable to create the payment request',
+      );
     } finally {
       setBusy(false);
     }
@@ -345,9 +381,9 @@ export function CheckoutSignIn({ invoiceSlug }: { invoiceSlug: string }) {
               </div>
             )}
 
-            {error !== null ? (
+            {signInError !== null ? (
               <p aria-live="assertive" className="mt-4 text-sm text-red-300" role="alert">
-                {error}
+                {signInError}
               </p>
             ) : null}
           </div>
@@ -455,9 +491,9 @@ export function CheckoutSignIn({ invoiceSlug }: { invoiceSlug: string }) {
                 )}
               </div>
             ) : null}
-            {error !== null && identified ? (
+            {paymentError !== null && identified ? (
               <p aria-live="assertive" className="mt-4 text-sm text-red-300" role="alert">
-                {error}
+                {paymentError}
               </p>
             ) : null}
           </div>

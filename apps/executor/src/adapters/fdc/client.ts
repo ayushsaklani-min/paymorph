@@ -32,6 +32,7 @@ const DEFAULT_SOURCE_ID = 'testXRP';
 const ATTESTATION_TYPE = 'XRPPayment';
 const DEFAULT_RETRY_AFTER_MS = 10_000;
 const TX_ID = /^(?:0x)?[0-9a-fA-F]{64}$/;
+const DA_ATTESTATION_NOT_FOUND = 'attestation request not found';
 export const XRPL_FDC_CONFIRMATIONS = 3;
 
 const xrpPaymentResponseAbiParameter = (
@@ -330,7 +331,11 @@ export class FdcXrpPaymentClient {
       );
     }
 
-    if (response.status === 404 || response.status === 202) {
+    if (
+      response.status === 404 ||
+      response.status === 202 ||
+      isAttestationPropagationResponse(response.status, response.body)
+    ) {
       return pending(
         'DA_PROOF_NOT_AVAILABLE',
         this.#config.retryAfterMs,
@@ -467,6 +472,15 @@ function trimTrailingSlash(value: string): string {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isAttestationPropagationResponse(status: number, body: unknown): boolean {
+  return (
+    status === 400 &&
+    isRecord(body) &&
+    typeof body.error === 'string' &&
+    body.error.trim().toLowerCase() === DA_ATTESTATION_NOT_FOUND
+  );
 }
 
 function isBytes32(value: unknown): value is Hex {

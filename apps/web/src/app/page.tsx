@@ -48,30 +48,30 @@ const protocolFacts: StoryItem[] = [
   },
 ];
 
-const communityReports: StoryItem[] = [
+const paymentConfidence: StoryItem[] = [
   {
-    source: 'r/XRP · “XRP stuck on confirming”',
+    source: 'Public context: status clarity',
     sourceHref: 'https://www.reddit.com/r/XRP/comments/1d1611p/',
-    context: 'Community report · status ambiguity',
-    body: 'A user reported an XRP transfer appearing to remain in “confirming” status, prompting advice to inspect the ledger transaction rather than trust a wallet screen alone.',
+    context: 'PayMorph clarity · live progress',
+    body: 'See the payment path, not just a spinner. The live timeline separates the Xaman signature, XRP validation, FDC proof, and final on-chain settlement.',
     response:
-      'PayMorph response: XRPL validation and Flare settlement are shown as separate verified stages.',
+      'Built for confidence: every stage says what happens next and what has already been verified.',
   },
   {
-    source: 'r/XRP · confirmed but not credited',
+    source: 'Public context: recipient timing',
     sourceHref: 'https://www.reddit.com/r/XRP/comments/1dnhs78/',
-    context: 'Community report · recipient delay',
-    body: 'A user reported that an XRP transfer was confirmed on-chain while the receiving service had not yet credited it.',
+    context: 'PayMorph precision · exact payment',
+    body: 'Approve one exact payment. PayMorph commits the amount, destination, memo, and merchant terms before the payer signs in Xaman.',
     response:
-      'PayMorph response: a validated XRP payment never by itself becomes a merchant settlement receipt.',
+      'Built for precision: the signed payment is validated against those exact instructions afterward.',
   },
   {
-    source: 'r/XRP · destination-tag error',
+    source: 'Public context: payment instructions',
     sourceHref: 'https://www.reddit.com/r/XRP/comments/egd8xm/',
-    context: 'Community report · payment instructions',
-    body: 'A user reported sending XRP to the right custodial address with the wrong destination tag, leaving the deposit uncredited.',
+    context: 'PayMorph finality · real receipt',
+    body: 'Receive a receipt earned through evidence. A source XRP payment is visible, while merchant completion waits for the decoded router settlement event.',
     response:
-      'PayMorph response: it commits exact payment instructions and validates their critical fields after signing.',
+      'Built for trust: a redirect, callback, or wallet state never declares a payment complete.',
   },
 ];
 
@@ -217,19 +217,18 @@ export default function HomePage() {
                 className="pm-display mt-5 max-w-lg text-4xl leading-[0.95] sm:text-5xl"
                 id="open-ledger-heading"
               >
-                Open networks deserve an open payment story.
+                Every payment deserves a clear next step.
               </h2>
               <p className="mt-5 max-w-md leading-7 text-[var(--muted-strong)]">
-                Public community reports show why status clarity matters. Protocol facts explain the
-                evidence underneath. Reports describe individual experiences—not verified claims
-                about XRPL, Xaman, Flare, or PayMorph.
+                PayMorph turns real checkout needs into a reassuring evidence path: clear progress,
+                exact instructions, and a receipt with a verifiable source of truth.
               </p>
             </div>
             <div
               className="relative min-w-0 overflow-hidden py-2"
-              aria-label="Public community payment reports"
+              aria-label="PayMorph payment confidence"
             >
-              <StoryRail items={communityReports} />
+              <StoryRail items={paymentConfidence} />
             </div>
           </div>
           <div
@@ -368,7 +367,7 @@ function StoryRail({ items, reverse = false }: { items: StoryItem[]; reverse?: b
             rel="noreferrer"
             target="_blank"
           >
-            Source: {item.source} <span aria-hidden="true">↗</span>
+            {item.source} <span aria-hidden="true">↗</span>
           </a>
         </article>
       ))}

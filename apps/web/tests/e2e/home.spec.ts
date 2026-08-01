@@ -5,16 +5,12 @@ test('shows the evidence-first testnet product promise', async ({ page }) => {
   await expect(page.getByRole('heading', { name: /Payment clarity/i })).toBeVisible();
   await expect(page.getByRole('heading', { name: /One payment. Four proofs./i })).toBeVisible();
   await expect(page.getByRole('note')).toContainText('no real monetary value');
-  await expect(page.getByLabel('Public community payment reports')).toContainText(
-    'Community report',
-  );
-  await expect(page.getByLabel('Public community payment reports')).toContainText(
-    'PayMorph response',
-  );
+  await expect(page.getByLabel('PayMorph payment confidence')).toContainText('PayMorph clarity');
+  await expect(page.getByLabel('PayMorph payment confidence')).toContainText('Built for trust');
   await expect(
     page
       .getByLabel('Public-chain protocol facts')
-      .getByRole('link', { name: /Source: XRPL Ledger Structure/i }),
+      .getByRole('link', { name: 'XRPL Ledger Structure' }),
   ).toHaveAttribute('href', 'https://xrpl.org/docs/concepts/ledgers/ledger-structure');
 });
 

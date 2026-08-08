@@ -2,8 +2,13 @@
 
 ## Start dependencies
 
-PayMorph's local setup does not require Docker Desktop. Install PostgreSQL in
-Ubuntu WSL and start its cluster:
+PayMorph's local setup does not require Docker Desktop. For the web app on
+Windows, `pnpm dev:web:local` starts and keeps the PostgreSQL cluster alive,
+loads the repository-root `.env.local`, and binds its local application origin
+to `http://localhost:3000`. It runs the web process only; use `pnpm dev` when
+the executor is intentionally needed.
+
+To start PostgreSQL manually, use Ubuntu WSL:
 
 ```bash
 wsl -d Ubuntu-24.04 -u root -- pg_ctlcluster 16 main start
@@ -16,11 +21,10 @@ keep it alive in a separate terminal while developing:
 wsl -d Ubuntu-24.04 -u root -- sh -lc "pg_ctlcluster 16 main start; exec sleep infinity"
 ```
 
-Use the WSL IP reported by `wsl -d Ubuntu-24.04 -- hostname -I` in the
-repository-root `.env.local` `DATABASE_URL`; the database must allow the
-Windows host gateway to connect. Root development, database, deployment,
-network, and smoke commands load this single file for both applications. Only
-testnet credentials are permitted.
+Use the stable Windows loopback forwarding endpoint in the repository-root
+`.env.local`: `postgresql://paymorph:paymorph@127.0.0.1:5432/paymorph`. Root
+development, database, deployment, network, and smoke commands load this
+single file for both applications. Only testnet credentials are permitted.
 
 Generate `OPERATOR_SESSION_TOKEN` as documented in
 `docs/runbooks/operator-api.md` only when exercising the local operator API.
@@ -55,11 +59,11 @@ into an application manually.
 ## Run
 
 ```bash
-pnpm dev
+pnpm dev:web:local
 ```
 
-The web process runs at `http://localhost:3000`. The executor is an always-on
-separate process and must have C2FLR only when live processing is enabled.
+The web process runs at `http://localhost:3000`. Start the executor separately
+with `pnpm dev` only when live processing is enabled and it has C2FLR.
 
 `GET /api/ready` additionally checks PostgreSQL, the live Coston2 FXRP route,
 and an authenticated read-only request to the configured FDC XRP indexer.
@@ -111,8 +115,9 @@ Only a persisted decoded `PaymentSettled` transition creates a
 
 ## Xaman callbacks
 
-Use an HTTPS tunnel with a stable callback for local Xaman testing. Configure
-the exact `/api/webhooks/xaman` URL in the Xaman developer console. Never expose
+Use an HTTPS tunnel with a stable callback for local Xaman testing. The
+localhost-only launcher is not a public callback endpoint. Configure the exact
+`/api/webhooks/xaman` URL in the Xaman developer console. Never expose
 database, admin, or executor ports.
 
 ## Stop

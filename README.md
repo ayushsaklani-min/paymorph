@@ -263,9 +263,11 @@ The `payment.settled` event is enqueued only after decoded on-chain settlement e
 ## Local development
 
 On Windows with PostgreSQL in WSL, run `pnpm dev:web:local`. It starts the web
-application, keeps WSL PostgreSQL available while it runs, and repairs only a
-stale private WSL database host in the untracked `.env.local` `DATABASE_URL`,
-using the stable loopback PostgreSQL endpoint.
+application, keeps WSL PostgreSQL available while it runs, loads the
+repository-root `.env.local`, and repairs only a stale private WSL database
+host in that untracked `DATABASE_URL`, using the stable loopback endpoint. It
+intentionally uses `http://localhost:3000`; use a deployed public HTTPS URL
+for a Xaman callback acceptance run.
 
 ### 1. Start PostgreSQL without Docker
 
@@ -299,7 +301,7 @@ Set the non-secret local values first:
 ```dotenv
 APP_ENV=development
 APP_URL=http://localhost:3000
-DATABASE_URL=postgresql://paymorph:paymorph@<WSL-IP>:5432/paymorph
+DATABASE_URL=postgresql://paymorph:paymorph@127.0.0.1:5432/paymorph
 MUTATION_ALLOWED_ORIGINS=http://localhost:3000
 ```
 

@@ -661,6 +661,21 @@ settlement evidence.
 
 ## Latest completed work
 
+- Local launcher and live-evidence revalidation (2026-08-08):
+  `pnpm dev:web:local` now starts only the web application, explicitly loads
+  the repository-root `.env.local`, retains a WSL PostgreSQL keepalive, uses
+  the stable loopback database endpoint, and fixes its local application origin
+  to `http://localhost:3000`. Local `/api/health` returned HTTP 200 and the
+  merchant nonce endpoint returned HTTP 201 with a stored challenge; no local
+  executor was started. The retained USDT0 attempt
+  `6f7320bc-eb35-4842-855d-6e8a1039b0a7` was independently reverified against
+  XRPL Testnet and Coston2: validated `tesSUCCESS` XRPL hash
+  `C0523EFE1DCDD7B66288FAA4FE30C2AB20AC3D7F7550E634A534CAF450E8AAC0`,
+  successful Coston2 hash
+  `0xeab167c4ac8f04fcaf19306de9a61f1a9ae0aa5d7cca1dcdf402cff546451224`,
+  matching router `PaymentSettled`, and the recorded USDT0 recipient event.
+  This is a read-only revalidation of existing testnet evidence, not a new
+  payment or a production claim.
 - Local availability UX and WSL startup hardening (2026-08-08): database
   connection outages now produce a safe HTTP 503 with a short retry hint rather
   than the generic internal-error message, while logging only bounded metadata.

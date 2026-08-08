@@ -4,6 +4,34 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
+function Test-LocalPostgres {
+  return Test-NetConnection -ComputerName '127.0.0.1' -Port 5432 -InformationLevel Quiet -WarningAction SilentlyContinue
+}
+
+function Start-LocalPostgresKeepalive {
+  if (Test-LocalPostgres) {
+    return $null
+  }
+
+  $keepalive = Start-Process -FilePath 'wsl.exe' -ArgumentList @(
+    '-d', 'Ubuntu-24.04', '-u', 'root', '--', 'bash', '-lc',
+    'service postgresql start && exec tail -f /dev/null'
+  ) -WindowStyle Hidden -PassThru
+
+  for ($attempt = 0; $attempt -lt 40; $attempt++) {
+    Start-Sleep -Milliseconds 500
+    if (Test-LocalPostgres) {
+      return $keepalive
+    }
+    if ($keepalive.HasExited) {
+      throw 'WSL PostgreSQL exited before accepting local connections.'
+    }
+  }
+
+  Stop-Process -Id $keepalive.Id -Force -ErrorAction SilentlyContinue
+  throw 'WSL PostgreSQL did not accept connections on 127.0.0.1:5432 within 20 seconds.'
+}
+
 $workspaceRoot = Split-Path -Parent $PSScriptRoot
 $envFile = Join-Path $workspaceRoot '.env.local'
 if (-not (Test-Path -LiteralPath $envFile)) {
@@ -29,6 +57,7 @@ if ($updatedEnvironmentContents -ne $environmentContents) {
   $databaseLine = $updatedEnvironmentContents -split "`r?`n" | Where-Object { $_ -match '^DATABASE_URL=' } | Select-Object -First 1
 }
 $env:DATABASE_URL = $databaseLine.Substring('DATABASE_URL='.Length)
+$postgresKeepalive = Start-LocalPostgresKeepalive
 
 Push-Location $workspaceRoot
 try {
@@ -39,4 +68,7 @@ try {
   }
 } finally {
   Pop-Location
+  if ($null -ne $postgresKeepalive -and -not $postgresKeepalive.HasExited) {
+    Stop-Process -Id $postgresKeepalive.Id -Force
+  }
 }

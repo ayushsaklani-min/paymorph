@@ -3,6 +3,17 @@ import { NextResponse } from 'next/server';
 import { ZodError } from 'zod';
 
 const REQUEST_ID = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/;
+const DATABASE_UNAVAILABLE_CODES = new Set(['P1001', 'P1002', 'P1017']);
+
+function isDatabaseUnavailable(error: unknown): error is Error {
+  if (!(error instanceof Error)) return false;
+  const code = 'code' in error && typeof error.code === 'string' ? error.code : undefined;
+  return (
+    DATABASE_UNAVAILABLE_CODES.has(code ?? '') ||
+    (error.name === 'PrismaClientInitializationError' &&
+      /(?:can't reach database server|connection.*(?:timed out|closed))/i.test(error.message))
+  );
+}
 
 /**
  * Honor well-formed correlation IDs from trusted infrastructure while keeping
@@ -23,6 +34,18 @@ function logUnhandledApiError(request: Request, requestId: string, error: unknow
       errorType: error instanceof Error ? error.constructor.name : typeof error,
     },
     'Unhandled API error',
+  );
+}
+
+function logDatabaseUnavailable(request: Request, requestId: string, error: Error): void {
+  console.error(
+    {
+      event: 'api.database_unavailable',
+      requestId,
+      method: request.method,
+      errorType: error.constructor.name,
+    },
+    'Database unavailable',
   );
 }
 
@@ -81,6 +104,25 @@ export function jsonError(request: Request, error: unknown): NextResponse<ApiEnv
         ...(retryAfterSeconds ? { 'retry-after': retryAfterSeconds.toString() } : {}),
       },
     });
+  }
+  if (isDatabaseUnavailable(error)) {
+    logDatabaseUnavailable(request, requestId, error);
+    return NextResponse.json(
+      errorEnvelope(
+        'INTERNAL_ERROR',
+        'PayMorph is temporarily unavailable. Please try again in a moment.',
+        undefined,
+        requestId,
+      ),
+      {
+        status: 503,
+        headers: {
+          'cache-control': 'no-store',
+          'retry-after': '5',
+          'x-request-id': requestId,
+        },
+      },
+    );
   }
   logUnhandledApiError(request, requestId, error);
   return NextResponse.json(

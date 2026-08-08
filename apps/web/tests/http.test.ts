@@ -34,4 +34,33 @@ describe('HTTP response boundaries', () => {
     );
     errorLog.mockRestore();
   });
+
+  it('returns a safe retryable response when Prisma cannot reach the database', async () => {
+    const errorLog = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const databaseError = Object.assign(
+      new Error("Can't reach database server at `127.0.0.1:5432`"),
+      {
+        code: 'P1001',
+        name: 'PrismaClientInitializationError',
+      },
+    );
+    const response = jsonError(
+      new Request('https://paymorph.example/api/auth/nonce'),
+      databaseError,
+    );
+
+    expect(response.status).toBe(503);
+    expect(response.headers.get('retry-after')).toBe('5');
+    await expect(response.json()).resolves.toMatchObject({
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: 'PayMorph is temporarily unavailable. Please try again in a moment.',
+      },
+    });
+    expect(errorLog).toHaveBeenCalledWith(
+      expect.objectContaining({ event: 'api.database_unavailable' }),
+      'Database unavailable',
+    );
+    errorLog.mockRestore();
+  });
 });

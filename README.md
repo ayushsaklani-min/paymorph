@@ -263,8 +263,9 @@ The `payment.settled` event is enqueued only after decoded on-chain settlement e
 ## Local development
 
 On Windows with PostgreSQL in WSL, run `pnpm dev:web:local`. It starts the web
-application and repairs only a stale private WSL database host in the untracked
-`.env.local` `DATABASE_URL`, using the stable loopback PostgreSQL endpoint.
+application, keeps WSL PostgreSQL available while it runs, and repairs only a
+stale private WSL database host in the untracked `.env.local` `DATABASE_URL`,
+using the stable loopback PostgreSQL endpoint.
 
 ### 1. Start PostgreSQL without Docker
 

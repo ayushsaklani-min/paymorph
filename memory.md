@@ -661,6 +661,15 @@ settlement evidence.
 
 ## Latest completed work
 
+- Local availability UX and WSL startup hardening (2026-08-08): database
+  connection outages now produce a safe HTTP 503 with a short retry hint rather
+  than the generic internal-error message, while logging only bounded metadata.
+  The Windows `pnpm dev:web:local` launcher now keeps its WSL PostgreSQL process
+  alive for the lifetime of the web development process and stops only the
+  keepalive it created. Focused HTTP regression tests, PowerShell parsing, the
+  full `pnpm verify` gate (including 131 web tests and production builds), and
+  `pnpm test:contracts` (31 Foundry tests) passed. This changes no payment or
+  settlement behavior.
 - Local merchant authentication repair (2026-08-05): the Windows development
   environment had a stale WSL private PostgreSQL address after WSL stopped,
   causing `/api/auth/nonce` to return an `INTERNAL_ERROR` after a successful

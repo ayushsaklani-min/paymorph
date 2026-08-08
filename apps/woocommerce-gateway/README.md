@@ -36,3 +36,29 @@ event is emitted by PayMorph only after decoded `PaymentSettled` evidence.
 - Invalid, missing, delayed, or unverified events leave the order unpaid.
 
 No customer wallet key, API key, or webhook secret is sent to the browser.
+
+## Local boundary verification
+
+With PHP 8.1 or newer installed, run from the PayMorph repository root:
+
+```bash
+pnpm test:woocommerce
+```
+
+The executable PHP smoke checks canonical USD strings, deterministic API
+idempotency keys, create/publish/reuse behavior, and the exact-body webhook
+HMAC boundary. It proves the gateway logic against controlled WordPress and
+WooCommerce boundaries; it is not a substitute for installation in a real
+WordPress/WooCommerce test store.
+
+On Windows, when PHP 8.1+ and MySQL Server 8 are installed, the following
+Docker-free acceptance creates an isolated database and official WordPress plus
+WooCommerce installation under ignored `artifacts/`, activates the gateway,
+and sends a signed settlement webhook through the real WordPress REST stack:
+
+```bash
+pnpm test:woocommerce:runtime
+```
+
+It binds only to localhost, uses separate ports, generates one-run credentials,
+and shuts down its isolated MySQL and PHP processes before returning.

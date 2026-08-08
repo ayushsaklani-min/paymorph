@@ -38,6 +38,36 @@ proof, submission, and decoded recipient evidence for operator review.
 
 Never change a failed live result into success manually.
 
+## Executor crash/restart smoke
+
+This acceptance deliberately terminates an executor immediately after its
+durable Coston2 broadcast checkpoint and before receipt processing. It must use
+a fresh attempt and be the only executor operating on the database.
+
+1. Stop every normally running PayMorph executor. Keep the web process and
+   PostgreSQL running.
+2. Begin a fresh checkout and stop before approving the exact Xaman Payment.
+   Copy the attempt UUID from the status URL.
+3. Start the guarded supervisor below, then approve the Payment in Xaman:
+
+```bash
+RUN_LIVE_CRASH_RESTART=1 \
+LIVE_CRASH_EXECUTOR_EXCLUSIVE=1 \
+LIVE_ATTEMPT_ID=<fresh-attempt-uuid> \
+pnpm test:live:crash-restart
+```
+
+The supervisor starts a single executor, observes the persisted broadcast hash,
+force-stops that process, requires the attempt and submission to remain at the
+pre-receipt checkpoint, and starts a new executor. The second process must
+settle through exactly the original reserved nonce and transaction hash. The
+command then runs `pnpm test:live` against the local receipt endpoint and writes
+`live-smoke/<attempt-id>-crash-restart.json`. A run that observed the submission
+only after finalization fails rather than claiming the crash point was covered.
+
+Do not set the exclusivity flag while another executor is running. After the
+command exits, restart the normal executor process.
+
 ## Recovery smoke
 
 After completing an official tiny `0xE0` recovery and reaching `RECOVERED`, run:

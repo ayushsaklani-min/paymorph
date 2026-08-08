@@ -54,19 +54,19 @@ return does not by itself advance the payment.
 
 ## What is implemented
 
-| Area                                    | Status          | Notes                                                                                                                                                   |
-| --------------------------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Merchant operating shell                | Implemented     | EIP-191 sign-in, dashboard projections, payment evidence views, invoices, templates, and settings.                                                      |
-| Collection surfaces                     | Implemented     | Reusable/single-use links, requests, analytics, and POS create canonical invoices only.                                                                 |
-| Public checkout                         | Implemented     | Payer-scoped Xaman SignIn, exact quotes, payment QR/deeplink, and an evidence-driven Xaman → XRPL → FDC → Coston2 timeline.                             |
-| Executor pipeline                       | Implemented     | Leased durable XRPL validation, FDC, Coston2 submission, event indexing, restart checkpoints, and recovery diagnostics.                                 |
-| Developer platform                      | Implemented     | Scoped `pm_test_` keys, `/api/v1` invoice/receipt routes, SDK, hosted button, encrypted webhook settings, and delivery outbox.                          |
-| Explorer and projections                | Implemented     | Public settlement evidence explorer plus marketplace and read-only treasury projections.                                                                |
-| WooCommerce gateway                     | MVP implemented | Server-side invoice mapping and verified post-settlement paid-order transition; needs WordPress/WooCommerce acceptance.                                 |
-| FXRP settlement                         | Live verified   | A tiny XRPL Testnet → FDC → Coston2 settlement was independently verified on 2026-08-01.                                                                |
-| USDT0 exact-output settlement           | Live verified   | ADR 0007's separately labelled `PAYMORPH_TESTNET` route completed an independently verified XRP Testnet → FDC → Coston2 USDT0 settlement on 2026-08-01. |
-| Recovery (`0xE0`)                       | Code complete   | Durable recovery checkpoints and an independent verifier exist; an official live recovery artifact remains a gate.                                      |
-| Refunds, subscriptions, escrow, mainnet | Deferred        | Explicitly outside the current testnet blueprint delivery scope.                                                                                        |
+| Area                                    | Status           | Notes                                                                                                                                                   |
+| --------------------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Merchant operating shell                | Implemented      | EIP-191 sign-in, dashboard projections, payment evidence views, invoices, templates, and settings.                                                      |
+| Collection surfaces                     | Implemented      | Reusable/single-use links, requests, analytics, and POS create canonical invoices only.                                                                 |
+| Public checkout                         | Implemented      | Payer-scoped Xaman SignIn, exact quotes, payment QR/deeplink, and an evidence-driven Xaman → XRPL → FDC → Coston2 timeline.                             |
+| Executor pipeline                       | Implemented      | Leased durable XRPL validation, FDC, Coston2 submission, event indexing, restart checkpoints, and recovery diagnostics.                                 |
+| Developer platform                      | Implemented      | Scoped `pm_test_` keys, `/api/v1` invoice/receipt routes, SDK, hosted button, encrypted webhook settings, and delivery outbox.                          |
+| Explorer and projections                | Implemented      | Public settlement evidence explorer plus marketplace and read-only treasury projections.                                                                |
+| WooCommerce gateway                     | Runtime verified | PHP boundary and Docker-free WordPress/WooCommerce runtime acceptance passed; public hosted outbox delivery remains a deployment gate.                  |
+| FXRP settlement                         | Live verified    | A tiny XRPL Testnet → FDC → Coston2 settlement was independently verified on 2026-08-01.                                                                |
+| USDT0 exact-output settlement           | Live verified    | ADR 0007's separately labelled `PAYMORPH_TESTNET` route completed an independently verified XRP Testnet → FDC → Coston2 USDT0 settlement on 2026-08-01. |
+| Recovery (`0xE0`)                       | Code complete    | Durable recovery checkpoints and an independent verifier exist; an official live recovery artifact remains a gate.                                      |
+| Refunds, subscriptions, escrow, mainnet | Deferred         | Explicitly outside the current testnet blueprint delivery scope.                                                                                        |
 
 The authoritative phase ledger is maintained in
 [docs/implementation-plan.md](docs/implementation-plan.md).
@@ -262,6 +262,10 @@ The `payment.settled` event is enqueued only after decoded on-chain settlement e
 
 ## Local development
 
+On Windows with PostgreSQL in WSL, run `pnpm dev:web:local`. It starts the web
+application and repairs only a stale private WSL database host in the untracked
+`.env.local` `DATABASE_URL`, using the stable loopback PostgreSQL endpoint.
+
 ### 1. Start PostgreSQL without Docker
 
 The recommended Windows setup is a native PostgreSQL 16 cluster in WSL:
@@ -383,26 +387,29 @@ Never manually turn a failed live run into success.
 
 ## Commands
 
-| Command                                                  | Purpose                                                           |
-| -------------------------------------------------------- | ----------------------------------------------------------------- |
-| `pnpm dev`                                               | Run web and executor using `.env.local`.                          |
-| `pnpm verify`                                            | Format check, lint, typecheck, unit tests, and production builds. |
-| `pnpm test`                                              | Run workspace tests.                                              |
-| `pnpm test:contracts`                                    | Run Foundry contract tests, fuzz tests, and invariants.           |
-| `pnpm test:e2e`                                          | Run Playwright browser journeys when Chromium is installed.       |
-| `pnpm db:migrate`                                        | Apply Prisma migrations.                                          |
-| `pnpm db:seed`                                           | Seed development data.                                            |
-| `RUN_DB_PROJECTION_ACCEPTANCE=1 pnpm test:db-projection` | Exercise the development-only receipt-projection DB fixture.      |
-| `pnpm webhooks:deliver`                                  | Deliver due merchant webhook events once.                         |
-| `pnpm network:resolve`                                   | Inspect runtime network and registry configuration.               |
-| `pnpm verify:deployment`                                 | Verify the configured deployment.                                 |
-| `pnpm contracts:deploy:coston2`                          | Deploy contracts to Coston2 with testnet-only keys.               |
-| `pnpm test:live`                                         | Run the opt-in real testnet receipt verifier.                     |
-| `pnpm test:live:recovery`                                | Verify and archive an evidence-backed official recovery.          |
+| Command                                                  | Purpose                                                            |
+| -------------------------------------------------------- | ------------------------------------------------------------------ |
+| `pnpm dev`                                               | Run web and executor using `.env.local`.                           |
+| `pnpm verify`                                            | Format, lint, types, tests (including PHP), and production builds. |
+| `pnpm test`                                              | Run workspace tests.                                               |
+| `pnpm test:contracts`                                    | Run Foundry contract tests, fuzz tests, and invariants.            |
+| `pnpm test:woocommerce`                                  | Run PHP syntax and WooCommerce gateway boundary acceptance.        |
+| `pnpm test:woocommerce:runtime`                          | Run isolated Docker-free WordPress/WooCommerce acceptance.         |
+| `pnpm test:e2e`                                          | Run Playwright browser journeys when Chromium is installed.        |
+| `pnpm db:migrate`                                        | Apply Prisma migrations.                                           |
+| `pnpm db:seed`                                           | Seed development data.                                             |
+| `RUN_DB_PROJECTION_ACCEPTANCE=1 pnpm test:db-projection` | Exercise the development-only receipt-projection DB fixture.       |
+| `pnpm webhooks:deliver`                                  | Deliver due merchant webhook events once.                          |
+| `pnpm network:resolve`                                   | Inspect runtime network and registry configuration.                |
+| `pnpm verify:deployment`                                 | Verify the configured deployment.                                  |
+| `pnpm contracts:deploy:coston2`                          | Deploy contracts to Coston2 with testnet-only keys.                |
+| `pnpm test:live`                                         | Run the opt-in real testnet receipt verifier.                      |
+| `pnpm test:live:crash-restart`                           | Deliberately kill/restart the exclusive executor after broadcast.  |
+| `pnpm test:live:recovery`                                | Verify and archive an evidence-backed official recovery.           |
 
-Latest local verification (2026-08-01):
+Latest local verification (2026-08-05):
 
-- `pnpm test` passed: 226 automated tests, including 29 Foundry
+- `pnpm test` passed: 205 TypeScript/JavaScript tests plus 31 Foundry
   unit/fuzz/invariant tests.
 - Repository linting, typechecking, and formatting checks passed. The explicit
   full contract suite passed after the payment-link API checkpoint.
@@ -417,14 +424,18 @@ Latest local verification (2026-08-01):
   `PLAYWRIGHT_BROWSER_CHANNEL=chrome pnpm test:e2e`, including a keyboard path
   from the app-wide skip link to the primary content landmark.
 - The full `pnpm verify` gate passed: formatting, linting, workspace
-  typechecking, 226 automated tests, and all production builds.
+  typechecking, 205 TypeScript/JavaScript tests, 31 Foundry tests, the PHP
+  WooCommerce boundary suite, and all production builds.
 - The protected metrics route passed focused authorization/format tests and a
   read-only local PostgreSQL route smoke; it exposes aggregate counts only.
 - A direct local `/api/health` check confirmed the response security headers
   and a canonical echoed `X-Request-Id` after the web-boundary update.
-- Playwright's managed Chromium and PHP/WordPress are not installed on this
-  machine, so the default Chromium path and WooCommerce runtime acceptance
-  remain external gates.
+- Playwright's managed Chromium is not installed on this machine, so the
+  default Chromium path remains an external CI gate. PHP 8.4.22 and the
+  Docker-free WordPress/WooCommerce runtime acceptance passed on 2026-08-05:
+  the real plugin activated and an exact-body signed duplicate settlement
+  webhook updated the real local WooCommerce order idempotently. This does not
+  prove public PayMorph webhook outbox delivery.
 
 ## API and operations
 
@@ -450,13 +461,14 @@ in [memory.md](memory.md) and the implementation plan. In particular:
   and a matching decoded `PaymentSettled` event in block `33504164`. The
   independent verifier output is retained locally under `live-smoke/`.
 - The official SparkDEX Coston2 route remains disabled under ADR 0006. ADR
-  0007's separately labelled `PAYMORPH_TESTNET` route is on-chain and healthy,
-  but still needs a payer-signed Xaman checkout and independent receipt before
-  it is called end-to-end live verified.
+  0007's separately labelled `PAYMORPH_TESTNET` route has a retained
+  payer-signed Xaman checkout and independently verified USDT0 receipt; it is
+  not an official SparkDEX or production-route claim.
 - The official `0xE0` recovery sequence has a durable implementation and
   independent verifier, but still needs a real testnet acceptance artifact.
-- The WooCommerce gateway requires an installed WordPress/WooCommerce test
-  environment before it can be called live-ready.
+- The WooCommerce plugin has passed local PHP and real WordPress/WooCommerce
+  runtime acceptance. A public deployed merchant store receiving a PayMorph
+  outbox delivery remains a hosted-integration gate.
 - A production release needs a stable HTTPS host, managed PostgreSQL, secret
   management, monitoring, backups, an external security review, and mainnet
   specific protocol validation. It must not reuse this testnet setup.

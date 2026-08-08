@@ -1,6 +1,6 @@
 # PayMorph project memory
 
-Last updated: 2026-08-01
+Last updated: 2026-08-05
 
 ## Product objective
 
@@ -589,8 +589,12 @@ job and cannot retry deterministic terminal or recovery states.
   creates and publishes a merchant-scoped canonical invoice through the
   server-side `/api/v1` API, persists the external-order mapping before
   publication retries, and marks an order paid only after the WordPress REST
-  endpoint verifies the exact-body PayMorph webhook HMAC. WordPress/WooCommerce
-  acceptance is still required; this is not a claim of an installed live store.
+  endpoint verifies the exact-body PayMorph webhook HMAC. Its PHP boundary
+  suite and Docker-free local runtime acceptance now pass against official
+  WordPress 7.0.2 and WooCommerce 11.0.0. The runtime gate activates the real
+  plugin and sends a valid duplicate signed settlement webhook through the real
+  WordPress REST stack; it does not claim a public PayMorph outbox delivery or
+  a deployed merchant store.
 - The root README now aligns the current merchant, collection, developer,
   webhook, explorer, projection, and WooCommerce surfaces with their verified
   status. It explicitly records the retained live-settlement, browser, and
@@ -645,20 +649,41 @@ job and cannot retry deterministic terminal or recovery states.
 - The local database now contains the independently verified `SETTLED` FXRP
   attempt recorded above. Historical `RECOVERY_REQUIRED` rows remain immutable
   audit evidence and must not be manually rewound.
-- PHP/WordPress is not installed on this machine, so the WooCommerce plugin has
-  been type-reviewed and documented but has not received a local `php -l` or
-  WordPress/WooCommerce acceptance run.
 
 ## Next action
 
 Keep the official SparkDEX route disabled under ADR 0006. ADR 0007's
 `PAYMORPH_TESTNET` route is now independently live-verified. The highest-value
 remaining acceptance checks are a real Xaman webhook-HMAC fixture, a deliberate
-executor-process interruption immediately after Coston2 broadcast, and a real
-WordPress/WooCommerce testnet checkout; none may alter the verified FXRP or
-USDT0 settlement evidence.
+executor-process interruption immediately after Coston2 broadcast, and an
+official `0xE0` recovery artifact; none may alter the verified FXRP or USDT0
+settlement evidence.
 
 ## Latest completed work
+
+- Local merchant authentication repair (2026-08-05): the Windows development
+  environment had a stale WSL private PostgreSQL address after WSL stopped,
+  causing `/api/auth/nonce` to return an `INTERNAL_ERROR` after a successful
+  wallet connection. `pnpm dev:web:local` now repairs only that untracked local
+  `DATABASE_URL` host to the stable loopback endpoint before starting the web
+  application. With the WSL PostgreSQL service running, direct local health
+  and nonce acceptance returned HTTP 200 and HTTP 201 respectively. This is a
+  local-environment fix; it changes no payment or settlement protocol logic.
+- Docker-free WooCommerce runtime acceptance (2026-08-05): PHP 8.4.22 passed
+  `php -l` and the executable plugin boundary suite. The isolated runtime
+  created a temporary localhost MySQL 8 database, installed official WordPress
+  7.0.2 and WooCommerce 11.0.0, activated the PayMorph gateway, confirmed its
+  registration, and delivered the same valid signed `payment.settled` webhook
+  twice through WordPress REST. The order retained the expected Coston2 hash
+  and receipt path while duplicate delivery stayed idempotent. Temporary MySQL,
+  PHP, and short-path WordPress processes/files were shut down or removed. This
+  uses a controlled signed event and does not prove a public PayMorph outbox
+  delivery or live settlement.
+- Current full verification (2026-08-05): `pnpm verify` passed formatting,
+  workspace lint/typechecks, 205 TypeScript/JavaScript tests, the 31-test
+  Foundry suite, the PHP WooCommerce boundary suite, and every production
+  build. The explicit `pnpm test:contracts`, operational TypeScript checks, and
+  PowerShell syntax parse also passed.
 
 - The checkout now preserves Xaman's authoritative `pushed` response after a
   signed SignIn. A successfully delivered exact Payment request is presented

@@ -215,15 +215,19 @@ artifacts are required; fixtures do not satisfy it.
 - A testnet-only WooCommerce gateway MVP creates and publishes a canonical
   invoice server-side, persists its external order mapping before retry, and
   changes a WooCommerce order to paid only after exact-body HMAC verification
-  of that evidence-backed webhook. It still needs a WordPress/WooCommerce
-  acceptance environment.
+  of that evidence-backed webhook. On 2026-08-05 its PHP boundary suite and an
+  isolated Docker-free WordPress 7.0.2/WooCommerce 11.0.0 runtime acceptance
+  passed: the real plugin activated/registered and accepted a duplicate signed
+  settlement webhook idempotently. This is a local plugin/runtime gate, not a
+  public PayMorph merchant-webhook delivery claim.
 - Local migration `20260731140000_webhook_delivery_schedule` is applied to the
   native PostgreSQL database, bringing the local schema to 15 migrations.
-- Latest full verification passed: `pnpm verify` completed formatting, all
-  workspace lint/typechecks, 226 automated tests (including 29 Foundry
-  unit/fuzz/invariant tests), and every production build. The explicit
-  `pnpm test:contracts` gate also passed. PHP/WordPress is not installed
-  locally, so plugin syntax and external-order acceptance remain unexecuted.
+- Current full verification (2026-08-05) passed: `pnpm verify` completed
+  formatting, all workspace lint/typechecks, 205 TypeScript/JavaScript tests,
+  the 31-test Foundry suite, the PHP WooCommerce boundary suite, and every
+  production build. The explicit `pnpm test:contracts` gate and the PowerShell
+  runtime-script syntax parse also passed. The separate runtime acceptance is
+  recorded above because it creates controlled local services.
 
 ## Cross-phase workstreams
 

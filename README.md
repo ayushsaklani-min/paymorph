@@ -116,8 +116,8 @@ Use the Render database's **external pooled connection string** as
 
 Import the repository as a Vercel project with **Root Directory** set to
 `apps/web`. [`apps/web/vercel.json`](apps/web/vercel.json) installs the pnpm
-workspace, generates Prisma, applies checked-in migrations, and builds the
-Next.js app.
+workspace, generates Prisma, builds each runtime workspace dependency, applies
+checked-in migrations, and builds the Next.js app.
 
 Set these Vercel environment values for Production (and separate values for
 Preview if previews are enabled):

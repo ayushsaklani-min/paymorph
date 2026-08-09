@@ -1,10 +1,31 @@
 import type { Metadata } from 'next';
+import { Manrope, Space_Mono, Syne } from 'next/font/google';
 import type { ReactNode } from 'react';
 import Script from 'next/script';
 import { AmbientPointer } from '@/components/ui/ambient-pointer';
 import { EmberEarth } from '@/components/ui/ember-earth';
 import { SkipToContent } from '@/components/ui/skip-to-content';
 import './globals.css';
+
+const displayFont = Syne({
+  variable: '--font-display',
+  subsets: ['latin'],
+  display: 'swap',
+});
+
+const bodyFont = Manrope({
+  variable: '--font-body',
+  subsets: ['latin'],
+  display: 'swap',
+});
+
+const monoFont = Space_Mono({
+  variable: '--font-mono',
+  subsets: ['latin'],
+  display: 'swap',
+  weight: ['400', '700'],
+  style: ['normal', 'italic'],
+});
 
 export const metadata: Metadata = {
   title: {
@@ -17,7 +38,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body suppressHydrationWarning>
+      <body
+        className={`${displayFont.variable} ${bodyFont.variable} ${monoFont.variable}`}
+        suppressHydrationWarning
+      >
         <Script id="extension-hydration-guard" strategy="beforeInteractive">
           {`
             (() => {

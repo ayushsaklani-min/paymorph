@@ -2,7 +2,8 @@ import { after } from 'next/server';
 
 const DEFAULT_WAKE_TIMEOUT_MS = 120_000;
 
-export type ExecutorWakeReason = 'PAYMENT_JOB_READY' | 'RECOVERY_JOB_READY' | 'OPERATOR_RETRY';
+export type ExecutorWakeReason =
+  'LANDING_PAGE' | 'PAYMENT_JOB_READY' | 'RECOVERY_JOB_READY' | 'OPERATOR_RETRY';
 
 export type ExecutorWakeOutcome =
   | { status: 'DISABLED' }
@@ -11,7 +12,7 @@ export type ExecutorWakeOutcome =
   | { status: 'INVALID_CONFIGURATION' };
 
 interface ExecutorWakeInput {
-  readonly attemptId: string;
+  readonly attemptId?: string;
   readonly reason: ExecutorWakeReason;
 }
 
@@ -106,7 +107,7 @@ function logWake(
 ): void {
   const fields = {
     event: 'executor.wake',
-    attemptId: input.attemptId,
+    ...(input.attemptId === undefined ? {} : { attemptId: input.attemptId }),
     reason: input.reason,
     outcome: result.status,
     ...('httpStatus' in result ? { httpStatus: result.httpStatus } : {}),

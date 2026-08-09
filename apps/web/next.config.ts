@@ -20,13 +20,16 @@ export const securityHeaders = [
 ];
 
 function configuredDevOrigin(): string[] {
+  const origins = new Set(['localhost', '127.0.0.1']);
   const appUrl = process.env.APP_URL;
-  if (appUrl === undefined) return [];
+  if (appUrl === undefined) return [...origins];
   try {
-    return [new URL(appUrl).host];
+    origins.add(new URL(appUrl).hostname);
   } catch {
-    return [];
+    // Invalid runtime configuration is rejected by the application boundary;
+    // keep the development allowlist restricted to the standard loopbacks.
   }
+  return [...origins];
 }
 
 const nextConfig: NextConfig = {

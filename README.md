@@ -34,7 +34,8 @@ emits `PaymentSettled` on Coston2.
   on an interactive 3D handset, an XRP → FDC → FXRP settlement explanation, and
   the explicit `PaymentSettled` completion boundary.
 - Merchant wallet sign-in, invoices, recipient splits, templates, payment links,
-  requests, POS, analytics, payment evidence, and network diagnostics.
+  requests, POS with a provider-issued Xaman SignIn QR, analytics, payment
+  evidence, and network diagnostics.
 - Payer checkout with Xaman SignIn, exact quote, QR/deeplink fallback, and live
   settlement status.
 - Public receipt explorer and settlement evidence views.

@@ -57,7 +57,13 @@ function apiMessage<T>(envelope: ApiEnvelope<T>, fallback: string): string {
   return envelope.error?.message ?? fallback;
 }
 
-export function CheckoutSignIn({ invoiceSlug }: { invoiceSlug: string }) {
+export function CheckoutSignIn({
+  invoiceSlug,
+  autoStart = false,
+}: {
+  invoiceSlug: string;
+  autoStart?: boolean;
+}) {
   const [payload, setPayload] = useState<SignInPayload | null>(null);
   const [resolution, setResolution] = useState<SignInResolution | null>(null);
   const [busy, setBusy] = useState(false);
@@ -70,8 +76,34 @@ export function CheckoutSignIn({ invoiceSlug }: { invoiceSlug: string }) {
   const resolvingRef = useRef(false);
   const resolvingPaymentRef = useRef(false);
   const paymentResolutionTerminalRef = useRef(false);
+  const autoStartAttemptedRef = useRef(false);
   const quoteIdempotencyKeyRef = useRef<string | null>(null);
   const paymentIdempotencyRef = useRef<{ quoteId: string; key: string } | null>(null);
+
+  const beginSignIn = useCallback(async () => {
+    setBusy(true);
+    setSignInError(null);
+    setResolution(null);
+    try {
+      const response = await fetch('/api/payer/signin', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({ invoiceSlug }),
+      });
+      const envelope = (await response.json()) as ApiEnvelope<SignInPayload>;
+      if (!response.ok || envelope.data === null) {
+        throw new Error(apiMessage(envelope, 'Unable to start Xaman SignIn'));
+      }
+      setPayload(envelope.data);
+    } catch (caught) {
+      setSignInError(caught instanceof Error ? caught.message : 'Unable to start Xaman SignIn');
+    } finally {
+      setBusy(false);
+    }
+  }, [invoiceSlug]);
 
   const resolveSignIn = useCallback(async () => {
     if (payload === null || resolvingRef.current) {
@@ -175,6 +207,14 @@ export function CheckoutSignIn({ invoiceSlug }: { invoiceSlug: string }) {
   }, [payload, resolution, resolveSignIn]);
 
   useEffect(() => {
+    if (!autoStart || autoStartAttemptedRef.current || payload !== null) {
+      return;
+    }
+    autoStartAttemptedRef.current = true;
+    void beginSignIn();
+  }, [autoStart, beginSignIn, payload]);
+
+  useEffect(() => {
     if (payload === null || resolution?.status === 'SIGNED') {
       return;
     }
@@ -192,31 +232,6 @@ export function CheckoutSignIn({ invoiceSlug }: { invoiceSlug: string }) {
       socket.close();
     };
   }, [payload, resolution?.status, resolveSignIn]);
-
-  async function beginSignIn() {
-    setBusy(true);
-    setSignInError(null);
-    setResolution(null);
-    try {
-      const response = await fetch('/api/payer/signin', {
-        method: 'POST',
-        credentials: 'same-origin',
-        headers: {
-          'content-type': 'application/json',
-        },
-        body: JSON.stringify({ invoiceSlug }),
-      });
-      const envelope = (await response.json()) as ApiEnvelope<SignInPayload>;
-      if (!response.ok || envelope.data === null) {
-        throw new Error(apiMessage(envelope, 'Unable to start Xaman SignIn'));
-      }
-      setPayload(envelope.data);
-    } catch (caught) {
-      setSignInError(caught instanceof Error ? caught.message : 'Unable to start Xaman SignIn');
-    } finally {
-      setBusy(false);
-    }
-  }
 
   async function createQuote() {
     setBusy(true);

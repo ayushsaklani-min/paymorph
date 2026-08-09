@@ -1,5 +1,7 @@
 import pino from 'pino';
 
+export type ExecutorLogger = pino.Logger;
+
 const ERROR_CODE = /^[A-Z][A-Z0-9_]{0,99}$/;
 
 /**

@@ -104,6 +104,7 @@ export class PrismaExecutorStore implements ExecutorStore {
         assetManagerAddress: attempt.quote.assetManagerAddress,
         fxrpAddress: attempt.quote.fxrpAddress,
         expiresAt: attempt.quote.expiresAt,
+        settlementDeadline: attempt.quote.settlementDeadline,
         route: attempt.quote.route,
       },
       ...(attempt.fdcRequest === null

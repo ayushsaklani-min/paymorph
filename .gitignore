@@ -6,6 +6,7 @@ node_modules/
 .env
 .env.*
 !.env.example
+render-backend.env
 *.pem
 *.key
 
@@ -20,6 +21,7 @@ coverage/
 playwright-report/
 test-results/
 *.tsbuildinfo
+.vercel/
 
 # Foundry
 packages/contracts/broadcast/
@@ -41,3 +43,10 @@ Thumbs.db
 
 # local smoke artifacts
 live-smoke/
+
+# Local-only engineering notes and acceptance tooling
+AGENTS.md
+memory.md
+docs/
+scripts/
+apps/woocommerce-gateway/README.md

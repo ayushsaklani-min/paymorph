@@ -44,15 +44,41 @@ export interface ExecutorConfig {
   readonly batchSize: number;
 }
 
+export class ExecutorConfigurationError extends Error {
+  readonly code = 'INVALID_EXECUTOR_CONFIG';
+
+  constructor(readonly invalidEnvironmentVariables: readonly string[]) {
+    super('Executor environment configuration is invalid');
+    this.name = 'ExecutorConfigurationError';
+  }
+}
+
 export function loadExecutorConfig(env: NodeJS.ProcessEnv = process.env): ExecutorConfig {
-  const value = schema.parse(env);
+  const parsed = schema.safeParse(env);
+  if (!parsed.success) {
+    throw new ExecutorConfigurationError(
+      [...new Set(parsed.error.issues.map((issue) => String(issue.path[0] ?? 'UNKNOWN')))].sort(),
+    );
+  }
+
+  const value = parsed.data;
+  const encryptionKey = parseConfiguredValue('DATA_ENCRYPTION_KEY_V1', () =>
+    parseEncryptionKey(value.DATA_ENCRYPTION_KEY_V1),
+  );
+  const registryAddress = parseConfiguredValue('FLARE_CONTRACT_REGISTRY', () =>
+    getAddress(value.FLARE_CONTRACT_REGISTRY),
+  );
+  const routerAddress = parseConfiguredValue('PAYMORPH_ROUTER_ADDRESS', () =>
+    getAddress(value.PAYMORPH_ROUTER_ADDRESS),
+  );
+
   return {
-    encryptionKey: parseEncryptionKey(value.DATA_ENCRYPTION_KEY_V1),
+    encryptionKey,
     privateKey: value.EXECUTOR_PRIVATE_KEY as Hex,
     xrplWsUrl: value.XRPL_WS_URL,
     coston2RpcUrl: value.COSTON2_RPC_URL,
-    registryAddress: getAddress(value.FLARE_CONTRACT_REGISTRY),
-    routerAddress: getAddress(value.PAYMORPH_ROUTER_ADDRESS),
+    registryAddress,
+    routerAddress,
     fdcVerifierUrl: value.FDC_VERIFIER_URL,
     fdcDaLayerUrl: value.FDC_DA_LAYER_URL,
     ...(value.FDC_VERIFIER_API_KEY === undefined
@@ -66,4 +92,12 @@ export function loadExecutorConfig(env: NodeJS.ProcessEnv = process.env): Execut
     leaseMs: value.EXECUTOR_LEASE_MS,
     batchSize: value.EXECUTOR_BATCH_SIZE,
   };
+}
+
+function parseConfiguredValue<T>(name: string, parse: () => T): T {
+  try {
+    return parse();
+  } catch {
+    throw new ExecutorConfigurationError([name]);
+  }
 }

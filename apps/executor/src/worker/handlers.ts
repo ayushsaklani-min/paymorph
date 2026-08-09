@@ -573,6 +573,13 @@ export class ExecutorHandlers {
     if (!attempt.xrplTxHash || !attempt.fdc?.proofJson) {
       return this.failFlare(attempt, 'EVIDENCE_MISSING', 'FDC proof checkpoint is missing');
     }
+    if (attempt.quote.settlementDeadline.getTime() <= Date.now()) {
+      return this.failFlare(
+        attempt,
+        'SETTLEMENT_DEADLINE_EXPIRED',
+        'The immutable settlement deadline passed before Coston2 submission',
+      );
+    }
     const pendingNonce = await this.boundaries.flare.getPendingNonce();
     const executorNonce = await this.store.reserveExecutorNonce(
       attempt.id,

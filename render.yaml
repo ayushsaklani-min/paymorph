@@ -1,0 +1,89 @@
+services:
+  - type: web
+    name: paymorph-executor
+    runtime: node
+    region: singapore
+    plan: free
+    buildCommand: pnpm install --frozen-lockfile && pnpm db:generate && pnpm --filter @paymorph/executor... build
+    startCommand: pnpm --filter @paymorph/executor start:web
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    envVars:
+      - fromGroup: paymorph-runtime
+      - key: DATABASE_URL
+        fromDatabase:
+          name: paymorph-db
+          property: connectionString
+
+databases:
+  - name: paymorph-db
+    databaseName: paymorph
+    user: paymorph
+    region: singapore
+    plan: free
+    postgresMajorVersion: '17'
+    connectionPool: pgbouncer
+
+envVarGroups:
+  - name: paymorph-runtime
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_URL
+        sync: false
+      - key: DATA_ENCRYPTION_KEY_V1
+        sync: false
+      - key: EXECUTOR_PRIVATE_KEY
+        sync: false
+      - key: PAYMORPH_ROUTER_ADDRESS
+        sync: false
+      - key: FDC_VERIFIER_API_KEY
+        sync: false
+      - key: XAMAN_API_KEY
+        sync: false
+      - key: XAMAN_API_SECRET
+        sync: false
+      - key: XAMAN_WEBHOOK_SECRET
+        sync: false
+      - key: METRICS_TOKEN
+        sync: false
+      - key: OPERATOR_SESSION_TOKEN
+        sync: false
+      - key: ADMIN_WALLET_ADDRESSES
+        sync: false
+      - key: XRPL_WS_URL
+        value: wss://s.altnet.rippletest.net:51233
+      - key: XRPL_RPC_URL
+        value: https://s.altnet.rippletest.net:51234
+      - key: XRPL_NETWORK
+        value: testnet
+      - key: XRPL_EXPLORER_URL
+        value: https://testnet.xrpl.org/transactions
+      - key: COSTON2_RPC_URL
+        value: https://coston2-api.flare.network/ext/C/rpc
+      - key: COSTON2_WSS_URL
+        value: wss://coston2-api.flare.network/ext/C/ws
+      - key: COSTON2_CHAIN_ID
+        value: '114'
+      - key: COSTON2_EXPLORER_URL
+        value: https://coston2-explorer.flare.network
+      - key: FLARE_CONTRACT_REGISTRY
+        value: 0xaD67FE66660Fb8dFE9d6b1b4240d8650e30F6019
+      - key: FDC_VERIFIER_URL
+        value: https://fdc-verifiers-testnet.flare.network
+      - key: FDC_DA_LAYER_URL
+        value: https://ctn2-data-availability.flare.network
+      - key: FDC_SOURCE_ID
+        value: testXRP
+      - key: FDC_RETRY_AFTER_MS
+        value: '10000'
+      - key: FDC_REQUIRED_XRPL_CONFIRMATIONS
+        value: '3'
+      - key: EXECUTOR_POLL_INTERVAL_MS
+        value: '2000'
+      - key: EXECUTOR_LEASE_MS
+        value: '60000'
+      - key: EXECUTOR_BATCH_SIZE
+        value: '10'
+      - key: LOG_LEVEL
+        value: info

@@ -2,11 +2,14 @@ import { db } from '@paymorph/db';
 import { errorEnvelope } from '@paymorph/shared';
 import { NextResponse } from 'next/server';
 import { jsonError, jsonSuccess, readJson, requestIdFor } from '@/lib/server/http';
+import { scheduleExecutorWake } from '@/lib/server/executor-wake';
 import { getPayerRuntimeConfig, processXamanSignInNotification } from '@/lib/server/payer-session';
 import { processXamanPaymentNotification } from '@/lib/server/payments';
 import { processXamanRecoveryNotification } from '@/lib/server/recovery';
 import { XamanBoundaryError } from '@/lib/server/xaman/types';
 import { verifyXamanWebhook } from '@/lib/server/xaman/webhook';
+
+export const maxDuration = 120;
 
 function isUniqueConstraintError(error: unknown): boolean {
   return typeof error === 'object' && error !== null && 'code' in error && error.code === 'P2002';
@@ -67,12 +70,26 @@ export async function POST(request: Request) {
     }
 
     const signIn = await processXamanSignInNotification(verified.payloadUuid);
-    const payment = signIn.known
-      ? signIn
-      : await processXamanPaymentNotification(verified.payloadUuid);
-    const processed = payment.known
-      ? payment
-      : await processXamanRecoveryNotification(verified.payloadUuid);
+    let processed = signIn;
+    if (!signIn.known) {
+      const payment = await processXamanPaymentNotification(verified.payloadUuid);
+      processed = payment;
+      if (payment.known && payment.signed === true && payment.attemptId !== undefined) {
+        scheduleExecutorWake({
+          attemptId: payment.attemptId,
+          reason: 'PAYMENT_JOB_READY',
+        });
+      } else if (!payment.known) {
+        const recovery = await processXamanRecoveryNotification(verified.payloadUuid);
+        processed = recovery;
+        if (recovery.known && recovery.signed === true && recovery.attemptId !== undefined) {
+          scheduleExecutorWake({
+            attemptId: recovery.attemptId,
+            reason: 'RECOVERY_JOB_READY',
+          });
+        }
+      }
+    }
     await db.webhookEvent.update({
       where: {
         provider_deliveryKey: {

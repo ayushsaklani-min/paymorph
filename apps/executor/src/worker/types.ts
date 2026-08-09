@@ -36,6 +36,7 @@ export interface AttemptSnapshot {
     readonly assetManagerAddress: string;
     readonly fxrpAddress: string;
     readonly expiresAt: Date;
+    readonly settlementDeadline: Date;
     readonly route: string;
   };
   readonly fdc?: {

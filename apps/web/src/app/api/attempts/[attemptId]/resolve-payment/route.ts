@@ -1,11 +1,14 @@
 import { db } from '@paymorph/db';
 import { DomainError } from '@paymorph/shared';
 import { z } from 'zod';
+import { scheduleExecutorWake } from '@/lib/server/executor-wake';
 import { assertMutationOrigin, jsonError, jsonSuccess } from '@/lib/server/http';
 import { hashPayerSessionToken, readPayerSessionToken } from '@/lib/server/payer-session';
 import { processXamanPaymentNotification } from '@/lib/server/payments';
 
 const idSchema = z.string().uuid();
+
+export const maxDuration = 120;
 
 /**
  * Reconciles the exact payload associated with this payer-bound attempt after
@@ -30,6 +33,9 @@ export async function POST(request: Request, context: { params: Promise<{ attemp
     }
 
     const result = await processXamanPaymentNotification(attempt.xamanPayloadUuid);
+    if (result.known && result.signed === true) {
+      scheduleExecutorWake({ attemptId: attempt.id, reason: 'PAYMENT_JOB_READY' });
+    }
     return jsonSuccess(request, {
       attemptId: attempt.id,
       signed: result.known && result.signed === true,

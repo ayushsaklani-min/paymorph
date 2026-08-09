@@ -1,0 +1,7 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
+  "buildCommand": "cd ../.. && pnpm db:generate && pnpm install --frozen-lockfile && pnpm --filter @paymorph/db migrate:deploy && pnpm --filter @paymorph/web build",
+  "devCommand": "cd ../.. && pnpm --filter @paymorph/web dev"
+}

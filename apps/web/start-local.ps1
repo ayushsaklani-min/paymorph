@@ -1,3 +1,8 @@
+param(
+  [ValidateSet('web', 'full')]
+  [string]$Mode = 'web'
+)
+
 $ErrorActionPreference = 'Stop'
 
 function Test-LocalPostgres {
@@ -35,7 +40,7 @@ function Start-LocalPostgresKeepalive {
   throw 'WSL PostgreSQL did not accept connections on 127.0.0.1:5432 within 20 seconds.'
 }
 
-$workspaceRoot = Split-Path -Parent $PSScriptRoot
+$workspaceRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $envFile = Join-Path $workspaceRoot '.env.local'
 if (-not (Test-Path -LiteralPath $envFile)) {
   throw 'Missing .env.local. Copy .env.example and configure local testnet credentials first.'
@@ -74,7 +79,11 @@ Push-Location $workspaceRoot
 try {
   # Load the root configuration explicitly. Next.js otherwise looks only for
   # apps/web/.env.local, and pnpm exec can consume the workspace filter.
-  node $dotenvCli -e $envFile -- pnpm --filter @paymorph/web dev
+  if ($Mode -eq 'full') {
+    node $dotenvCli -e $envFile -- pnpm --parallel --filter @paymorph/web --filter @paymorph/executor dev
+  } else {
+    node $dotenvCli -e $envFile -- pnpm --filter @paymorph/web dev
+  }
 } finally {
   Pop-Location
   if ($null -ne $postgresKeepalive -and -not $postgresKeepalive.HasExited) {

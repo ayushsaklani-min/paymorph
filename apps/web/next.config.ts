@@ -1,5 +1,12 @@
 import type { NextConfig } from 'next';
+import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
+
+const { PrismaPlugin } = createRequire(import.meta.url)(
+  '@prisma/nextjs-monorepo-workaround-plugin',
+) as {
+  PrismaPlugin: new () => { apply(compiler: unknown): void };
+};
 
 export const securityHeaders = [
   { key: 'X-Content-Type-Options', value: 'nosniff' },
@@ -33,7 +40,10 @@ const nextConfig: NextConfig = {
     return [{ source: '/:path*', headers: securityHeaders }];
   },
   transpilePackages: ['@paymorph/shared', '@paymorph/ui', '@paymorph/db'],
-  webpack(config) {
+  webpack(config, { isServer }) {
+    if (isServer) {
+      config.plugins.push(new PrismaPlugin());
+    }
     config.resolve.extensionAlias = {
       '.js': ['.ts', '.tsx', '.js'],
       '.jsx': ['.tsx', '.jsx'],

@@ -225,6 +225,39 @@ describe('executor handler orchestration', () => {
     );
   });
 
+  it('stops an expired immutable settlement before reserving a nonce or simulating', async () => {
+    const snapshot = attempt({
+      status: 'FDC_READY',
+      fdc: {
+        status: 'READY',
+        requestBytes: '0x1234',
+        verifierRequest: {},
+        votingRoundId: 9n,
+        proofJson: { merkleProof: [], data: {} },
+      },
+      quote: {
+        ...attempt().quote,
+        settlementDeadline: new Date('2000-01-01T00:00:00.000Z'),
+      },
+    });
+    const store = fakeStore(snapshot);
+    const boundaries = fakeBoundaries();
+    const handler = new ExecutorHandlers(store, boundaries, KEY);
+
+    await expect(
+      handler.handle({ id: 'job-expired', attemptId: snapshot.id, jobType: 'SUBMIT_FLARE' }),
+    ).resolves.toEqual({ status: 'COMPLETE' });
+
+    expect(store.saveAttemptFailure).toHaveBeenCalledWith(
+      snapshot.id,
+      'SETTLEMENT_DEADLINE_EXPIRED',
+      'The immutable settlement deadline passed before Coston2 submission',
+    );
+    expect(store.transition).toHaveBeenCalledWith(snapshot.id, 'FDC_READY', 'EXECUTION_REVERTED');
+    expect(boundaries.flare.getPendingNonce).not.toHaveBeenCalled();
+    expect(boundaries.flare.finalize).not.toHaveBeenCalled();
+  });
+
   it('resumes a checkpointed broadcast hash instead of broadcasting a replacement', async () => {
     const transactionHash = `0x${'66'.repeat(32)}`;
     const snapshot = attempt({
@@ -554,6 +587,7 @@ function attempt(
       assetManagerAddress: '0x3000000000000000000000000000000000000003',
       fxrpAddress: '0x4000000000000000000000000000000000000004',
       expiresAt: new Date('2030-01-01T00:00:00.000Z'),
+      settlementDeadline: new Date('2030-01-01T00:15:00.000Z'),
       route: 'FXRP',
     },
     ...overrides,

@@ -19,5 +19,5 @@ mitigations.
 - Sensitive provider tokens and committed user-operation bytes are encrypted at
   rest.
 
-See `docs/architecture.md` and `docs/runbooks/security-review.md` for the threat
-model and release gates.
+Deploy only with testnet credentials until an independent audit and a dedicated
+mainnet release process exist.

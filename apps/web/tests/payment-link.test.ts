@@ -6,6 +6,10 @@ import {
   parsePaymentLinkListQuery,
   paymentLinkDefaultsSchema,
 } from '../src/lib/server/payment-links/service.js';
+import {
+  canonicalPaymentLinkAmount,
+  paymentLinkErrorMessage,
+} from '../src/features/payment-links/payment-link-form-helpers.js';
 
 const defaults = {
   title: 'Creator bundle',
@@ -42,6 +46,28 @@ describe('payment link validation', () => {
         recipients: [{ ...defaults.recipients[0], bps: 9_999 }],
       }),
     ).toThrow(/10,000 bps/);
+  });
+
+  it('canonicalizes surrounding whitespace before sending a decimal amount', () => {
+    expect(canonicalPaymentLinkAmount(' 1.25 ')).toBe('1.25');
+  });
+
+  it.each(['', '0', '.5', '1,25', '$5'])('blocks an ambiguous form amount: %s', (amount) => {
+    expect(() => canonicalPaymentLinkAmount(amount)).toThrow();
+  });
+
+  it('surfaces the field-level API validation message instead of a generic failure', () => {
+    expect(
+      paymentLinkErrorMessage({
+        message: 'Request validation failed',
+        details: [
+          {
+            path: ['expiresAt'],
+            message: 'Link expiry must be between 15 minutes and 30 days from now',
+          },
+        ],
+      }),
+    ).toBe('Link expiry: Link expiry must be between 15 minutes and 30 days from now');
   });
 });
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { FDC_TYPICAL_MAX_SECONDS, fdcWaitSnapshot } from './fdc-wait';
 
 interface Attempt {
   id: string;
@@ -91,11 +92,18 @@ function presentationFor(status: string | undefined): Presentation {
         tone: 'pending',
       };
     case 'XRPL_VALIDATED':
-    case 'FDC_REQUESTED':
       return {
         title: 'XRP payment verified',
         description: 'XRPL Testnet has validated the exact payment details.',
         nextStep: 'PayMorph is requesting independent Flare Data Connector evidence.',
+        progress: 2,
+        tone: 'pending',
+      };
+    case 'FDC_REQUESTED':
+      return {
+        title: 'Independent verification in progress',
+        description: 'Flare data providers are reaching consensus on the validated XRPL payment.',
+        nextStep: 'No action needed. Do not send a second payment while verification continues.',
         progress: 2,
         tone: 'pending',
       };
@@ -169,6 +177,72 @@ function presentationFor(status: string | undefined): Presentation {
         tone: 'pending',
       };
   }
+}
+
+function FdcWaitPanel({ startedAt }: { startedAt: string }) {
+  const [nowMs, setNowMs] = useState<number | null>(null);
+
+  useEffect(() => {
+    const update = () => setNowMs(Date.now());
+    update();
+    const timer = window.setInterval(update, 1_000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  const snapshot = fdcWaitSnapshot(startedAt, nowMs ?? Date.parse(startedAt));
+  return (
+    <div className="pm-card mt-6 overflow-hidden rounded-3xl border border-[var(--accent)]/30 bg-[var(--accent)]/8 p-5 sm:p-6">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="text-sm font-semibold">Flare consensus round</p>
+          <p className="mt-1 text-xs leading-5 text-[var(--muted)]">
+            Secure FDC verification normally takes around 90–180 seconds on testnet.
+          </p>
+        </div>
+        <time
+          className="rounded-full border border-[var(--line)] bg-black/15 px-3 py-1.5 font-mono text-xs text-[var(--accent)]"
+          dateTime={`PT${snapshot.elapsedSeconds}S`}
+        >
+          {snapshot.elapsedLabel} elapsed
+        </time>
+      </div>
+
+      <div
+        aria-label="Flare Data Connector verification is active"
+        className="mt-5 h-2 overflow-hidden rounded-full bg-black/20"
+        role="progressbar"
+      >
+        <div className="h-full w-2/3 animate-pulse rounded-full bg-gradient-to-r from-[var(--accent)] via-pink-300 to-violet-400" />
+      </div>
+
+      <div className="mt-5 grid gap-2 text-xs sm:grid-cols-3">
+        <p className="rounded-xl border border-emerald-400/25 bg-emerald-400/8 px-3 py-2.5 text-emerald-100">
+          <span className="mr-2" aria-hidden="true">
+            ✓
+          </span>
+          XRPL evidence locked
+        </p>
+        <p className="rounded-xl border border-[var(--accent)]/35 bg-[var(--accent)]/8 px-3 py-2.5">
+          <span className="mr-2 animate-pulse" aria-hidden="true">
+            ●
+          </span>
+          Provider consensus
+        </p>
+        <p className="rounded-xl border border-[var(--line)] bg-black/10 px-3 py-2.5 text-[var(--muted)]">
+          <span className="mr-2" aria-hidden="true">
+            3
+          </span>
+          Proof publication
+        </p>
+      </div>
+
+      <p className="mt-4 text-xs leading-5 text-[var(--muted)]">
+        {snapshot.isExtended
+          ? `This is taking longer than the usual ${FDC_TYPICAL_MAX_SECONDS / 60}-minute window, but PayMorph is still checking safely every 10 seconds.`
+          : 'You can leave this page open. PayMorph will move to Coston2 automatically as soon as the proof is valid.'}
+      </p>
+    </div>
+  );
 }
 
 function JourneyTracker({ progress }: { progress: number }) {
@@ -391,6 +465,10 @@ export function AttemptStatus({
         </div>
 
         <JourneyTracker progress={presentation.progress} />
+
+        {attempt?.status === 'FDC_REQUESTED' ? (
+          <FdcWaitPanel startedAt={attempt.updatedAt} />
+        ) : null}
 
         {attempt?.status === 'SETTLED' ? (
           <a

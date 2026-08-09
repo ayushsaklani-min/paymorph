@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { canonicalPaymentLinkAmount, paymentLinkErrorMessage } from './payment-link-form-helpers';
 
 export function PaymentLinkForm({ merchantAddress }: { merchantAddress: string }) {
   const router = useRouter();
@@ -14,6 +15,7 @@ export function PaymentLinkForm({ merchantAddress }: { merchantAddress: string }
       setSubmitting(true);
       setError(undefined);
       const linkExpiry = formData.get('linkExpiresAt');
+      const amount = canonicalPaymentLinkAmount(formData.get('amount'));
       const body = JSON.stringify({
         name: formData.get('name'),
         mode: formData.get('mode'),
@@ -24,7 +26,7 @@ export function PaymentLinkForm({ merchantAddress }: { merchantAddress: string }
           title: formData.get('title'),
           description: formData.get('description') || undefined,
           denomination: formData.get('denomination'),
-          amount: formData.get('amount'),
+          amount,
           settlementAsset: formData.get('settlementAsset'),
           expiresInHours: Number(formData.get('expiresInHours')),
           recipients: [{ label: 'Merchant', address: merchantAddress, bps: 10_000 }],
@@ -41,9 +43,10 @@ export function PaymentLinkForm({ merchantAddress }: { merchantAddress: string }
         },
         body,
       });
-      const envelope = (await response.json()) as { error?: { message: string } };
-      if (!response.ok)
-        throw new Error(envelope.error?.message ?? 'Payment link could not be created.');
+      const envelope = (await response.json()) as {
+        error?: { message?: unknown; details?: unknown };
+      };
+      if (!response.ok) throw new Error(paymentLinkErrorMessage(envelope.error));
       router.refresh();
       setSubmitting(false);
     } catch (caught) {
@@ -78,8 +81,10 @@ export function PaymentLinkForm({ merchantAddress }: { merchantAddress: string }
             className={inputClass}
             inputMode="decimal"
             name="amount"
+            pattern="^(0|[1-9]\d*)(\.\d+)?$"
             placeholder="1.00"
             required
+            title="Enter a positive amount such as 1 or 1.25"
           />
         </Field>
       </div>
@@ -122,7 +127,7 @@ export function PaymentLinkForm({ merchantAddress }: { merchantAddress: string }
       </Field>
       <p className="text-xs leading-5 text-[var(--muted)]">
         Each checkout creates an immutable canonical invoice. The default recipient is your
-        connected Coston2 wallet.
+        connected Coston2 wallet. Amounts use a dot as the decimal separator.
       </p>
       {error ? (
         <p className="text-sm text-red-200" role="alert">

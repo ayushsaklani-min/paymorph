@@ -3,6 +3,7 @@ import { db } from '@paymorph/db';
 import { formatBaseUnits } from '@paymorph/shared';
 import { requireMerchant } from '@/lib/server/auth/session';
 import { InvoiceActions } from '@/features/invoices/invoice-actions';
+import { formatSplitPercentage } from '@/features/invoices/split-percentage';
 
 export default async function InvoiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const merchant = await requireMerchant();
@@ -56,7 +57,7 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
                 <p className="font-medium">{recipient.label}</p>
                 <p className="mt-1 font-mono text-xs text-[var(--muted)]">{recipient.address}</p>
               </div>
-              <p>{(recipient.bps / 100).toFixed(2)}%</p>
+              <p>{formatSplitPercentage(recipient.bps)}</p>
             </li>
           ))}
         </ul>

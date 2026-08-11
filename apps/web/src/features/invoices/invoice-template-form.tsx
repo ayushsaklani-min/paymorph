@@ -1,22 +1,28 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { formatSplitPercentage, percentageToBps } from './split-percentage';
 
 interface RecipientDraft {
   label: string;
   address: string;
-  bps: string;
+  percentage: string;
 }
 
 export function InvoiceTemplateForm({ merchantAddress }: { merchantAddress: string }) {
   const router = useRouter();
   const [recipients, setRecipients] = useState<RecipientDraft[]>([
-    { label: 'Merchant', address: merchantAddress, bps: '10000' },
+    { label: 'Merchant', address: merchantAddress, percentage: '100' },
   ]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string>();
   const pendingRequest = useRef<{ body: string; idempotencyKey: string } | null>(null);
+  const totalBps = useMemo(
+    () =>
+      recipients.reduce((sum, recipient) => sum + (percentageToBps(recipient.percentage) ?? 0), 0),
+    [recipients],
+  );
 
   function updateRecipient(index: number, patch: Partial<RecipientDraft>) {
     setRecipients((current) =>
@@ -30,6 +36,16 @@ export function InvoiceTemplateForm({ merchantAddress }: { merchantAddress: stri
     try {
       setSubmitting(true);
       setError(undefined);
+      const serializedRecipients = recipients.map((recipient) => {
+        const bps = percentageToBps(recipient.percentage);
+        if (bps === null) {
+          throw new Error('Each recipient share must be between 0.01% and 100%.');
+        }
+        return { label: recipient.label, address: recipient.address, bps };
+      });
+      if (totalBps !== 10_000) {
+        throw new Error('Recipient shares must add up to exactly 100%.');
+      }
       const body = JSON.stringify({
         name: formData.get('name'),
         defaults: {
@@ -39,7 +55,7 @@ export function InvoiceTemplateForm({ merchantAddress }: { merchantAddress: stri
           amount: formData.get('amount') || undefined,
           settlementAsset: formData.get('settlementAsset'),
           expiresInHours: Number(formData.get('expiresInHours')),
-          recipients: recipients.map((recipient) => ({ ...recipient, bps: Number(recipient.bps) })),
+          recipients: serializedRecipients,
         },
       });
       if (pendingRequest.current?.body !== body) {
@@ -121,7 +137,7 @@ export function InvoiceTemplateForm({ merchantAddress }: { merchantAddress: stri
       <div className="rounded-xl border border-[var(--line)] bg-white/[0.025] p-4">
         <p className="text-sm font-medium">Default recipient split</p>
         <p className="mt-1 text-sm text-[var(--muted)]">
-          These addresses are copied into each new invoice. The split must total 10,000 bps.
+          These addresses are copied into each new invoice. Recipient shares must add up to 100%.
         </p>
         <div className="mt-4 space-y-3">
           {recipients.map((recipient, index) => (
@@ -143,14 +159,16 @@ export function InvoiceTemplateForm({ merchantAddress }: { merchantAddress: stri
                 value={recipient.address}
               />
               <input
-                aria-label={`Recipient ${index + 1} basis points`}
+                aria-label={`Recipient ${index + 1} share percentage`}
                 className={inputClass}
-                max="10000"
-                min="1"
-                onChange={(event) => updateRecipient(index, { bps: event.target.value })}
+                inputMode="decimal"
+                max="100"
+                min="0.01"
+                onChange={(event) => updateRecipient(index, { percentage: event.target.value })}
                 required
+                step="0.01"
                 type="number"
-                value={recipient.bps}
+                value={recipient.percentage}
               />
               <button
                 className="min-h-11 self-end rounded-full border border-[var(--line)] px-3 text-sm disabled:opacity-40"
@@ -169,12 +187,17 @@ export function InvoiceTemplateForm({ merchantAddress }: { merchantAddress: stri
           className="mt-4 min-h-10 rounded-full border border-[var(--line)] px-4 text-sm disabled:opacity-40"
           disabled={recipients.length >= 10}
           onClick={() =>
-            setRecipients((current) => [...current, { label: '', address: '', bps: '' }])
+            setRecipients((current) => [...current, { label: '', address: '', percentage: '' }])
           }
           type="button"
         >
           Add recipient
         </button>
+        <p
+          className={`mt-3 text-sm ${totalBps === 10_000 ? 'text-[var(--accent)]' : 'text-amber-300'}`}
+        >
+          Split total: {formatSplitPercentage(totalBps)} of 100%
+        </p>
       </div>
       {error ? (
         <p className="text-sm text-red-200" role="alert">
@@ -183,7 +206,7 @@ export function InvoiceTemplateForm({ merchantAddress }: { merchantAddress: stri
       ) : null}
       <button
         className="min-h-11 rounded-full bg-[var(--accent)] px-5 py-2.5 font-semibold text-[var(--accent-ink)] disabled:opacity-50"
-        disabled={submitting}
+        disabled={submitting || totalBps !== 10_000}
         type="submit"
       >
         {submitting ? 'Saving template…' : 'Save template'}

@@ -1,4 +1,5 @@
 import { AttemptStatus, db } from '@paymorph/db';
+import { formatSplitPercentage } from '@/features/invoices/split-percentage';
 import { requireMerchant } from '@/lib/server/auth/session';
 
 export default async function MarketplacePage() {
@@ -47,7 +48,7 @@ export default async function MarketplacePage() {
                 {invoice.recipients.map((recipient) => (
                   <li className="flex justify-between" key={recipient.id}>
                     <span>{recipient.label}</span>
-                    <span>{(recipient.bps / 100).toFixed(2)}%</span>
+                    <span>{formatSplitPercentage(recipient.bps)}</span>
                   </li>
                 ))}
               </ul>

@@ -2,11 +2,12 @@
 
 import { useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { bpsToPercentageInput, formatSplitPercentage, percentageToBps } from './split-percentage';
 
 interface RecipientDraft {
   label: string;
   address: string;
-  bps: string;
+  percentage: string;
 }
 
 export interface InvoiceFormTemplate {
@@ -23,7 +24,7 @@ export interface InvoiceFormTemplate {
   };
 }
 
-const initialRecipient: RecipientDraft = { label: 'Merchant', address: '', bps: '10000' };
+const initialRecipient: RecipientDraft = { label: 'Merchant', address: '', percentage: '100' };
 
 export function InvoiceForm({
   merchantAddress,
@@ -36,8 +37,9 @@ export function InvoiceForm({
   const [recipients, setRecipients] = useState<RecipientDraft[]>(() =>
     template
       ? template.defaults.recipients.map((recipient) => ({
-          ...recipient,
-          bps: String(recipient.bps),
+          label: recipient.label,
+          address: recipient.address,
+          percentage: bpsToPercentageInput(recipient.bps),
         }))
       : [{ ...initialRecipient, address: merchantAddress }],
   );
@@ -45,7 +47,8 @@ export function InvoiceForm({
   const [error, setError] = useState<string>();
   const pendingRequest = useRef<{ body: string; idempotencyKey: string } | null>(null);
   const totalBps = useMemo(
-    () => recipients.reduce((sum, recipient) => sum + Number(recipient.bps || 0), 0),
+    () =>
+      recipients.reduce((sum, recipient) => sum + (percentageToBps(recipient.percentage) ?? 0), 0),
     [recipients],
   );
 
@@ -65,6 +68,13 @@ export function InvoiceForm({
       if (typeof expiresAtValue !== 'string') {
         throw new Error('Invoice expiry is required.');
       }
+      const serializedRecipients = recipients.map((recipient) => {
+        const bps = percentageToBps(recipient.percentage);
+        if (bps === null) {
+          throw new Error('Each recipient share must be between 0.01% and 100%.');
+        }
+        return { label: recipient.label, address: recipient.address, bps };
+      });
       const body = JSON.stringify({
         title: formData.get('title'),
         description: formData.get('description') || undefined,
@@ -73,10 +83,7 @@ export function InvoiceForm({
         amount: formData.get('amount'),
         settlementAsset: formData.get('settlementAsset'),
         expiresAt: new Date(expiresAtValue).toISOString(),
-        recipients: recipients.map((recipient) => ({
-          ...recipient,
-          bps: Number(recipient.bps),
-        })),
+        recipients: serializedRecipients,
       });
       if (pendingRequest.current?.body !== body) {
         pendingRequest.current = { body, idempotencyKey: crypto.randomUUID() };
@@ -207,16 +214,17 @@ export function InvoiceForm({
                   value={recipient.address}
                 />
               </Field>
-              <Field label="Basis points">
+              <Field label="Share (%)">
                 <input
                   className={inputClass}
-                  inputMode="numeric"
-                  max="10000"
-                  min="1"
-                  onChange={(event) => updateRecipient(index, { bps: event.target.value })}
+                  inputMode="decimal"
+                  max="100"
+                  min="0.01"
+                  onChange={(event) => updateRecipient(index, { percentage: event.target.value })}
                   required
+                  step="0.01"
                   type="number"
-                  value={recipient.bps}
+                  value={recipient.percentage}
                 />
               </Field>
               <button
@@ -238,14 +246,14 @@ export function InvoiceForm({
             className="min-h-11 rounded-full border border-[var(--line)] px-5 disabled:opacity-40"
             disabled={recipients.length >= 10}
             onClick={() =>
-              setRecipients((current) => [...current, { label: '', address: '', bps: '' }])
+              setRecipients((current) => [...current, { label: '', address: '', percentage: '' }])
             }
             type="button"
           >
             Add recipient
           </button>
           <p className={totalBps === 10_000 ? 'text-[var(--accent)]' : 'text-amber-300'}>
-            Split total: {totalBps.toLocaleString()} / 10,000 bps
+            Split total: {formatSplitPercentage(totalBps)} of 100%
           </p>
         </div>
       </fieldset>

@@ -3,10 +3,7 @@ import { formatBaseUnits } from '@paymorph/shared';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { CheckoutSignIn } from '@/features/checkout/checkout-signin';
-
-function formatBps(bps: number): string {
-  return `${Math.floor(bps / 100)}.${String(bps % 100).padStart(2, '0')}%`;
-}
+import { formatSplitPercentage } from '@/features/invoices/split-percentage';
 
 function maskAddress(address: string): string {
   return `${address.slice(0, 6)}…${address.slice(-4)}`;
@@ -111,7 +108,9 @@ export default async function CheckoutPage({ params }: { params: Promise<{ slug:
                     {maskAddress(recipient.address)}
                   </p>
                 </div>
-                <span className="shrink-0 text-[var(--muted)]">{formatBps(recipient.bps)}</span>
+                <span className="shrink-0 text-[var(--muted)]">
+                  {formatSplitPercentage(recipient.bps)}
+                </span>
               </li>
             ))}
           </ul>

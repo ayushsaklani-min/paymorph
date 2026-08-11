@@ -1,5 +1,7 @@
 import { notFound } from 'next/navigation';
+import { formatBaseUnits } from '@paymorph/shared';
 import { TestnetNotice } from '@paymorph/ui';
+import { formatSplitPercentage } from '@/features/invoices/split-percentage';
 import { buildPublicReceipt } from '@/lib/server/receipts/service';
 
 export const dynamic = 'force-dynamic';
@@ -8,6 +10,9 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
   const { id } = await params;
   const receipt = await buildPublicReceipt(id).catch(() => null);
   if (!receipt) notFound();
+  const settlementAsset = receipt.settlement.asset;
+  const invoiceAmount = formatBaseUnits(BigInt(receipt.settlement.invoiceAmount), 6);
+  const serviceFee = formatBaseUnits(BigInt(receipt.settlement.serviceFee), 6);
 
   return (
     <main
@@ -51,8 +56,11 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
             </a>
           </Evidence>
           <Evidence label="Coston2 settlement">
-            <p>
-              {receipt.settlement.invoiceAmount} base units + {receipt.settlement.serviceFee} fee
+            <p className="font-semibold">
+              {invoiceAmount} {settlementAsset}
+            </p>
+            <p className="mt-1 text-sm text-[var(--muted)]">
+              Service fee: {serviceFee} {settlementAsset}
             </p>
             <a
               className="mt-2 block break-all text-sm text-[var(--accent)] underline"
@@ -75,7 +83,14 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
                   <p className="font-medium">{recipient.label}</p>
                   <p className="mt-1 font-mono text-xs text-[var(--muted)]">{recipient.address}</p>
                 </div>
-                <p>{recipient.amount} base units</p>
+                <div className="text-right">
+                  <p>
+                    {formatBaseUnits(BigInt(recipient.amount), 6)} {settlementAsset}
+                  </p>
+                  <p className="mt-1 text-xs text-[var(--muted)]">
+                    {formatSplitPercentage(recipient.bps)} share
+                  </p>
+                </div>
               </li>
             ))}
           </ul>

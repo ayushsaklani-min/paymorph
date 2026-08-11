@@ -14,7 +14,7 @@ describe('landing executor wake endpoint', () => {
     process.env.APP_URL = 'https://paymorph.example';
     delete process.env.EXECUTOR_WAKE_URL;
 
-    const response = POST(
+    const response = await POST(
       new Request('https://paymorph.example/api/executor/wake', {
         method: 'POST',
         headers: {
@@ -31,7 +31,7 @@ describe('landing executor wake endpoint', () => {
   it('rejects a cross-site wake request', async () => {
     process.env.APP_URL = 'https://paymorph.example';
 
-    const response = POST(
+    const response = await POST(
       new Request('https://paymorph.example/api/executor/wake', {
         method: 'POST',
         headers: {
@@ -45,6 +45,27 @@ describe('landing executor wake endpoint', () => {
     await expect(response.json()).resolves.toMatchObject({
       data: null,
       error: { code: 'FORBIDDEN' },
+    });
+  });
+
+  it('reports a disabled probe without claiming executor readiness', async () => {
+    process.env.APP_URL = 'https://paymorph.example';
+    delete process.env.EXECUTOR_WAKE_URL;
+
+    const response = await POST(
+      new Request('https://paymorph.example/api/executor/wake?probe=1', {
+        method: 'POST',
+        headers: {
+          origin: 'https://paymorph.example',
+          'sec-fetch-site': 'same-origin',
+        },
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      data: { state: 'DISABLED' },
+      error: null,
     });
   });
 });

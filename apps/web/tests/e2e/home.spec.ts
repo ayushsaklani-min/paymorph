@@ -22,6 +22,27 @@ test('shows the evidence-first testnet product promise', async ({ page }) => {
   await expect(page.getByRole('link', { name: /WooCommerce/i })).toBeAttached();
 });
 
+test('warms the executor without blocking the payment story', async ({ page }) => {
+  await page.route('**/api/executor/wake**', async (route) => {
+    const probe = new URL(route.request().url()).searchParams.get('probe') === '1';
+    await route.fulfill({
+      contentType: 'application/json',
+      status: probe ? 200 : 202,
+      body: JSON.stringify({
+        data: probe ? { state: 'READY' } : { accepted: true },
+        error: null,
+        requestId: 'browser-audit',
+      }),
+    });
+  });
+
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: /Pay with XRP.*Settle on Flare/i })).toBeVisible();
+  await expect(page.locator('[data-engine-state="READY"]')).toContainText(
+    'Testnet executor is awake',
+  );
+});
+
 test('reveals the payment story as each section enters the viewport', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByRole('status', { name: 'Loading PayMorph' })).toBeHidden({

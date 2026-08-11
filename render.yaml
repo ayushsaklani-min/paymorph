@@ -4,7 +4,7 @@ services:
     runtime: node
     region: singapore
     plan: free
-    buildCommand: pnpm install --frozen-lockfile && pnpm db:generate && pnpm --filter @paymorph/executor... build
+    buildCommand: pnpm install --frozen-lockfile && pnpm db:generate && pnpm --filter @paymorph/executor build
     startCommand: pnpm --filter @paymorph/executor start:web
     healthCheckPath: /health
     autoDeployTrigger: commit

@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { HeroStoryController } from '@/components/marketing/hero-story-controller';
 import { ScrollRevealController } from '@/components/marketing/scroll-reveal-controller';
 import { XamanPhoneModel } from '@/components/marketing/xaman-phone-model';
+import { ExecutorWarmupStatus } from '@/components/ui/executor-warmup-status';
 import { LandingSplash } from '@/components/ui/landing-splash';
 
 const journeySteps = [
@@ -79,7 +80,7 @@ const productSurfaces = [
   {
     number: '06',
     title: 'SDK',
-    copy: 'Use the typed Node client for the same canonical payment API.',
+    copy: 'Use the server-side Node client for the same canonical payment API.',
     href: '/dashboard/developers',
   },
 ] as const;
@@ -88,6 +89,7 @@ export default function HomePage() {
   return (
     <main id="main-content" tabIndex={-1} className="pm-home-shell">
       <LandingSplash />
+      <ExecutorWarmupStatus />
       <HeroStoryController />
       <ScrollRevealController />
 

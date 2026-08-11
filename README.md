@@ -39,7 +39,7 @@ emits `PaymentSettled` on Coston2.
 - Payer checkout with Xaman SignIn, exact quote, QR/deeplink fallback, and live
   settlement status.
 - Public receipt explorer and settlement evidence views.
-- Scoped `pm_test_` developer API, hosted checkout button, typed Node SDK, and
+- Scoped `pm_test_` developer API, hosted checkout button, server-side Node client, and
   HMAC-signed merchant webhooks.
 - Testnet WooCommerce gateway that marks an order paid only after a verified
   `payment.settled` webhook.
@@ -181,7 +181,7 @@ apps/
 packages/
   contracts/           Solidity router and Foundry tests
   db/                  Prisma schema and database access
-  sdk/                 typed Node client
+  sdk/                 server-side Node client
   shared/              payment state, amount math, provider boundaries
   ui/                  shared React UI
 render.yaml            Render database and executor web-service blueprint

@@ -2554,6 +2554,91 @@ html.pm-splash-active {
   }
 }
 
+/* Non-blocking settlement-engine warm-up --------------------------------- */
+
+.pm-engine-status {
+  position: fixed;
+  right: clamp(0.8rem, 2vw, 1.5rem);
+  bottom: clamp(0.8rem, 2vw, 1.5rem);
+  z-index: 90;
+  display: grid;
+  width: min(calc(100vw - 1.6rem), 23rem);
+  grid-template-columns: 2.4rem 1fr;
+  gap: 0.8rem;
+  align-items: center;
+  padding: 0.8rem 1rem 0.8rem 0.8rem;
+  border: 1px solid rgb(255 255 255 / 15%);
+  border-radius: 1rem;
+  background: rgb(31 13 53 / 92%);
+  box-shadow: 0 1.2rem 3rem rgb(42 13 70 / 28%);
+  color: #fff;
+  backdrop-filter: blur(18px);
+  animation: pm-engine-status-arrive 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.pm-engine-status-mark {
+  display: grid;
+  width: 2.4rem;
+  height: 2.4rem;
+  place-items: center;
+  border: 1px solid rgb(255 255 255 / 20%);
+  border-radius: 50%;
+  background: conic-gradient(from 90deg, #ff7085, #d83db0, #7442f4, #ff7085);
+  color: white;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.pm-engine-status:not([data-engine-state='READY']) .pm-engine-status-mark {
+  animation: pm-engine-status-spin 1.35s linear infinite;
+}
+
+.pm-engine-status[data-engine-state='READY'] .pm-engine-status-mark {
+  background: linear-gradient(135deg, #29ca91, #63e2b6);
+}
+
+.pm-engine-status strong,
+.pm-engine-status small {
+  display: block;
+}
+
+.pm-engine-status strong {
+  font-family: var(--font-display), sans-serif;
+  font-size: 0.78rem;
+  letter-spacing: -0.01em;
+}
+
+.pm-engine-status small {
+  margin-top: 0.18rem;
+  color: rgb(255 255 255 / 67%);
+  font-size: 0.68rem;
+  line-height: 1.35;
+}
+
+@keyframes pm-engine-status-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes pm-engine-status-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pm-engine-status,
+  .pm-engine-status-mark {
+    animation: none !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

@@ -15,15 +15,6 @@ export function LandingSplash() {
     const root = document.documentElement;
     root.classList.add('pm-splash-active');
 
-    void fetch('/api/executor/wake', {
-      method: 'POST',
-      cache: 'no-store',
-      credentials: 'same-origin',
-      headers: { 'content-type': 'application/json' },
-      body: '{}',
-      keepalive: true,
-    }).catch(() => undefined);
-
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const displayMs = reducedMotion ? REDUCED_MOTION_DISPLAY_MS : DISPLAY_MS;
     const exitMs = reducedMotion ? 0 : EXIT_MS;

@@ -814,14 +814,11 @@ body:has(.pm-home-shell) .pm-earth-scene {
 }
 
 .pm-home-shell {
-  --home-ink: #24162d;
-  --home-muted: #746378;
-  --home-violet: #6634e8;
-  --home-pink: #d6228f;
-  --home-coral: #ee777d;
+  --home-ink: #3a211b;
+  --home-muted: #7b655e;
   position: relative;
   overflow-x: clip;
-  background: #fffafa;
+  background: #fffaf6;
   color: var(--home-ink);
 }
 
@@ -899,11 +896,11 @@ body:has(.pm-home-shell) .pm-earth-scene {
   align-items: center;
   margin-inline: auto;
   padding: 0 1.1rem;
-  border: 1px solid rgb(64 29 79 / 12%);
+  border: 1px solid rgb(103 65 52 / 12%);
   border-radius: 1.1rem;
   background: rgb(255 255 255 / 76%);
   box-shadow:
-    0 18px 46px -34px rgb(69 28 62 / 42%),
+    0 18px 46px -34px rgb(106 67 54 / 42%),
     inset 0 1px rgb(255 255 255 / 96%);
   backdrop-filter: blur(20px) saturate(1.2);
 }
@@ -930,16 +927,16 @@ body:has(.pm-home-shell) .pm-earth-scene {
   padding: 9rem 0 5rem;
   background:
     radial-gradient(circle at 80% 21%, rgb(255 255 255 / 78%), transparent 24rem),
-    radial-gradient(circle at 12% 92%, rgb(238 124 134 / 24%), transparent 29rem),
-    linear-gradient(125deg, #fff8f8 0%, #f9d8df 46%, #ee858b 100%);
+    radial-gradient(circle at 12% 92%, rgb(241 168 145 / 24%), transparent 29rem),
+    linear-gradient(125deg, #fffaf6 0%, #fae4dc 46%, #f0a089 100%);
 }
 
 .pm-home-hero::before {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgb(86 36 91 / 4%) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(86 36 91 / 4%) 1px, transparent 1px);
+    linear-gradient(rgb(109 75 63 / 4%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(109 75 63 / 4%) 1px, transparent 1px);
   background-size: 72px 72px;
   content: '';
   mask-image: linear-gradient(black, transparent 88%);
@@ -989,7 +986,7 @@ body:has(.pm-home-shell) .pm-earth-scene {
   align-items: center;
   gap: 0.75rem;
   margin: 0;
-  color: #5826d3;
+  color: #d66a53;
   font-family: var(--font-mono), 'SFMono-Regular', Consolas, monospace;
   font-size: 0.7rem;
   font-weight: 750;
@@ -1005,7 +1002,7 @@ body:has(.pm-home-shell) .pm-earth-scene {
 }
 
 .pm-home-kicker-light {
-  color: #f4b6d9;
+  color: #c65a45;
 }
 
 .pm-home-hero h1 {
@@ -1040,7 +1037,7 @@ html.pm-hero-story-ready .pm-home-hero h1 {
 }
 
 .pm-home-hero-line-accent {
-  background: linear-gradient(100deg, #5524d5 10%, #7b35ef 48%, #d51c89 88%);
+  background: linear-gradient(100deg, #c85a44 10%, #e47b63 48%, #ef9a80 88%);
   background-clip: text;
   color: transparent;
   font-size: 0.78em;
@@ -1051,7 +1048,7 @@ html.pm-hero-story-ready .pm-home-hero h1 {
 .pm-home-lede {
   max-width: 42rem;
   margin: 2rem 0 0;
-  color: #65556b;
+  color: #76615a;
   font-size: clamp(1.05rem, 1.6vw, 1.28rem);
   line-height: 1.65;
 }
@@ -1086,18 +1083,18 @@ html.pm-hero-story-ready .pm-home-hero h1 {
 }
 
 .pm-home-button-primary {
-  border-color: rgb(54 21 99 / 22%);
-  background: linear-gradient(108deg, #5423db, #7337f3 50%, #d51c89);
+  border-color: rgb(110 61 46 / 22%);
+  background: linear-gradient(108deg, #c85a44, #e47b63 50%, #ef9a80);
   box-shadow:
-    0 18px 32px -17px rgb(92 39 202 / 60%),
+    0 18px 32px -17px rgb(205 91 67 / 60%),
     inset 0 1px rgb(255 255 255 / 40%);
   color: #fff;
 }
 
 .pm-home-button-quiet {
-  border-color: rgb(61 29 71 / 15%);
+  border-color: rgb(103 66 54 / 15%);
   background: rgb(255 255 255 / 68%);
-  color: #4e2c77;
+  color: #6a4338;
   box-shadow: inset 0 1px #fff;
 }
 
@@ -1105,7 +1102,7 @@ html.pm-hero-story-ready .pm-home-hero h1 {
   margin-top: 1.8rem;
   border-color: rgb(255 255 255 / 18%);
   background: #fff;
-  color: #4d209f;
+  color: #9d4938;
   box-shadow: 0 18px 34px -22px rgb(0 0 0 / 60%);
 }
 
@@ -1114,7 +1111,7 @@ html.pm-hero-story-ready .pm-home-hero h1 {
   margin-top: 1.5rem !important;
   border-radius: 0.8rem !important;
   background: rgb(255 255 255 / 44%) !important;
-  color: #695c6e !important;
+  color: #76615a !important;
   font-size: 0.77rem !important;
   line-height: 1.5 !important;
 }
@@ -1126,11 +1123,11 @@ html.pm-hero-story-ready .pm-home-hero h1 {
   gap: 0.85rem;
   justify-self: end;
   padding: 1.2rem;
-  border: 1px solid rgb(74 31 77 / 15%);
+  border: 1px solid rgb(111 72 59 / 15%);
   border-radius: 1.4rem;
   background: rgb(255 255 255 / 62%);
   box-shadow:
-    0 42px 80px -48px rgb(72 28 49 / 58%),
+    0 42px 80px -48px rgb(105 68 56 / 48%),
     inset 0 1px #fff;
   backdrop-filter: blur(18px);
 }
@@ -1142,14 +1139,14 @@ html.pm-hero-story-ready .pm-home-hero h1 {
   left: 3.05rem;
   width: 2px;
   overflow: hidden;
-  background: rgb(101 48 172 / 12%);
+  background: rgb(232 127 102 / 12%);
 }
 
 .pm-home-path-line span {
   display: block;
   width: 100%;
   height: 45%;
-  background: linear-gradient(transparent, #7437ed, #d6228f, transparent);
+  background: linear-gradient(transparent, #e47b63, #ed9278, transparent);
   animation: pm-home-path-travel 3.2s ease-in-out infinite;
 }
 
@@ -1160,10 +1157,10 @@ html.pm-hero-story-ready .pm-home-hero h1 {
   align-items: center;
   gap: 0.85rem;
   padding: 0.85rem 0.95rem;
-  border: 1px solid rgb(72 34 77 / 11%);
+  border: 1px solid rgb(111 75 63 / 11%);
   border-radius: 0.9rem;
   background: rgb(255 255 255 / 73%);
-  box-shadow: 0 12px 30px -26px rgb(58 26 70 / 48%);
+  box-shadow: 0 12px 30px -26px rgb(105 68 56 / 38%);
 }
 
 .pm-home-path-index {
@@ -1171,10 +1168,10 @@ html.pm-hero-story-ready .pm-home-hero h1 {
   width: 2.65rem;
   height: 2.65rem;
   place-items: center;
-  border: 1px solid rgb(105 51 231 / 19%);
+  border: 1px solid rgb(232 127 102 / 19%);
   border-radius: 0.75rem;
-  background: #f2ebff;
-  color: #6330df;
+  background: #fff3ed;
+  color: #dd7058;
   font-family: var(--font-mono), 'SFMono-Regular', Consolas, monospace;
   font-size: 0.72rem;
   font-weight: 800;
@@ -1200,12 +1197,12 @@ html.pm-hero-story-ready .pm-home-hero h1 {
   width: 0.55rem;
   height: 0.55rem;
   border-radius: 50%;
-  background: #bca9c5;
+  background: #d2b8ae;
 }
 
 .pm-home-path-node:last-of-type i {
-  background: #d6228f;
-  box-shadow: 0 0 0 0.35rem rgb(214 34 143 / 11%);
+  background: #ed9278;
+  box-shadow: 0 0 0 0.35rem rgb(239 146 120 / 11%);
 }
 
 .pm-home-hero-stamp {
@@ -1216,17 +1213,18 @@ html.pm-hero-story-ready .pm-home-hero h1 {
   margin-top: 0.2rem;
   padding: 0.95rem 1rem;
   border-radius: 0.9rem;
-  background: #25103d;
-  color: #fff;
+  border: 1px solid rgb(232 127 102 / 24%);
+  background: rgb(255 255 255 / 78%);
+  color: #3a211b;
 }
 
 .pm-home-hero-stamp span {
-  color: #cfbdd7;
+  color: #7b655e;
   font-size: 0.7rem;
 }
 
 .pm-home-hero-stamp strong {
-  color: #f3a8d4;
+  color: #c65a45;
   font-family: var(--font-mono), 'SFMono-Regular', Consolas, monospace;
   font-size: 0.75rem;
 }
@@ -1236,9 +1234,10 @@ html.pm-hero-story-ready .pm-home-hero h1 {
   padding: clamp(7rem, 13vw, 11rem) 0;
   overflow: hidden;
   background:
-    radial-gradient(circle at 86% 20%, rgb(114 51 234 / 23%), transparent 28rem),
-    radial-gradient(circle at 10% 100%, rgb(214 34 143 / 13%), transparent 32rem), #1d1028;
-  color: #fff;
+    radial-gradient(circle at 86% 20%, rgb(232 127 102 / 20%), transparent 28rem),
+    radial-gradient(circle at 10% 100%, rgb(239 146 120 / 12%), transparent 32rem),
+    linear-gradient(145deg, #fbe8df, #fffaf6 68%, #ffffff);
+  color: #3a211b;
 }
 
 .pm-home-problem::before {
@@ -1263,7 +1262,7 @@ html.pm-hero-story-ready .pm-home-hero h1 {
 }
 
 .pm-home-problem h2 em {
-  color: #f1a1cf;
+  color: #f3b59f;
   font-style: normal;
 }
 
@@ -1272,7 +1271,7 @@ html.pm-hero-story-ready .pm-home-hero h1 {
   max-width: 64rem;
   gap: 2.5rem;
   margin-top: 3.5rem;
-  color: #d8c9df;
+  color: #7b655e;
   font-size: 1.02rem;
   grid-template-columns: 1fr 1fr;
   line-height: 1.75;
@@ -1283,7 +1282,7 @@ html.pm-hero-story-ready .pm-home-hero h1 {
   align-items: center;
   gap: 1rem;
   margin-top: 4rem;
-  color: #d6c5de;
+  color: #5e4941;
   font-family: var(--font-mono), 'SFMono-Regular', Consolas, monospace;
   font-size: 0.75rem;
   grid-template-columns: auto 1fr auto 1fr auto;
@@ -1293,7 +1292,7 @@ html.pm-hero-story-ready .pm-home-hero h1 {
 
 .pm-home-sent-vs-paid i {
   height: 1px;
-  background: linear-gradient(90deg, rgb(255 255 255 / 12%), #854be9, rgb(255 255 255 / 12%));
+  background: linear-gradient(90deg, transparent, #e98b72, transparent);
 }
 
 .pm-home-sent-vs-paid strong {
@@ -1301,18 +1300,18 @@ html.pm-hero-story-ready .pm-home-hero h1 {
   width: 3rem;
   height: 3rem;
   place-items: center;
-  border: 1px solid rgb(255 255 255 / 13%);
+  border: 1px solid rgb(232 127 102 / 24%);
   border-radius: 50%;
-  background: rgb(255 255 255 / 5%);
-  color: #f3a5d2;
+  background: #ffffff;
+  color: #c65a45;
   font-size: 1.25rem;
 }
 
 .pm-home-journey {
   padding: clamp(6rem, 10vw, 9rem) 0;
   background:
-    radial-gradient(circle at 12% 36%, rgb(237 122 132 / 13%), transparent 27rem),
-    linear-gradient(#fffafa, #fff);
+    radial-gradient(circle at 12% 36%, rgb(241 168 145 / 13%), transparent 27rem),
+    linear-gradient(#fffaf6, #fff);
 }
 
 .pm-home-section-heading {
@@ -1372,13 +1371,13 @@ html.pm-hero-story-ready .pm-home-hero h1 {
   height: min(73vh, 43rem);
   min-height: 34rem;
   overflow: hidden;
-  border: 1px solid rgb(73 35 78 / 12%);
+  border: 1px solid rgb(104 72 61 / 12%);
   border-radius: 2rem;
   background:
     radial-gradient(circle at 52% 42%, rgb(255 255 255 / 90%), transparent 18rem),
-    linear-gradient(145deg, #f9e9f5, #f1c4d4 58%, #e78089);
+    linear-gradient(145deg, #fae7df, #f4c9b9 58%, #e98b72);
   box-shadow:
-    0 42px 72px -52px rgb(74 29 53 / 52%),
+    0 42px 72px -52px rgb(91 52 41 / 42%),
     inset 0 1px #fff;
 }
 
@@ -1388,11 +1387,11 @@ html.pm-hero-story-ready .pm-home-hero h1 {
   left: 50%;
   width: 25rem;
   height: 25rem;
-  border: 1px solid rgb(107 52 232 / 14%);
+  border: 1px solid rgb(232 127 102 / 14%);
   border-radius: 50%;
   box-shadow:
-    0 0 0 3.5rem rgb(107 52 232 / 3.5%),
-    0 0 0 7rem rgb(214 34 143 / 2.5%);
+    0 0 0 3.5rem rgb(232 127 102 / 3.5%),
+    0 0 0 7rem rgb(239 146 120 / 2.5%);
   transform: translate(-50%, -50%);
 }
 
@@ -1434,7 +1433,7 @@ html.pm-hero-story-ready .pm-home-hero h1 {
   border: 0.55rem solid #171219;
   border-radius: 2.2rem;
   background: #000;
-  box-shadow: 0 35px 50px -32px rgb(51 19 47 / 68%);
+  box-shadow: 0 35px 50px -32px rgb(105 68 56 / 48%);
   transform: rotate(3deg);
 }
 
@@ -1461,7 +1460,7 @@ html.pm-hero-story-ready .pm-home-hero h1 {
   justify-content: center;
   gap: 0.55rem;
   margin: 1rem 0 0;
-  color: #78667d;
+  color: #7b655e;
   font-size: 0.72rem;
 }
 
@@ -1475,7 +1474,7 @@ html.pm-hero-story-ready .pm-home-hero h1 {
   flex-direction: column;
   justify-content: center;
   padding: 3rem 0;
-  border-bottom: 1px solid rgb(70 34 75 / 11%);
+  border-bottom: 1px solid rgb(91 61 51 / 11%);
 }
 
 .pm-home-step-topline {
@@ -1485,7 +1484,7 @@ html.pm-hero-story-ready .pm-home-hero h1 {
 }
 
 .pm-home-step-topline span {
-  color: #6b35e8;
+  color: #df745c;
   font-family: var(--font-mono), 'SFMono-Regular', Consolas, monospace;
   font-size: 0.72rem;
   font-weight: 800;
@@ -1493,7 +1492,7 @@ html.pm-hero-story-ready .pm-home-hero h1 {
 
 .pm-home-step-topline p {
   margin: 0;
-  color: #d6228f;
+  color: #ed9278;
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.12em;
@@ -1524,10 +1523,10 @@ html.pm-hero-story-ready .pm-home-hero h1 {
   gap: 0.6rem;
   margin-top: 1.5rem;
   padding: 0.55rem 0.75rem;
-  border: 1px solid rgb(104 52 229 / 15%);
+  border: 1px solid rgb(232 127 102 / 15%);
   border-radius: 0.65rem;
-  background: #f5f0ff;
-  color: #5f31c9;
+  background: #fff5f0;
+  color: #cc604b;
   font-family: var(--font-mono), 'SFMono-Regular', Consolas, monospace;
   font-size: 0.7rem;
 }
@@ -1536,7 +1535,7 @@ html.pm-hero-story-ready .pm-home-hero h1 {
   width: 0.42rem;
   height: 0.42rem;
   border-radius: 50%;
-  background: #d6228f;
+  background: #ed9278;
 }
 
 .pm-home-morph-zone {
@@ -1545,8 +1544,8 @@ html.pm-hero-story-ready .pm-home-hero h1 {
   overflow: hidden;
   background:
     radial-gradient(circle at 13% 18%, rgb(255 255 255 / 68%), transparent 20rem),
-    radial-gradient(circle at 87% 70%, rgb(111 53 235 / 18%), transparent 27rem),
-    linear-gradient(128deg, #f9dfe6, #f2afb9 55%, #eb7d84);
+    radial-gradient(circle at 87% 70%, rgb(232 127 102 / 18%), transparent 27rem),
+    linear-gradient(128deg, #fae7df, #f5c3b2 55%, #e98b72);
 }
 
 .pm-home-morph-zone::after {
@@ -1580,21 +1579,21 @@ html.pm-hero-story-ready .pm-home-hero h1 {
   min-height: 10.5rem;
   place-items: center;
   align-content: center;
-  border: 1px solid rgb(66 28 73 / 14%);
+  border: 1px solid rgb(91 61 51 / 14%);
   border-radius: 1.25rem;
   background: rgb(255 255 255 / 77%);
   box-shadow:
-    0 28px 48px -34px rgb(79 29 51 / 56%),
+    0 28px 48px -34px rgb(105 68 56 / 46%),
     inset 0 1px #fff;
   text-align: center;
   backdrop-filter: blur(16px);
 }
 
 .pm-home-flow-token[data-active] {
-  color: #fff;
-  background: linear-gradient(145deg, #5422ce, #7034ec 52%, #c91a87);
+  color: #3a211b;
+  background: linear-gradient(145deg, #f5c3b2, #ef9a80 52%, #e87f66);
   box-shadow:
-    0 30px 52px -30px rgb(82 30 175 / 64%),
+    0 30px 52px -30px rgb(174 79 60 / 64%),
     inset 0 1px rgb(255 255 255 / 37%);
 }
 
@@ -1603,10 +1602,10 @@ html.pm-hero-story-ready .pm-home-hero h1 {
   width: 2.75rem;
   height: 2.75rem;
   place-items: center;
-  border: 1px solid rgb(102 49 226 / 17%);
+  border: 1px solid rgb(224 112 88 / 17%);
   border-radius: 50%;
-  background: #f1e9ff;
-  color: #6230d8;
+  background: #fff1eb;
+  color: #d86c55;
   font-family: var(--font-display), Georgia, serif;
   font-size: 1.15rem;
   font-style: italic;
@@ -1625,12 +1624,12 @@ html.pm-hero-story-ready .pm-home-hero h1 {
 
 .pm-home-flow-token small {
   margin-top: 0.28rem;
-  color: #79687e;
+  color: #7b655e;
   font-size: 0.65rem;
 }
 
 .pm-home-flow-token[data-active] small {
-  color: #e0d0f0;
+  color: #f0ddd4;
 }
 
 .pm-home-flow-arrow {
@@ -1640,7 +1639,7 @@ html.pm-hero-story-ready .pm-home-hero h1 {
 }
 
 .pm-home-flow-arrow span {
-  color: #6c5872;
+  color: #7b655e;
   font-family: var(--font-mono), 'SFMono-Regular', Consolas, monospace;
   font-size: 0.58rem;
   text-align: center;
@@ -1651,7 +1650,7 @@ html.pm-hero-story-ready .pm-home-hero h1 {
   display: block;
   height: 2px;
   overflow: visible;
-  background: linear-gradient(90deg, rgb(100 49 221 / 13%), #6a34e6, #d6228f);
+  background: linear-gradient(90deg, rgb(224 112 88 / 13%), #df745c, #ed9278);
 }
 
 .pm-home-flow-arrow i::after {
@@ -1660,8 +1659,8 @@ html.pm-hero-story-ready .pm-home-hero h1 {
   right: -1px;
   width: 0.5rem;
   height: 0.5rem;
-  border-top: 2px solid #d6228f;
-  border-right: 2px solid #d6228f;
+  border-top: 2px solid #ed9278;
+  border-right: 2px solid #ed9278;
   content: '';
   transform: translateY(-50%) rotate(45deg);
 }
@@ -1674,7 +1673,7 @@ html.pm-hero-story-ready .pm-home-hero h1 {
 }
 
 .pm-home-settlement-split > span {
-  color: #78637d;
+  color: #7b655e;
   font-family: var(--font-mono), 'SFMono-Regular', Consolas, monospace;
   font-size: 0.8rem;
   font-style: italic;
@@ -1683,7 +1682,7 @@ html.pm-hero-story-ready .pm-home-hero h1 {
 .pm-home-route-disclosure {
   max-width: 52rem;
   margin: 2.5rem auto 0;
-  color: #67566b;
+  color: #765e56;
   font-size: 0.75rem;
   line-height: 1.65;
   text-align: center;
@@ -1691,8 +1690,8 @@ html.pm-hero-story-ready .pm-home-hero h1 {
 
 .pm-home-proof-gate {
   overflow: hidden;
-  background: #160b20;
-  color: #fff;
+  background: linear-gradient(180deg, #fffaf6, #fbe8df 48%, #fffaf6);
+  color: #3a211b;
 }
 
 .pm-home-proof-before,
@@ -1708,7 +1707,7 @@ html.pm-hero-story-ready .pm-home-hero h1 {
 .pm-home-proof-before span,
 .pm-home-proof-after p {
   margin: 0;
-  color: #a693b1;
+  color: #7b655e;
   font-family: var(--font-mono), 'SFMono-Regular', Consolas, monospace;
   font-size: 0.68rem;
   letter-spacing: 0.12em;
@@ -1728,7 +1727,7 @@ html.pm-hero-story-ready .pm-home-hero h1 {
 }
 
 .pm-home-proof-before h2 {
-  color: #ded5e3;
+  color: #3a211b;
 }
 
 .pm-home-proof-divider {
@@ -1736,7 +1735,7 @@ html.pm-hero-story-ready .pm-home-hero h1 {
   width: min(100% - 2rem, 72rem);
   height: 1px;
   margin-inline: auto;
-  background: rgb(255 255 255 / 8%);
+  background: rgb(232 127 102 / 24%);
 }
 
 .pm-home-proof-divider i {
@@ -1746,18 +1745,18 @@ html.pm-hero-story-ready .pm-home-hero h1 {
   width: 0.75rem;
   height: 0.75rem;
   border-radius: 50%;
-  background: #d6228f;
+  background: #ed9278;
   box-shadow:
-    0 0 0 0.6rem rgb(214 34 143 / 9%),
-    0 0 3rem #d6228f;
+    0 0 0 0.6rem rgb(239 146 120 / 9%),
+    0 0 3rem #ed9278;
   transform: translate(-50%, -50%);
 }
 
 .pm-home-proof-after {
   position: relative;
   background:
-    radial-gradient(circle at 50% 50%, rgb(124 52 238 / 27%), transparent 26rem),
-    radial-gradient(circle at 50% 70%, rgb(214 34 143 / 13%), transparent 32rem);
+    radial-gradient(circle at 50% 50%, rgb(232 127 102 / 27%), transparent 26rem),
+    radial-gradient(circle at 50% 70%, rgb(239 146 120 / 13%), transparent 32rem);
 }
 
 .pm-home-settled-mark {
@@ -1766,17 +1765,18 @@ html.pm-hero-story-ready .pm-home-hero h1 {
   height: 5.5rem;
   place-items: center;
   margin-top: 2.5rem;
-  border: 1px solid rgb(255 255 255 / 26%);
+  border: 1px solid rgb(198 90 69 / 24%);
   border-radius: 50%;
-  background: linear-gradient(145deg, #7438ef, #d6228f);
+  background: linear-gradient(145deg, #e47b63, #ed9278);
   box-shadow:
     0 0 0 1rem rgb(255 255 255 / 4%),
-    0 0 5rem rgb(113 51 228 / 54%);
+    0 0 5rem rgb(224 112 88 / 54%);
   font-size: 2.1rem;
+  color: #3a211b;
 }
 
 .pm-home-proof-after h2 {
-  background: linear-gradient(100deg, #fff, #d9c0ff 48%, #f3a4d2);
+  background: linear-gradient(100deg, #a64e3c, #d87560 48%, #e98b72);
   background-clip: text;
   color: transparent;
   font-family: var(--font-mono), 'SFMono-Regular', Consolas, monospace;
@@ -1786,7 +1786,7 @@ html.pm-hero-story-ready .pm-home-hero h1 {
 
 .pm-home-proof-after > strong {
   margin-top: 1rem;
-  color: #f2afd5;
+  color: #c65a45;
   font-family: var(--font-display), Georgia, serif;
   font-size: clamp(1.5rem, 3vw, 2.5rem);
   font-style: italic;
@@ -1796,7 +1796,7 @@ html.pm-hero-story-ready .pm-home-hero h1 {
 .pm-home-receipt-section {
   padding: clamp(7rem, 11vw, 10rem) 0;
   background:
-    radial-gradient(circle at 18% 80%, rgb(238 122 132 / 12%), transparent 27rem), #fffafa;
+    radial-gradient(circle at 18% 80%, rgb(241 168 145 / 12%), transparent 27rem), #fffaf6;
 }
 
 .pm-home-receipt-grid {
@@ -1810,7 +1810,7 @@ html.pm-hero-story-ready .pm-home-hero h1 {
   display: inline-flex;
   gap: 0.55rem;
   margin-top: 1.8rem;
-  color: #5d2ccf;
+  color: #d46a53;
   font-size: 0.88rem;
   font-weight: 780;
   text-decoration: none;
@@ -1818,11 +1818,11 @@ html.pm-hero-story-ready .pm-home-hero h1 {
 
 .pm-home-receipt {
   overflow: hidden;
-  border: 1px solid rgb(74 34 78 / 14%);
+  border: 1px solid rgb(91 61 51 / 14%);
   border-radius: 1.25rem;
   background: rgb(255 255 255 / 92%);
   box-shadow:
-    0 42px 75px -50px rgb(74 28 52 / 55%),
+    0 42px 75px -50px rgb(105 68 56 / 45%),
     inset 0 1px #fff;
 }
 
@@ -1837,8 +1837,8 @@ html.pm-hero-story-ready .pm-home-hero h1 {
 
 .pm-home-receipt-header {
   padding: 1.3rem 1.4rem;
-  border-bottom: 1px solid rgb(68 32 73 / 10%);
-  background: linear-gradient(110deg, #f9d9e2, #ef959e);
+  border-bottom: 1px solid rgb(91 61 51 / 10%);
+  background: linear-gradient(110deg, #fae4dc, #f1aa94);
 }
 
 .pm-home-receipt-header p,
@@ -1848,7 +1848,7 @@ html.pm-hero-story-ready .pm-home-hero h1 {
 }
 
 .pm-home-receipt-header p {
-  color: #725f76;
+  color: #78645d;
   font-size: 0.68rem;
 }
 
@@ -1859,10 +1859,10 @@ html.pm-hero-story-ready .pm-home-hero h1 {
 
 .pm-home-receipt-header > span {
   padding: 0.38rem 0.55rem;
-  border: 1px solid rgb(94 43 83 / 16%);
+  border: 1px solid rgb(110 77 65 / 16%);
   border-radius: 999px;
   background: rgb(255 255 255 / 48%);
-  color: #5b2f70;
+  color: #6a4338;
   font-family: var(--font-mono), 'SFMono-Regular', Consolas, monospace;
   font-size: 0.6rem;
   font-weight: 800;
@@ -1870,8 +1870,8 @@ html.pm-hero-story-ready .pm-home-hero h1 {
 
 .pm-home-receipt-id {
   padding: 1.15rem 1.4rem;
-  border-bottom: 1px solid rgb(68 32 73 / 9%);
-  color: #756579;
+  border-bottom: 1px solid rgb(91 61 51 / 9%);
+  color: #7b655e;
   font-size: 0.7rem;
 }
 
@@ -1892,7 +1892,7 @@ html.pm-hero-story-ready .pm-home-hero h1 {
   align-items: center;
   gap: 0.85rem;
   padding: 0.9rem 0;
-  border-bottom: 1px solid rgb(68 32 73 / 8%);
+  border-bottom: 1px solid rgb(91 61 51 / 8%);
   grid-template-columns: auto 1fr;
 }
 
@@ -1923,26 +1923,27 @@ html.pm-hero-story-ready .pm-home-hero h1 {
 
 .pm-home-receipt li small {
   margin-top: 0.18rem;
-  color: #817286;
+  color: #89746d;
   font-size: 0.65rem;
 }
 
 .pm-home-receipt-authority {
   padding: 1rem 1.4rem;
-  background: #25113b;
-  color: #cdbcd5;
+  border-top: 1px solid rgb(232 127 102 / 18%);
+  background: #fbe8df;
+  color: #7b655e;
   font-size: 0.65rem;
 }
 
 .pm-home-receipt-authority strong {
-  color: #f2a5d2;
+  color: #c65a45;
   font-family: var(--font-mono), 'SFMono-Regular', Consolas, monospace;
   font-size: 0.62rem;
 }
 
 .pm-home-products {
   padding: clamp(7rem, 11vw, 10rem) 0;
-  border-top: 1px solid rgb(69 32 74 / 9%);
+  border-top: 1px solid rgb(91 61 51 / 9%);
   background: #fff;
 }
 
@@ -1958,11 +1959,11 @@ html.pm-hero-story-ready .pm-home-hero h1 {
   min-height: 17rem;
   padding: 1.5rem;
   overflow: hidden;
-  border: 1px solid rgb(73 34 78 / 12%);
+  border: 1px solid rgb(91 61 51 / 12%);
   border-radius: 1.05rem;
   background:
-    radial-gradient(circle at 100% 100%, rgb(235 126 137 / 13%), transparent 9rem), #fffafa;
-  box-shadow: 0 24px 45px -38px rgb(73 30 56 / 42%);
+    radial-gradient(circle at 100% 100%, rgb(241 168 145 / 13%), transparent 9rem), #fffaf6;
+  box-shadow: 0 24px 45px -38px rgb(105 68 56 / 38%);
   text-decoration: none;
   transition:
     border-color 230ms ease,
@@ -1971,13 +1972,13 @@ html.pm-hero-story-ready .pm-home-hero h1 {
 }
 
 .pm-home-product-card:hover {
-  border-color: rgb(106 51 231 / 30%);
-  box-shadow: 0 34px 55px -38px rgb(75 29 58 / 50%);
+  border-color: rgb(232 127 102 / 30%);
+  box-shadow: 0 34px 55px -38px rgb(105 68 56 / 46%);
   transform: translateY(-4px);
 }
 
 .pm-home-product-card > span {
-  color: #6c36e7;
+  color: #df745c;
   font-family: var(--font-mono), 'SFMono-Regular', Consolas, monospace;
   font-size: 0.68rem;
   font-weight: 800;
@@ -2007,18 +2008,19 @@ html.pm-hero-story-ready .pm-home-hero h1 {
   width: 2.35rem;
   height: 2.35rem;
   place-items: center;
-  border: 1px solid rgb(102 49 224 / 15%);
+  border: 1px solid rgb(224 112 88 / 15%);
   border-radius: 0.7rem;
-  background: #f3edff;
-  color: #6531db;
+  background: #fff1eb;
+  color: #d86c55;
 }
 
 .pm-home-developer {
   padding: clamp(7rem, 11vw, 10rem) 0;
   background:
-    radial-gradient(circle at 8% 10%, rgb(214 34 143 / 12%), transparent 25rem),
-    radial-gradient(circle at 92% 90%, rgb(106 52 230 / 20%), transparent 27rem), #1b0e27;
-  color: #fff;
+    radial-gradient(circle at 8% 10%, rgb(239 146 120 / 12%), transparent 25rem),
+    radial-gradient(circle at 92% 90%, rgb(232 127 102 / 18%), transparent 27rem),
+    linear-gradient(135deg, #fbe8df, #fffaf6 55%, #ffffff);
+  color: #3a211b;
 }
 
 .pm-home-developer-grid {
@@ -2033,17 +2035,17 @@ html.pm-hero-story-ready .pm-home-hero h1 {
 }
 
 .pm-home-developer > .pm-home-container > div:first-child > p:not(.pm-home-kicker) {
-  color: #cbbbd2;
+  color: #7b655e;
 }
 
 .pm-home-code-window {
   overflow: hidden;
-  border: 1px solid rgb(255 255 255 / 11%);
+  border: 1px solid rgb(232 127 102 / 22%);
   border-radius: 1.15rem;
-  background: #100718;
+  background: #ffffff;
   box-shadow:
-    0 38px 65px -40px rgb(0 0 0 / 84%),
-    inset 0 1px rgb(255 255 255 / 5%);
+    0 38px 65px -44px rgb(105 68 56 / 30%),
+    inset 0 1px rgb(255 255 255 / 92%);
 }
 
 .pm-home-code-toolbar {
@@ -2052,15 +2054,15 @@ html.pm-hero-story-ready .pm-home-hero h1 {
   gap: 0.4rem;
   min-height: 3rem;
   padding: 0 1rem;
-  border-bottom: 1px solid rgb(255 255 255 / 8%);
-  background: rgb(255 255 255 / 3%);
+  border-bottom: 1px solid rgb(232 127 102 / 16%);
+  background: #fff4ee;
 }
 
 .pm-home-code-toolbar span {
   width: 0.55rem;
   height: 0.55rem;
   border-radius: 50%;
-  background: #e47782;
+  background: #e98b72;
 }
 
 .pm-home-code-toolbar span:nth-child(2) {
@@ -2068,12 +2070,12 @@ html.pm-hero-story-ready .pm-home-hero h1 {
 }
 
 .pm-home-code-toolbar span:nth-child(3) {
-  background: #8a62e8;
+  background: #ec9a82;
 }
 
 .pm-home-code-toolbar strong {
   margin-left: auto;
-  color: #9f8da8;
+  color: #ad958b;
   font-family: var(--font-mono), 'SFMono-Regular', Consolas, monospace;
   font-size: 0.62rem;
   font-weight: 500;
@@ -2083,7 +2085,7 @@ html.pm-hero-story-ready .pm-home-hero h1 {
   margin: 0;
   padding: 1.5rem;
   overflow-x: auto;
-  color: #eadff0;
+  color: #3a211b;
   font-family: var(--font-mono), 'SFMono-Regular', Consolas, monospace;
   font-size: 0.74rem;
   line-height: 1.8;
@@ -2092,8 +2094,8 @@ html.pm-hero-story-ready .pm-home-hero h1 {
 
 .pm-home-footer {
   padding: 4rem 0;
-  border-top: 1px solid rgb(71 34 74 / 10%);
-  background: #fffafa;
+  border-top: 1px solid rgb(91 61 51 / 10%);
+  background: #fffaf6;
   text-align: center;
 }
 
@@ -2109,14 +2111,14 @@ html.pm-hero-story-ready .pm-home-hero h1 {
 
 .pm-home-footer p {
   margin: 1.2rem 0 0;
-  color: #54465a;
+  color: #675149;
   font-size: 0.86rem;
   font-weight: 700;
 }
 
 .pm-home-footer span {
   margin-top: 0.7rem;
-  color: #88778c;
+  color: #8d776f;
   font-size: 0.68rem;
 }
 
@@ -2304,7 +2306,7 @@ html.pm-hero-story-ready .pm-home-hero h1 {
   .pm-home-flow-arrow i {
     width: 2px;
     height: 100%;
-    background: linear-gradient(#6733e1, #d6228f);
+    background: linear-gradient(#df745c, #ed9278);
   }
 
   .pm-home-flow-arrow i::after {
@@ -2366,9 +2368,9 @@ html.pm-splash-active {
   overflow: hidden;
   background:
     radial-gradient(circle at 18% 20%, rgb(255 255 255 / 92%), transparent 24rem),
-    radial-gradient(circle at 82% 72%, rgb(109 53 245 / 13%), transparent 28rem),
-    linear-gradient(145deg, #fff9fa 0%, #f9e1e6 45%, #efb4bd 100%);
-  color: #24102e;
+    radial-gradient(circle at 82% 72%, rgb(232 127 102 / 13%), transparent 28rem),
+    linear-gradient(145deg, #fffaf6 0%, #fae7df 45%, #f5c3b2 100%);
+  color: #3a211b;
   opacity: 1;
   transition:
     opacity 460ms cubic-bezier(0.4, 0, 0.2, 1),
@@ -2379,8 +2381,8 @@ html.pm-splash-active {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgb(91 39 126 / 5%) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(91 39 126 / 5%) 1px, transparent 1px);
+    linear-gradient(rgb(135 80 62 / 5%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(135 80 62 / 5%) 1px, transparent 1px);
   background-size: 64px 64px;
   content: '';
   mask-image: radial-gradient(circle at center, black 8%, transparent 72%);
@@ -2396,17 +2398,17 @@ html.pm-splash-active {
   position: absolute;
   width: min(78vw, 58rem);
   aspect-ratio: 1;
-  border: 1px solid rgb(109 53 245 / 10%);
+  border: 1px solid rgb(232 127 102 / 10%);
   border-radius: 50%;
   background: radial-gradient(
     circle,
     rgb(255 255 255 / 72%) 0%,
-    rgb(228 85 167 / 10%) 36%,
+    rgb(241 166 142 / 10%) 36%,
     transparent 69%
   );
   box-shadow:
     0 0 9rem rgb(255 255 255 / 72%),
-    inset 0 0 7rem rgb(109 53 245 / 8%);
+    inset 0 0 7rem rgb(232 127 102 / 8%);
   animation: pm-splash-aura 2.8s ease-in-out infinite;
 }
 
@@ -2444,7 +2446,7 @@ html.pm-splash-active {
   align-items: center;
   gap: 0.65rem;
   margin-top: clamp(1.15rem, 3vw, 2rem);
-  color: #4b2a5e;
+  color: #5a3d34;
   font-size: clamp(0.77rem, 1.2vw, 0.9rem);
   font-weight: 700;
   letter-spacing: 0.16em;
@@ -2462,7 +2464,7 @@ html.pm-splash-active {
   width: 0.32rem;
   height: 0.32rem;
   border-radius: 50%;
-  background: linear-gradient(135deg, #6d35f5, #e22f91);
+  background: linear-gradient(135deg, #e87f66, #ed9278);
   animation: pm-splash-dot 1s ease-in-out infinite;
 }
 
@@ -2481,21 +2483,21 @@ html.pm-splash-active {
   margin-top: 1rem;
   overflow: hidden;
   border-radius: 999px;
-  background: rgb(67 31 87 / 10%);
+  background: rgb(121 78 64 / 12%);
 }
 
 .pm-splash-progress span {
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: linear-gradient(90deg, #5e2de1, #9635f0 52%, #ec4c83);
+  background: linear-gradient(90deg, #d66a53, #e68469 52%, #ef9a80);
   transform-origin: left;
   animation: pm-splash-progress 1.9s cubic-bezier(0.25, 0.8, 0.25, 1) both;
 }
 
 .pm-splash-caption {
   margin: 0.85rem 0 0;
-  color: rgb(75 42 94 / 68%);
+  color: rgb(116 92 83 / 78%);
   font-size: clamp(0.72rem, 1vw, 0.82rem);
   letter-spacing: 0.02em;
 }
@@ -2567,11 +2569,11 @@ html.pm-splash-active {
   gap: 0.8rem;
   align-items: center;
   padding: 0.8rem 1rem 0.8rem 0.8rem;
-  border: 1px solid rgb(255 255 255 / 15%);
+  border: 1px solid rgb(232 127 102 / 24%);
   border-radius: 1rem;
-  background: rgb(31 13 53 / 92%);
-  box-shadow: 0 1.2rem 3rem rgb(42 13 70 / 28%);
-  color: #fff;
+  background: rgb(255 250 246 / 94%);
+  box-shadow: 0 1.2rem 3rem rgb(105 68 56 / 22%);
+  color: #3a211b;
   backdrop-filter: blur(18px);
   animation: pm-engine-status-arrive 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
@@ -2581,10 +2583,10 @@ html.pm-splash-active {
   width: 2.4rem;
   height: 2.4rem;
   place-items: center;
-  border: 1px solid rgb(255 255 255 / 20%);
+  border: 1px solid rgb(198 90 69 / 20%);
   border-radius: 50%;
-  background: conic-gradient(from 90deg, #ff7085, #d83db0, #7442f4, #ff7085);
-  color: white;
+  background: conic-gradient(from 90deg, #ef9a80, #ed9278, #e98b72, #ef9a80);
+  color: #3a211b;
   font-size: 1rem;
   font-weight: 800;
 }
@@ -2610,7 +2612,7 @@ html.pm-splash-active {
 
 .pm-engine-status small {
   margin-top: 0.18rem;
-  color: rgb(255 255 255 / 67%);
+  color: #7b655e;
   font-size: 0.68rem;
   line-height: 1.35;
 }
@@ -2650,42 +2652,42 @@ html.pm-splash-active {
   }
 }
 
-/* Coral-violet product skin -------------------------------------------------
+/* Peach-paper product skin -------------------------------------------------
    This final cascade intentionally owns the visual language across public,
    checkout, receipt, and merchant surfaces while leaving protocol behavior
    and Tailwind layout utilities untouched. */
 :root {
   color-scheme: light;
-  --ink: #241729;
-  --muted: #786b7c;
-  --muted-strong: #55485a;
-  --surface: #fffdfd;
+  --ink: #3a211b;
+  --muted: #7b655e;
+  --muted-strong: #5e4941;
+  --surface: #fffaf6;
   --surface-raised: #ffffff;
-  --surface-deep: #f8e8ed;
-  --line: rgb(54 34 61 / 16%);
-  --line-strong: rgb(88 45 104 / 34%);
-  --accent: #6d35f5;
-  --accent-ink: #ffffff;
-  --accent-blue: #5124d6;
-  --accent-cyan: #d51c89;
-  --danger: #b83250;
-  --coral: #e97078;
-  --coral-deep: #d85f6e;
-  --blush: #f7c5cf;
-  --paper: #fffdfd;
-  --shadow: rgb(77 35 55 / 22%);
+  --surface-deep: #fbe8df;
+  --line: rgb(91 61 51 / 16%);
+  --line-strong: rgb(121 78 64 / 34%);
+  --accent: #e87f66;
+  --accent-ink: #3a211b;
+  --accent-blue: #c65a45;
+  --accent-cyan: #ef9a80;
+  --danger: #b84f3d;
+  --coral: #ed9278;
+  --coral-deep: #d87560;
+  --blush: #f7d3c7;
+  --paper: #fffaf6;
+  --shadow: rgb(105 68 56 / 22%);
 }
 
 html {
-  background: #fbf5f7;
+  background: #fff7f2;
   color: var(--ink);
 }
 
 body {
   background:
-    radial-gradient(circle at 82% 4%, rgb(104 50 239 / 15%), transparent 24rem),
+    radial-gradient(circle at 82% 4%, rgb(232 127 102 / 15%), transparent 24rem),
     radial-gradient(circle at 10% 26%, rgb(255 255 255 / 38%), transparent 28rem),
-    linear-gradient(180deg, #e97078 0%, #ef888d 18%, #f5b7bf 37%, #fff8fa 70%, #f8f2f6 100%);
+    linear-gradient(180deg, #ed9278 0%, #f0a089 18%, #f7c9b9 37%, #fff9f5 70%, #fff6f0 100%);
   background-attachment: fixed;
   color: var(--ink);
   font-family: var(--font-body), 'Segoe UI', ui-sans-serif, system-ui, sans-serif;
@@ -2695,8 +2697,8 @@ body {
 
 body::before {
   background-image:
-    linear-gradient(rgb(73 37 79 / 4%) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(73 37 79 / 4%) 1px, transparent 1px);
+    linear-gradient(rgb(104 72 61 / 4%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(104 72 61 / 4%) 1px, transparent 1px);
   background-size: 80px 80px;
   mask-image: linear-gradient(to bottom, black, transparent 68%);
   -webkit-mask-image: linear-gradient(to bottom, black, transparent 68%);
@@ -2707,27 +2709,27 @@ body::after {
 }
 
 ::selection {
-  background: rgb(109 53 245 / 22%);
-  color: #241729;
+  background: rgb(232 127 102 / 22%);
+  color: #3a211b;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f4e9ed;
+  background: #f9e8e0;
 }
 
 ::-webkit-scrollbar-thumb {
-  border-color: #f4e9ed;
-  background: linear-gradient(#d51c89, #6d35f5);
+  border-color: #f9e8e0;
+  background: linear-gradient(#ef9a80, #e87f66);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(#c4147b, #5722d4);
+  background: linear-gradient(#c65a45, #c65a45);
 }
 
 .pm-pointer-aura {
   background: radial-gradient(
     30rem circle at var(--pointer-x) var(--pointer-y),
-    rgb(109 53 245 / 8%),
+    rgb(232 127 102 / 8%),
     transparent 62%
   );
 }
@@ -2743,23 +2745,23 @@ body::after {
 }
 
 .pm-earth-halo {
-  border-color: rgb(108 53 245 / 18%);
+  border-color: rgb(232 127 102 / 18%);
   box-shadow:
-    0 0 5rem 1.2rem rgb(109 53 245 / 10%),
-    0 0 12rem 2rem rgb(213 28 137 / 8%),
+    0 0 5rem 1.2rem rgb(232 127 102 / 10%),
+    0 0 12rem 2rem rgb(239 146 120 / 8%),
     inset 0 0 4rem rgb(255 255 255 / 20%);
 }
 
 .pm-earth {
-  border-color: rgb(64 30 83 / 24%);
+  border-color: rgb(109 69 54 / 24%);
   background:
     radial-gradient(circle at 32% 25%, rgb(255 255 255 / 56%), transparent 12%),
-    radial-gradient(circle at 69% 69%, rgb(238 112 120 / 42%), transparent 30%),
-    radial-gradient(circle at 50% 50%, #caa9fa 0%, #8453ee 48%, #4c239c 79%);
+    radial-gradient(circle at 69% 69%, rgb(241 168 145 / 42%), transparent 30%),
+    radial-gradient(circle at 50% 50%, #f8c7b6 0%, #e98b72 48%, #a64e3c 79%);
   box-shadow:
     -1.5rem -0.7rem 3.8rem rgb(255 255 255 / 32%),
-    1.2rem 1.2rem 4rem rgb(126 39 124 / 22%),
-    inset -2.1rem -1.2rem 4.2rem rgb(48 17 86 / 42%),
+    1.2rem 1.2rem 4rem rgb(196 94 70 / 22%),
+    inset -2.1rem -1.2rem 4.2rem rgb(92 46 35 / 42%),
     inset 0.4rem 0.3rem 1.7rem rgb(255 255 255 / 30%);
 }
 
@@ -2771,15 +2773,15 @@ body::after {
 
 .pm-earth-land {
   border-color: rgb(255 255 255 / 22%);
-  background: linear-gradient(145deg, rgb(248 183 198 / 74%), rgb(213 28 137 / 30%));
+  background: linear-gradient(145deg, rgb(249 205 189 / 74%), rgb(239 146 120 / 30%));
 }
 
 .pm-logo-mark,
 .pm-logo-compact {
-  border: 1px solid rgb(63 29 79 / 24%) !important;
-  background: linear-gradient(145deg, #32165f, #6d35f5 52%, #d51c89) !important;
+  border: 1px solid rgb(103 65 52 / 24%) !important;
+  background: linear-gradient(145deg, #7a392d, #e87f66 52%, #ef9a80) !important;
   box-shadow:
-    0 10px 22px -12px rgb(74 27 108 / 58%),
+    0 10px 22px -12px rgb(111 60 45 / 58%),
     inset 0 1px rgb(255 255 255 / 42%) !important;
   color: #ffffff !important;
 }
@@ -2793,10 +2795,10 @@ body::after {
 }
 
 .pm-editorial-nav {
-  border-color: rgb(62 33 69 / 14%);
+  border-color: rgb(103 70 59 / 14%);
   background: rgb(255 253 253 / 88%);
   box-shadow:
-    0 18px 44px -28px rgb(75 32 50 / 48%),
+    0 18px 44px -28px rgb(105 68 56 / 38%),
     inset 0 1px rgb(255 255 255 / 92%);
   backdrop-filter: blur(22px) saturate(1.1);
 }
@@ -2806,7 +2808,7 @@ body::after {
 }
 
 .pm-kicker {
-  color: #5124d6;
+  color: #c65a45;
   font-family: var(--font-mono), 'SFMono-Regular', Consolas, monospace;
   font-size: 0.7rem;
   letter-spacing: 0.17em;
@@ -2821,12 +2823,12 @@ body::after {
 }
 
 .pm-eyebrow {
-  color: #6d35f5;
+  color: #e87f66;
 }
 
 .pm-hero-rule {
   height: 2px;
-  background: linear-gradient(90deg, #6d35f5, #d51c89 60%, transparent);
+  background: linear-gradient(90deg, #e87f66, #ef9a80 60%, transparent);
 }
 
 .pm-panel,
@@ -2836,7 +2838,7 @@ body::after {
   background: rgb(255 253 253 / 94%);
   box-shadow:
     0 24px 58px -36px var(--shadow),
-    0 8px 20px -16px rgb(66 28 50 / 24%),
+    0 8px 20px -16px rgb(99 61 49 / 24%),
     inset 0 1px rgb(255 255 255 / 95%);
   backdrop-filter: blur(18px) saturate(1.05);
 }
@@ -2858,16 +2860,16 @@ body::after {
 
 .pm-panel::before,
 .pm-checkout-flow > div::before {
-  background: linear-gradient(90deg, transparent, rgb(109 53 245 / 50%), #d51c89, transparent);
+  background: linear-gradient(90deg, transparent, rgb(232 127 102 / 50%), #ef9a80, transparent);
   opacity: 0.6;
 }
 
 .pm-panel:hover,
 .pm-card:hover {
-  border-color: rgb(109 53 245 / 30%);
+  border-color: rgb(232 127 102 / 30%);
   box-shadow:
-    0 28px 64px -34px rgb(83 31 85 / 34%),
-    0 12px 24px -20px rgb(213 28 137 / 24%),
+    0 28px 64px -34px rgb(123 68 53 / 34%),
+    0 12px 24px -20px rgb(239 146 120 / 24%),
     inset 0 1px #ffffff;
 }
 
@@ -2876,17 +2878,17 @@ body::after {
 }
 
 .pm-card::after {
-  background: rgb(213 28 137 / 8%);
+  background: rgb(239 146 120 / 8%);
 }
 
 .pm-story-surface {
-  border-color: rgb(75 35 67 / 12%);
+  border-color: rgb(109 74 61 / 12%);
   background:
     radial-gradient(circle at 12% 10%, rgb(255 255 255 / 70%), transparent 24rem),
-    linear-gradient(115deg, #f7c5cf, #f9dce3 44%, #f2d8f6);
+    linear-gradient(115deg, #f7d3c7, #fae2d9 44%, #fae2d9);
   box-shadow:
     inset 0 1px rgb(255 255 255 / 66%),
-    0 26px 64px -46px rgb(92 36 65 / 35%);
+    0 26px 64px -46px rgb(123 76 60 / 35%);
 }
 
 .pm-story-surface::before {
@@ -2894,27 +2896,27 @@ body::after {
     90deg,
     transparent 0,
     transparent 6rem,
-    rgb(73 35 78 / 4%) 6.05rem,
+    rgb(104 72 61 / 4%) 6.05rem,
     transparent 6.12rem
   );
 }
 
 .pm-story-card {
-  border-color: rgb(66 34 70 / 14%);
+  border-color: rgb(105 72 60 / 14%);
   background: rgb(255 253 253 / 90%);
   box-shadow:
-    0 18px 34px -27px rgb(74 30 54 / 32%),
+    0 18px 34px -27px rgb(105 68 56 / 28%),
     inset 0 1px #ffffff;
 }
 
 .pm-hero-proof {
   border-radius: 1.45rem;
-  border-color: rgb(79 36 77 / 16%);
+  border-color: rgb(112 75 62 / 16%);
   background:
-    radial-gradient(circle at 86% 8%, rgb(109 53 245 / 24%), transparent 28%),
-    linear-gradient(145deg, #f8c8d2, #ed858c 52%, #e36b78);
+    radial-gradient(circle at 86% 8%, rgb(232 127 102 / 24%), transparent 28%),
+    linear-gradient(145deg, #f8d2c4, #ee9a83 52%, #e7836b);
   box-shadow:
-    0 34px 66px -36px rgb(78 30 48 / 45%),
+    0 34px 66px -36px rgb(108 65 51 / 45%),
     inset 0 1px rgb(255 255 255 / 54%);
 }
 
@@ -2924,21 +2926,21 @@ body::after {
     rgb(255 255 255 / 36%),
     transparent 26%,
     transparent 70%,
-    rgb(109 53 245 / 12%)
+    rgb(232 127 102 / 12%)
   );
 }
 
 .pm-hero-proof > div,
 .pm-product-surface {
-  border-color: rgb(60 31 67 / 14%) !important;
+  border-color: rgb(101 70 59 / 14%) !important;
   background: rgb(255 253 253 / 94%) !important;
   box-shadow:
-    0 18px 38px -28px rgb(75 29 52 / 32%),
+    0 18px 38px -28px rgb(106 65 52 / 32%),
     inset 0 1px #ffffff;
 }
 
 .pm-trace-line {
-  background: linear-gradient(#6d35f5, rgb(213 28 137 / 18%));
+  background: linear-gradient(#e87f66, rgb(239 146 120 / 18%));
 }
 
 .pm-button {
@@ -2947,60 +2949,60 @@ body::after {
 }
 
 .pm-button-primary {
-  border-color: rgb(58 25 104 / 24%);
-  background: linear-gradient(110deg, #5423db, #7337f3 48%, #d51c89);
+  border-color: rgb(120 62 46 / 24%);
+  background: linear-gradient(110deg, #c85a44, #e47b63 48%, #ef9a80);
   box-shadow:
-    0 14px 26px -14px rgb(95 41 209 / 56%),
-    0 6px 14px -10px rgb(213 28 137 / 48%),
+    0 14px 26px -14px rgb(202 91 68 / 56%),
+    0 6px 14px -10px rgb(239 146 120 / 48%),
     inset 0 1px rgb(255 255 255 / 42%);
-  color: #ffffff;
+  color: #3a211b;
 }
 
 .pm-button-primary:hover {
   box-shadow:
-    0 18px 34px -14px rgb(95 41 209 / 62%),
-    0 8px 18px -10px rgb(213 28 137 / 54%),
+    0 18px 34px -14px rgb(202 91 68 / 62%),
+    0 8px 18px -10px rgb(239 146 120 / 54%),
     inset 0 1px rgb(255 255 255 / 48%);
 }
 
 .pm-button:active {
   box-shadow:
-    0 7px 14px -11px rgb(85 36 147 / 52%),
-    inset 0 2px 4px rgb(40 10 70 / 16%);
+    0 7px 14px -11px rgb(165 74 56 / 52%),
+    inset 0 2px 4px rgb(80 39 29 / 16%);
   transform: translateY(1px);
 }
 
 .pm-button-secondary {
-  border-color: rgb(65 33 72 / 16%);
+  border-color: rgb(104 71 59 / 16%);
   background: rgb(255 255 255 / 84%);
   box-shadow:
-    0 10px 18px -16px rgb(67 29 49 / 34%),
+    0 10px 18px -16px rgb(99 62 50 / 34%),
     inset 0 1px #ffffff;
-  color: #5124d6;
+  color: #c65a45;
 }
 
 .pm-button-secondary:hover {
-  border-color: rgb(109 53 245 / 36%);
-  background: #faf6ff;
+  border-color: rgb(232 127 102 / 36%);
+  background: #fff8f3;
   box-shadow:
-    0 14px 24px -18px rgb(90 42 177 / 38%),
+    0 14px 24px -18px rgb(184 86 65 / 38%),
     inset 0 1px #ffffff;
 }
 
 .pm-text-action {
-  color: #5d35a8;
-  text-decoration-color: rgb(109 53 245 / 34%);
+  color: #a64e3c;
+  text-decoration-color: rgb(232 127 102 / 34%);
 }
 
 .pm-text-action:hover {
-  color: #3f1a8d;
+  color: #7a392d;
 }
 
 .pm-dashboard .bg-\[var\(--surface\)\],
 .pm-app-root .bg-\[var\(--surface\)\] {
   background: rgb(255 253 253 / 94%) !important;
   box-shadow:
-    0 22px 46px -34px rgb(77 35 55 / 30%),
+    0 22px 46px -34px rgb(105 68 56 / 30%),
     inset 0 1px #ffffff;
 }
 
@@ -3009,10 +3011,10 @@ body::after {
 .pm-dashboard textarea,
 .pm-app-root :is(input:not([type='checkbox']), select, textarea) {
   min-height: 2.85rem;
-  border-color: rgb(72 42 78 / 17%);
+  border-color: rgb(110 77 65 / 17%);
   border-radius: 0.72rem;
-  background: #f2eef4;
-  box-shadow: inset 0 1px 2px rgb(51 26 58 / 7%);
+  background: #f9eee8;
+  box-shadow: inset 0 1px 2px rgb(86 56 46 / 7%);
   color: var(--ink);
 }
 
@@ -3027,15 +3029,15 @@ body::after {
 .pm-dashboard select:focus,
 .pm-dashboard textarea:focus,
 .pm-app-root :is(input:not([type='checkbox']), select, textarea):focus {
-  border-color: rgb(109 53 245 / 54%);
+  border-color: rgb(232 127 102 / 54%);
   background: #ffffff;
   box-shadow:
-    0 0 0 4px rgb(109 53 245 / 11%),
+    0 0 0 4px rgb(232 127 102 / 11%),
     inset 0 1px #ffffff;
 }
 
 .pm-app-root :is(input, textarea)::placeholder {
-  color: #998e9c;
+  color: #a08c84;
 }
 
 .pm-app-root table {
@@ -3043,8 +3045,8 @@ body::after {
 }
 
 .pm-app-root thead {
-  background: #f6eff4 !important;
-  color: #65576a !important;
+  background: #fff4ee !important;
+  color: #76615a !important;
 }
 
 .pm-app-root tbody tr {
@@ -3054,11 +3056,11 @@ body::after {
 }
 
 .pm-app-root tbody tr:hover {
-  background: rgb(109 53 245 / 4%);
+  background: rgb(232 127 102 / 4%);
 }
 
 .pm-app-root [class*='bg-black/'] {
-  background-color: rgb(73 35 78 / 5.5%) !important;
+  background-color: rgb(104 72 61 / 5.5%) !important;
 }
 
 .pm-app-root [class*='bg-white/'] {
@@ -3066,7 +3068,7 @@ body::after {
 }
 
 .pm-app-root [class*='border-white/'] {
-  border-color: rgb(62 34 68 / 13%) !important;
+  border-color: rgb(103 72 60 / 13%) !important;
 }
 
 .pm-app-root [class*='text-emerald-'] {
@@ -3102,9 +3104,9 @@ body::after {
 }
 
 .pm-app-root [role='note'] {
-  border-color: rgb(109 53 245 / 16%) !important;
-  background: rgb(245 238 255 / 78%) !important;
-  color: #66546f !important;
+  border-color: rgb(232 127 102 / 16%) !important;
+  background: rgb(255 241 235 / 78%) !important;
+  color: #745c53 !important;
 }
 
 @media (max-width: 700px) {
@@ -3116,7 +3118,7 @@ body::after {
   .pm-card,
   .pm-checkout-flow > div {
     box-shadow:
-      0 18px 38px -30px rgb(77 35 55 / 34%),
+      0 18px 38px -30px rgb(105 68 56 / 34%),
       inset 0 1px #ffffff;
   }
 }

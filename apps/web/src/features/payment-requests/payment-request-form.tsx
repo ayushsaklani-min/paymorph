@@ -124,7 +124,7 @@ export function PaymentRequestForm({ merchantAddress }: { merchantAddress: strin
   );
 }
 const inputClass =
-  'mt-2 min-h-11 w-full rounded-xl border border-[var(--line)] bg-[#0a1119] px-3 py-2 text-[var(--ink)]';
+  'mt-2 min-h-11 w-full rounded-xl border border-[var(--line)] bg-[var(--surface-deep)] px-3 py-2 text-[var(--ink)]';
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="text-sm text-[var(--muted)]">

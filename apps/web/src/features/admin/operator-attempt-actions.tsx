@@ -119,7 +119,7 @@ export function OperatorAttemptActions({
         </p>
       ) : null}
       {diagnosis !== null ? (
-        <div className="mt-3 rounded-xl border border-[var(--line)] bg-[#0a1119] p-3 text-xs">
+        <div className="mt-3 rounded-xl border border-[var(--line)] bg-[var(--surface-deep)] p-3 text-xs">
           <p className="font-semibold">
             {diagnosis.eligible ? 'Eligible for recovery flow' : 'Not recovery eligible'}
           </p>

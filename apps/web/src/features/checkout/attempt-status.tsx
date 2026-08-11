@@ -212,7 +212,7 @@ function FdcWaitPanel({ startedAt }: { startedAt: string }) {
         className="mt-5 h-2 overflow-hidden rounded-full bg-black/20"
         role="progressbar"
       >
-        <div className="h-full w-2/3 animate-pulse rounded-full bg-gradient-to-r from-[var(--accent)] via-pink-300 to-violet-400" />
+        <div className="h-full w-2/3 animate-pulse rounded-full bg-gradient-to-r from-[var(--accent)] via-[#f3ad96] to-[#e87f66]" />
       </div>
 
       <div className="mt-5 grid gap-2 text-xs sm:grid-cols-3">

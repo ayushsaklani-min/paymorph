@@ -22,18 +22,18 @@ emits `PaymentSettled` on Coston2.
 
 ## Hackathon submission
 
-| Requirement              | PayMorph submission                                                                                                                                    |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Project**              | PayMorph                                                                                                                                               |
-| **Selected bounty**      | **Bounty 1 — Interoperable Asset Products**                                                                                                            |
-| **Product**              | Evidence-first merchant checkout: customers pay native XRP from Xaman while merchants settle in FXRP or guarded testnet USDT0 on Flare.                |
-| **Target user**          | Online merchants, freelancers, marketplaces, and payment developers who want XRP checkout without treating a redirect or webhook as settlement proof.  |
-| **Working application**  | [paymorph-seven.vercel.app](https://paymorph-seven.vercel.app)                                                                                         |
-| **Demo video**           | [Watch the 3-minute PayMorph demo](https://youtu.be/DK7TuqjlFlA)                                                                                       |
-| **Creator**              | [Ayush Saklani on X](https://x.com/ayushsaklani976)                                                                                                    |
-| **Source and materials** | [GitHub repository](https://github.com/ayushsaklani-min/paymorph), [architecture](docs/architecture.md), and [OpenAPI contract](docs/api/openapi.yaml) |
-| **Networks**             | XRP Ledger Testnet and Flare Coston2, chain ID `114`                                                                                                   |
-| **Current scope**        | Testnet demonstration; tokens have no real monetary value                                                                                              |
+| Requirement              | PayMorph submission                                                                                                                                                                                                                                                          |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Project**              | PayMorph                                                                                                                                                                                                                                                                     |
+| **Selected bounty**      | **Bounty 1 — Interoperable Asset Products**                                                                                                                                                                                                                                  |
+| **Product**              | Evidence-first merchant checkout: customers pay native XRP from Xaman while merchants settle in FXRP or guarded testnet USDT0 on Flare.                                                                                                                                      |
+| **Target user**          | Online merchants, freelancers, marketplaces, and payment developers who want XRP checkout without treating a redirect or webhook as settlement proof.                                                                                                                        |
+| **Working application**  | [paymorph-seven.vercel.app](https://paymorph-seven.vercel.app)                                                                                                                                                                                                               |
+| **Demo video**           | [Watch the 3-minute PayMorph demo](https://youtu.be/DK7TuqjlFlA)                                                                                                                                                                                                             |
+| **Creator**              | [Ayush Saklani on X](https://x.com/ayushsaklani976)                                                                                                                                                                                                                          |
+| **Source and materials** | [GitHub repository](https://github.com/ayushsaklani-min/paymorph), [architecture overview](https://github.com/ayushsaklani-min/paymorph#how-paymorph-uses-flare), and [versioned API source](https://github.com/ayushsaklani-min/paymorph/tree/main/apps/web/src/app/api/v1) |
+| **Networks**             | XRP Ledger Testnet and Flare Coston2, chain ID `114`                                                                                                                                                                                                                         |
+| **Current scope**        | Testnet demonstration; tokens have no real monetary value                                                                                                                                                                                                                    |
 
 PayMorph is submitted to the interoperable-assets bounty because Flare is the
 payment verification and settlement layer, not a superficial deployment target.

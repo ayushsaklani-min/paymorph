@@ -80,9 +80,10 @@ deployed payment application. During the program, the team built:
   service-fee accounting, pause/roles, and unit, fuzz, and invariant tests;
 - live-verified FXRP settlement and a separately labelled real-token Coston2
   test route for guarded exact-output USDT0 settlement;
-- invoices, reusable payment links, payment requests, Xaman-compatible POS,
-  templates, analytics, public receipts/explorer, scoped API keys, a server-side
-  Node client, signed merchant webhooks, and a WooCommerce gateway;
+- invoices, reusable payment links, manual payment requests, an FXRP POS flow,
+  templates, analytics projections, public receipts/explorer, scoped API keys,
+  a lightweight server-side Node client, signed merchant webhooks, and a
+  locally validated WooCommerce testnet gateway;
 - hosted Vercel, Render, and PostgreSQL infrastructure with readiness checks and
   an explicit free-host cold-start experience.
 
@@ -111,10 +112,13 @@ or mainnet route.
 - Both FXRP and USDT0 payer-controlled flows were completed with Xaman on XRPL
   Testnet and independently rechecked against successful Coston2 receipts and
   decoded `RecipientPaid`/`PaymentSettled` logs.
-- Merchant invoice, reusable link, request, POS, API-key, marketplace-split,
-  treasury-projection, and WooCommerce boundaries have acceptance coverage.
-- The current release passes 233 TypeScript tests, 31 Foundry unit/fuzz/invariant
-  tests, seven Chrome journeys, all workspace builds, and production readiness.
+- Merchant invoice, reusable link, request, API-key, marketplace-split,
+  treasury-projection, and WooCommerce boundaries have automated or local
+  acceptance coverage. POS is implemented, but its latest provider-QR change
+  still needs a retained device-level hosted acceptance result.
+- The current release passes 247 TypeScript tests, 31 Foundry unit/fuzz/invariant
+  tests, seven Chrome journeys, all workspace builds, and the hosted readiness
+  checks.
 - The product has founder-led testnet usage and repeated end-to-end testing. It
   does not claim external pilot revenue, mainnet volume, or unaudited user
   acquisition.
@@ -126,8 +130,8 @@ or mainnet route.
 2. Move the executor from free-host cold starts to an always-on, monitored,
    independently reconciled service and complete the remaining crash/restart,
    webhook-HMAC, and official recovery live gates.
-3. Add merchant-configurable webhook/API controls, delivery history, exports,
-   refunds, and stronger commerce integrations.
+3. Add complete dashboard controls for API keys and webhooks, delivery history,
+   exports, post-payment refunds, and stronger commerce integrations.
 4. Integrate an official, liquid production FXRP/USDT0 route when its runtime
    health gates pass; keep FXRP as the fail-closed fallback.
 5. Commission contract/application security reviews before considering Flare
@@ -143,27 +147,65 @@ evidence rather than hiding or faking the network wait.
 
 ## Why PayMorph
 
-| Merchant gets                                                                               | Payer gets                                                                                     |
-| ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| Immutable invoices, links, requests, POS, dashboard, API, webhooks, and WooCommerce support | A guided Xaman → XRPL → FDC → Coston2 timeline with clear pending, failure, and receipt states |
-| FXRP direct settlement or guarded exact-output USDT0 settlement                             | One native XRP Testnet payment, with a pushed Xaman payment request after SignIn               |
-| Receipts reconstructed from normalized chain evidence                                       | No false “paid” state from a redirect, webhook, or database update                             |
+| Merchant gets                                                                          | Payer gets                                                                                     |
+| -------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Immutable invoices, links, manual requests, an FXRP POS flow, API, and signed webhooks | A guided Xaman → XRPL → FDC → Coston2 timeline with clear pending, failure, and receipt states |
+| FXRP direct settlement or guarded exact-output USDT0 settlement                        | One native XRP Testnet payment, with a pushed Xaman payment request after SignIn               |
+| Receipts reconstructed from normalized chain evidence                                  | No false “paid” state from a redirect, webhook, or database update                             |
 
-## Product surfaces
+## Capability audit
 
-- Public scroll-led payment story with a supplied Xaman testnet wallet rendered
-  on an interactive 3D handset, an XRP → FDC → FXRP settlement explanation, and
-  the explicit `PaymentSettled` completion boundary.
-- Merchant wallet sign-in, invoices, recipient splits, templates, payment links,
-  requests, POS with a provider-issued Xaman SignIn QR, analytics, payment
-  evidence, and network diagnostics.
-- Payer checkout with Xaman SignIn, exact quote, QR/deeplink fallback, and live
-  settlement status.
-- Public receipt explorer and settlement evidence views.
-- Scoped `pm_test_` developer API, hosted checkout button, server-side Node
-  client, and HMAC-signed merchant webhooks.
-- Testnet WooCommerce gateway that marks an order paid only after a verified
-  `payment.settled` webhook.
+Last audited against the repository on **2026-08-13**. “Hosted” means the
+surface is present in the deployed testnet application; it does not mean
+mainnet-ready, audited, or suitable for real funds.
+
+| Capability                                                   | Current status                               | Honest boundary                                                                                                                                                                                                                                                       |
+| ------------------------------------------------------------ | -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FXRP checkout and settlement                                 | **Live verified**                            | A payer-controlled Xaman → XRPL Testnet → FDC → Coston2 run has retained `PaymentSettled` evidence.                                                                                                                                                                   |
+| USDT0 checkout and settlement                                | **Live verified test route**                 | Uses the separately labelled `PAYMORPH_TESTNET` token/adapter and runtime health checks. It is not an official SparkDEX or mainnet route; FXRP remains the fallback.                                                                                                  |
+| Invoices and recipient splits                                | **Hosted and functional**                    | Draft, edit, publish, cancel, immutable published terms, and one-to-ten deterministic recipients are implemented.                                                                                                                                                     |
+| Invoice templates                                            | **Hosted and functional**                    | Templates copy defaults into canonical invoices; they are not a catalogue, inventory, or order-management system.                                                                                                                                                     |
+| Reusable and single-use payment links                        | **Hosted and functional**                    | Each checkout creates or reuses a canonical invoice. View/start events are recorded, but the merchant UI does not yet provide a complete link-analytics report.                                                                                                       |
+| Payment requests                                             | **Hosted, manual delivery**                  | Create/cancel and recipient metadata work. PayMorph does not send email, reminders, or delivery/open notifications. Request expiry validation still needs the same explicit 15-minute-to-30-day guard used by the invoice service.                                    |
+| Point of sale                                                | **Hosted, device acceptance pending**        | Creates a 30-minute FXRP invoice and provider-issued Xaman SignIn QR with a browser fallback. USDT0 selection, terminal receipt acknowledgement, and a retained post-fix device scan are still open.                                                                  |
+| Merchant dashboard and analytics                             | **Hosted projection**                        | Counts and time-series are rebuildable PostgreSQL projections. They are not accounting records and never override chain evidence.                                                                                                                                     |
+| Payments, public receipts, explorer, and network diagnostics | **Hosted and read-only**                     | Explorer results are limited to settled attempts; receipts complete only from decoded `PaymentSettled` evidence.                                                                                                                                                      |
+| Scoped API keys and versioned API                            | **Functional, UI incomplete**                | Tested API routes cover invoices, payment links, payments, and receipts. Key issue/revoke services exist, but the dashboard only lists keys; creation and revocation currently require API calls.                                                                     |
+| Hosted checkout button                                       | **Redirect-only preview**                    | The small browser loader can create a checkout link. Its iframe/modal mode is not release-ready because PayMorph deliberately sends `X-Frame-Options: DENY`, and it has no retained browser acceptance suite.                                                         |
+| `@paymorph/node`                                             | **Private thin client**                      | The package wraps the implemented API and verifies webhook HMACs, but currently returns `unknown`, is not generated from OpenAPI, and is not published to npm. It must not be presented as a finished typed SDK.                                                      |
+| Merchant webhooks                                            | **Implemented; public acceptance gate open** | Encrypted endpoint settings, exact-body HMAC signing, durable leases, retry scheduling, and idempotent settlement enqueueing exist. There is no merchant delivery-history/replay UI, formal secret-rotation workflow, or retained stable-public delivery artifact.    |
+| WooCommerce                                                  | **Locally validated testnet MVP**            | The plugin supports USD stores, one FXRP recipient, hosted redirect, and verified `payment.settled` order completion. It has PHP boundary and local WordPress/WooCommerce runtime coverage, but no public pilot store or retained public webhook-delivery acceptance. |
+| Treasury                                                     | **Read-only projection**                     | Summarizes the latest 50 settled attempts. It is not a wallet balance, custody product, withdrawal interface, yield strategy, or complete accounting ledger.                                                                                                          |
+| Marketplace                                                  | **Split-settlement projection**              | Shows invoices with multiple on-chain recipients. It does not implement seller onboarding, products, orders, commissions, fulfilment, or marketplace custody.                                                                                                         |
+| Recovery                                                     | **Code complete; official live gate open**   | The `0xE0` path has guarded diagnosis and evidence handling, but no retained official recovery artifact. Recovery mints eligible test FXRP to the payer; it does not settle the merchant invoice or return native XRP.                                                |
+| Operator console and metrics                                 | **Implemented, operational only**            | Protected retry/diagnosis and aggregate Prometheus output exist. A hosted scraper, alerts, and deliberate executor crash/restart acceptance are not complete.                                                                                                         |
+
+### Not implemented or not claimed
+
+- Flare mainnet, real-value payments, custody, fiat settlement/off-ramping, or a
+  completed independent security audit.
+- Official SparkDEX/mainnet USDT0 routing. The existing USDT0 evidence applies
+  only to the clearly labelled Coston2 `PAYMORPH_TESTNET` route.
+- Post-payment merchant refunds, recurring billing/auto-debits, subscriptions,
+  escrow, disputes, chargebacks, or payment reversals. The router returning
+  unused FXRP during an exact-output settlement is protocol accounting, not a
+  merchant refund feature.
+- Automated request delivery, reminders, delivery/open reporting, customer
+  CRM, full marketplace/order management, or treasury custody and withdrawals.
+- A production-ready typed/npm SDK, production-ready embedded modal, public
+  WooCommerce pilot, Shopify integration, or mobile merchant app.
+- Confidential-compute functionality or a claim against the Confidential
+  Compute bounty.
+
+### Remaining live and release gates
+
+1. Retain a stable-public Xaman webhook-HMAC acceptance artifact.
+2. Retain the deliberate executor crash/restart settlement artifact.
+3. Retain an official credentialed `0xE0` recovery artifact.
+4. Repeat and retain the current POS QR flow on a real Xaman testnet device.
+5. Move the executor to always-on monitored infrastructure, add alerting and
+   independent reconciliation, and complete application/contract security
+   reviews before any mainnet consideration.
 
 ## Evidence model
 
@@ -322,7 +364,9 @@ strings; no floating point values are used in settlement. Read
   `PAYMORPH_TESTNET` exact-output route; it is not an official SparkDEX or
   mainnet claim.
 - Remaining live gates: stable public Xaman webhook-HMAC acceptance, deliberate
-  executor crash/restart acceptance, and an official `0xE0` recovery artifact.
+  executor crash/restart acceptance, an official `0xE0` recovery artifact, and
+  a retained current POS device scan. See the capability audit above for
+  product-surface limitations that are separate from the core settlement proof.
 
 ## License
 

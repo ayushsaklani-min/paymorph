@@ -30,6 +30,7 @@ emits `PaymentSettled` on Coston2.
 | **Target user**          | Online merchants, freelancers, marketplaces, and payment developers who want XRP checkout without treating a redirect or webhook as settlement proof.  |
 | **Working application**  | [paymorph-seven.vercel.app](https://paymorph-seven.vercel.app)                                                                                         |
 | **Demo video**           | [Watch the 3-minute PayMorph demo](https://youtu.be/DK7TuqjlFlA)                                                                                       |
+| **Creator**              | [Ayush Saklani on X](https://x.com/ayushsaklani976)                                                                                                    |
 | **Source and materials** | [GitHub repository](https://github.com/ayushsaklani-min/paymorph), [architecture](docs/architecture.md), and [OpenAPI contract](docs/api/openapi.yaml) |
 | **Networks**             | XRP Ledger Testnet and Flare Coston2, chain ID `114`                                                                                                   |
 | **Current scope**        | Testnet demonstration; tokens have no real monetary value                                                                                              |

@@ -29,6 +29,7 @@ emits `PaymentSettled` on Coston2.
 | **Product**              | Evidence-first merchant checkout: customers pay native XRP from Xaman while merchants settle in FXRP or guarded testnet USDT0 on Flare.                |
 | **Target user**          | Online merchants, freelancers, marketplaces, and payment developers who want XRP checkout without treating a redirect or webhook as settlement proof.  |
 | **Working application**  | [paymorph-seven.vercel.app](https://paymorph-seven.vercel.app)                                                                                         |
+| **Demo video**           | [Watch the 3-minute PayMorph demo](https://youtu.be/DK7TuqjlFlA)                                                                                       |
 | **Source and materials** | [GitHub repository](https://github.com/ayushsaklani-min/paymorph), [architecture](docs/architecture.md), and [OpenAPI contract](docs/api/openapi.yaml) |
 | **Networks**             | XRP Ledger Testnet and Flare Coston2, chain ID `114`                                                                                                   |
 | **Current scope**        | Testnet demonstration; tokens have no real monetary value                                                                                              |

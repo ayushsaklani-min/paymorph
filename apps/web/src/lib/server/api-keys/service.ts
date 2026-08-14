@@ -17,6 +17,18 @@ export const createApiKeySchema = z.strictObject({
   expiresAt: z.iso.datetime().optional(),
 });
 export type ApiKeyScope = (typeof scopes)[number];
+type RevokedApiKey = Pick<
+  ApiKey,
+  | 'id'
+  | 'name'
+  | 'prefix'
+  | 'scopesJson'
+  | 'status'
+  | 'lastUsedAt'
+  | 'expiresAt'
+  | 'revokedAt'
+  | 'createdAt'
+>;
 
 export async function createApiKey(merchantId: string, input: z.infer<typeof createApiKeySchema>) {
   const secret = `pm_test_${randomBytes(32).toString('base64url')}`;
@@ -58,13 +70,26 @@ export async function authenticateApiKey(raw: string, required: ApiKeyScope): Pr
   return candidate;
 }
 
-export async function revokeApiKey(merchantId: string, id: string): Promise<ApiKey> {
+export async function revokeApiKey(merchantId: string, id: string): Promise<RevokedApiKey> {
   const result = await db.apiKey.updateMany({
     where: { id, merchantId, status: ApiKeyStatus.ACTIVE },
     data: { status: ApiKeyStatus.REVOKED, revokedAt: new Date() },
   });
   if (result.count !== 1) throw new DomainError('VALIDATION_ERROR', 'API key cannot be revoked');
-  return db.apiKey.findUniqueOrThrow({ where: { id } });
+  return db.apiKey.findUniqueOrThrow({
+    where: { id },
+    select: {
+      id: true,
+      name: true,
+      prefix: true,
+      scopesJson: true,
+      status: true,
+      lastUsedAt: true,
+      expiresAt: true,
+      revokedAt: true,
+      createdAt: true,
+    },
+  });
 }
 function hash(value: string) {
   return createHash('sha256').update(value).digest('hex');

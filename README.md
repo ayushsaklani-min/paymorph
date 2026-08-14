@@ -118,7 +118,7 @@ or mainnet route.
   treasury-projection, and WooCommerce boundaries have automated or local
   acceptance coverage. POS is implemented, but its latest provider-QR change
   still needs a retained device-level hosted acceptance result.
-- The current release passes 247 TypeScript tests, 31 Foundry unit/fuzz/invariant
+- The current release passes 250 TypeScript tests, 31 Foundry unit/fuzz/invariant
   tests, seven Chrome journeys, all workspace builds, and the hosted readiness
   checks.
 - The product has founder-led testnet usage and repeated end-to-end testing. It
@@ -132,7 +132,7 @@ or mainnet route.
 2. Move the executor from free-host cold starts to an always-on, monitored,
    independently reconciled service and complete the remaining crash/restart,
    webhook-HMAC, and official recovery live gates.
-3. Add complete dashboard controls for API keys and webhooks, delivery history,
+3. Add complete dashboard controls and delivery history for merchant webhooks,
    exports, post-payment refunds, and stronger commerce integrations.
 4. Integrate an official, liquid production FXRP/USDT0 route when its runtime
    health gates pass; keep FXRP as the fail-closed fallback.
@@ -172,7 +172,7 @@ mainnet-ready, audited, or suitable for real funds.
 | Point of sale                                                | **Hosted, device acceptance pending**        | Creates a 30-minute FXRP invoice and provider-issued Xaman SignIn QR with a browser fallback. USDT0 selection, terminal receipt acknowledgement, and a retained post-fix device scan are still open.                                                                  |
 | Merchant dashboard and analytics                             | **Hosted projection**                        | Counts and time-series are rebuildable PostgreSQL projections. They are not accounting records and never override chain evidence.                                                                                                                                     |
 | Payments, public receipts, explorer, and network diagnostics | **Hosted and read-only**                     | Explorer results are limited to settled attempts; receipts complete only from decoded `PaymentSettled` evidence.                                                                                                                                                      |
-| Scoped API keys and versioned API                            | **Functional, UI incomplete**                | Tested API routes cover invoices, payment links, payments, and receipts. Key issue/revoke services exist, but the dashboard only lists keys; creation and revocation currently require API calls.                                                                     |
+| Scoped API keys and versioned API                            | **Hosted and functional**                    | The dashboard creates least-privilege keys, displays each secret once, lists safe metadata, and supports confirmed revocation. Tested API routes cover invoices, payment links, payments, and receipts.                                                               |
 | Hosted checkout button                                       | **Redirect-only preview**                    | The small browser loader can create a checkout link. Its iframe/modal mode is not release-ready because PayMorph deliberately sends `X-Frame-Options: DENY`, and it has no retained browser acceptance suite.                                                         |
 | `@paymorph/node`                                             | **Private thin client**                      | The package wraps the implemented API and verifies webhook HMACs, but currently returns `unknown`, is not generated from OpenAPI, and is not published to npm. It must not be presented as a finished typed SDK.                                                      |
 | Merchant webhooks                                            | **Implemented; public acceptance gate open** | Encrypted endpoint settings, exact-body HMAC signing, durable leases, retry scheduling, and idempotent settlement enqueueing exist. There is no merchant delivery-history/replay UI, formal secret-rotation workflow, or retained stable-public delivery artifact.    |

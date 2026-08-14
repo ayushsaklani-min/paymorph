@@ -1,4 +1,6 @@
 import { AttemptStatus, db } from '@paymorph/db';
+import { ProductJourney } from '@/features/guides/product-journey';
+import { PRODUCT_JOURNEYS } from '@/features/guides/product-journeys';
 import { formatSplitPercentage } from '@/features/invoices/split-percentage';
 import { requireMerchant } from '@/lib/server/auth/session';
 
@@ -61,6 +63,7 @@ export default async function MarketplacePage() {
           </div>
         )}
       </div>
+      <ProductJourney journey={PRODUCT_JOURNEYS.marketplace} />
     </main>
   );
 }

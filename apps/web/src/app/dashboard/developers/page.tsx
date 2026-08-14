@@ -2,6 +2,8 @@ import { requireMerchant } from '@/lib/server/auth/session';
 import { db } from '@paymorph/db';
 import { ApiKeyManager } from '@/features/developers/api-key-manager';
 import { filterApiKeyScopes, type ApiKeyListItem } from '@/features/developers/api-key-types';
+import { ProductJourney } from '@/features/guides/product-journey';
+import { PRODUCT_JOURNEYS } from '@/features/guides/product-journeys';
 
 export default async function DevelopersPage() {
   const merchant = await requireMerchant();
@@ -41,6 +43,7 @@ export default async function DevelopersPage() {
         every key can be revoked here.
       </p>
       <ApiKeyManager initialKeys={initialKeys} />
+      <ProductJourney journey={PRODUCT_JOURNEYS.developers} />
     </main>
   );
 }

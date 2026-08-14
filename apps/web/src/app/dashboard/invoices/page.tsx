@@ -1,5 +1,7 @@
 import { db } from '@paymorph/db';
 import { formatBaseUnits } from '@paymorph/shared';
+import { ProductJourney } from '@/features/guides/product-journey';
+import { PRODUCT_JOURNEYS } from '@/features/guides/product-journeys';
 import { requireMerchant } from '@/lib/server/auth/session';
 
 export default async function InvoicesPage() {
@@ -77,6 +79,8 @@ export default async function InvoicesPage() {
           </table>
         </div>
       )}
+
+      <ProductJourney journey={PRODUCT_JOURNEYS.invoices} />
     </main>
   );
 }

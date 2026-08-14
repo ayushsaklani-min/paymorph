@@ -1,4 +1,6 @@
 import { formatBaseUnits } from '@paymorph/shared';
+import { ProductJourney } from '@/features/guides/product-journey';
+import { PRODUCT_JOURNEYS } from '@/features/guides/product-journeys';
 import { requireMerchant } from '@/lib/server/auth/session';
 import { getDashboardOverview } from '@/lib/server/dashboard/overview';
 
@@ -229,6 +231,8 @@ export default async function DashboardPage() {
           </div>
         )}
       </section>
+
+      <ProductJourney journey={PRODUCT_JOURNEYS.overview} />
     </main>
   );
 }

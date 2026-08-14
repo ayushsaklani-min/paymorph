@@ -1,5 +1,7 @@
 import { requireMerchant } from '@/lib/server/auth/session';
 import { listPaymentRequests } from '@/lib/server/payment-requests/service';
+import { ProductJourney } from '@/features/guides/product-journey';
+import { PRODUCT_JOURNEYS } from '@/features/guides/product-journeys';
 import { PaymentRequestActions } from '@/features/payment-requests/payment-request-actions';
 import { PaymentRequestForm } from '@/features/payment-requests/payment-request-form';
 
@@ -53,6 +55,7 @@ export default async function PaymentRequestsPage() {
           <PaymentRequestForm merchantAddress={merchant.walletAddress} />
         </aside>
       </div>
+      <ProductJourney journey={PRODUCT_JOURNEYS.paymentRequests} />
     </main>
   );
 }

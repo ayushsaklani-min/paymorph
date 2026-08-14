@@ -1,5 +1,7 @@
 import { AttemptStatus, db } from '@paymorph/db';
 import { formatBaseUnits } from '@paymorph/shared';
+import { ProductJourney } from '@/features/guides/product-journey';
+import { PRODUCT_JOURNEYS } from '@/features/guides/product-journeys';
 import { requireMerchant } from '@/lib/server/auth/session';
 
 export default async function TreasuryPage() {
@@ -55,6 +57,7 @@ export default async function TreasuryPage() {
           </tbody>
         </table>
       </section>
+      <ProductJourney journey={PRODUCT_JOURNEYS.treasury} />
     </main>
   );
 }

@@ -1,5 +1,7 @@
 import { db } from '@paymorph/db';
 import { requireMerchant } from '@/lib/server/auth/session';
+import { ProductJourney } from '@/features/guides/product-journey';
+import { PRODUCT_JOURNEYS } from '@/features/guides/product-journeys';
 import { PaymentLinkActions } from '@/features/payment-links/payment-link-actions';
 import { PaymentLinkForm } from '@/features/payment-links/payment-link-form';
 
@@ -67,6 +69,7 @@ export default async function PaymentLinksPage() {
           <PaymentLinkForm merchantAddress={merchant.walletAddress} />
         </aside>
       </div>
+      <ProductJourney journey={PRODUCT_JOURNEYS.paymentLinks} />
     </main>
   );
 }

@@ -1,4 +1,6 @@
 import { requireMerchant } from '@/lib/server/auth/session';
+import { ProductJourney } from '@/features/guides/product-journey';
+import { PRODUCT_JOURNEYS } from '@/features/guides/product-journeys';
 import { MerchantProfileForm } from '@/features/settings/merchant-profile-form';
 
 export default async function SettingsPage() {
@@ -14,6 +16,7 @@ export default async function SettingsPage() {
         logoUrl={merchant.logoUrl}
         webhookUrl={merchant.webhookUrl}
       />
+      <ProductJourney journey={PRODUCT_JOURNEYS.settings} />
     </main>
   );
 }

@@ -1,5 +1,7 @@
 import { formatBaseUnits } from '@paymorph/shared';
 import { db } from '@paymorph/db';
+import { ProductJourney } from '@/features/guides/product-journey';
+import { PRODUCT_JOURNEYS } from '@/features/guides/product-journeys';
 import { requireMerchant } from '@/lib/server/auth/session';
 
 function label(status: string): string {
@@ -125,6 +127,8 @@ export default async function PaymentsPage() {
           </table>
         </div>
       )}
+
+      <ProductJourney journey={PRODUCT_JOURNEYS.payments} />
     </main>
   );
 }
